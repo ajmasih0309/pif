@@ -8,7 +8,7 @@ DB_FILE = 'data/processed/pif.db'
 # 1. Load Data from SQLite
 def load_data():
     conn = sqlite3.connect(DB_FILE)
-    df = pd.read_sql_query("SELECT * FROM orders_test", conn)
+    df = pd.read_sql_query("SELECT * FROM orders_50", conn)
     conn.close()
     return df
 
