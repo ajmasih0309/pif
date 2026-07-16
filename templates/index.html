@@ -1,0 +1,408 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<style>
+    /* Tab Styling */
+    .nav-tabs .nav-link {
+        font-family: 'Patrick Hand', cursive;
+        font-size: 1.5rem;
+        color: white !important;
+        border: 1px solid #000;
+        border-bottom: none;
+        margin-right: 2px;
+        opacity: 0.6;
+        transition: 0.3s;
+    }
+    .nav-tabs .nav-link.active { opacity: 1; font-weight: bold; }
+    
+    /* 5 Tab Colors */
+    #tab-open { background-color: #008000; }
+    #tab-contacted { background-color: #17a2b8; } 
+    #tab-completed { background-color: #80ff80; color: black !important; }
+    #tab-cancelled { background-color: #dc3545; }
+    #tab-all { background-color: #ffb347; color: black !important; }
+    
+    .master-header th { background-color: #b3b3b3 !important; color: #000; border-bottom: 2px dashed #000; }
+    .child-header th { background-color: #cccccc !important; color: #000; font-size: 1.1rem; }
+    
+    .cursor-pointer { cursor: pointer; }
+    .child-table-wrapper { background-color: #fffaf0; padding: 10px; border: 1px solid #000; border-top: none; }
+
+    /* Visual Arrow Toggle CSS */
+    .toggle-icon::before {
+        content: "▶";
+        display: inline-block;
+        margin-right: 10px;
+        color: #555;
+        font-size: 0.85em;
+        transition: transform 0.2s ease;
+    }
+    tr:not(.collapsed) .toggle-icon::before { transform: rotate(90deg); color: #000; }
+</style>
+
+<div class="d-flex justify-content-center mb-2 mt-3">
+    <h1 class="chalk-header fw-bold text-center w-100">View Orders</h1>
+</div>
+
+<ul class="nav nav-tabs border-0" id="orderTabs" role="tablist">
+    <li class="nav-item" role="presentation"><button class="nav-link active px-4 rounded-0" id="tab-open" data-bs-toggle="tab" data-bs-target="#open" type="button" role="tab">Open</button></li>
+    <li class="nav-item" role="presentation"><button class="nav-link px-4 rounded-0" id="tab-contacted" data-bs-toggle="tab" data-bs-target="#contacted" type="button" role="tab">Contacted</button></li>
+    <li class="nav-item" role="presentation"><button class="nav-link px-4 rounded-0" id="tab-completed" data-bs-toggle="tab" data-bs-target="#completed" type="button" role="tab">Completed</button></li>
+    <li class="nav-item" role="presentation"><button class="nav-link px-4 rounded-0" id="tab-cancelled" data-bs-toggle="tab" data-bs-target="#cancelled" type="button" role="tab">Cancelled</button></li>
+    <li class="nav-item" role="presentation"><button class="nav-link px-4 rounded-0" id="tab-all" data-bs-toggle="tab" data-bs-target="#all" type="button" role="tab">All</button></li>
+</ul>
+
+<div class="tab-content" id="orderTabsContent">
+    
+    <div class="tab-pane fade show active" id="open" role="tabpanel">
+        <div class="table-responsive">
+            <table class="table table-bordered mb-0">
+                <thead class="master-header">
+                    <tr>
+                        <th>Contact Name</th><th>Contact Phone</th><th>Contact Email</th>
+                        <th>Pedal Partner</th><th>Order Date</th><th>Order Type</th>
+                        <th>Shop Name</th><th>Total Bikes</th>
+                    </tr>
+                </thead>
+                <tbody id="tbodyOpen">
+                    {% for order in open_orders %}
+                    <tr class="cursor-pointer bg-light collapsed" data-bs-toggle="collapse" data-bs-target="#collapseOpen{{ loop.index }}">
+                        <td class="fw-bold"><span class="toggle-icon"></span>{{ order.contact_name }}</td>
+                        <td>{{ order.contact_phone }}</td>
+                        <td>{{ order.contact_email }}</td>
+                        <td>{{ order.pedal_partner }}</td>
+                        <td class="text-center">{{ order.order_date }}</td>
+                        <td>{{ order.order_type }}</td>
+                        <td>{{ order.shop_name }}</td>
+                        <td class="fw-bold text-center fs-4">{{ order.total_bikes }}</td>
+                    </tr>
+                    <tr>
+                        <td colspan="8" class="p-0 border-0">
+                            <div class="collapse" id="collapseOpen{{ loop.index }}">
+                                <div class="child-table-wrapper">
+                                    <table class="table table-sm table-bordered mb-0 bg-white text-nowrap">
+                                        <thead class="child-header">
+                                            <tr>
+                                                <th>Action</th><th>Recipient Name</th><th>Bike Style</th>
+                                                <th>Age</th><th>Height</th><th>Choice 1</th><th>Choice 2</th><th>Notes</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for recipient in order.recipients %}
+                                            <tr>
+                                                <td class="d-flex gap-2 border-0">
+                                                    <form action="{{ url_for('update_status', order_id=recipient.order_id) }}" method="POST" class="mb-0">
+                                                        <input type="hidden" name="new_status" value="Contacted">
+                                                        <button type="submit" class="btn btn-sm btn-info border border-dark fw-bold">📞 Contact</button>
+                                                    </form>
+                                                    <form action="{{ url_for('update_status', order_id=recipient.order_id) }}" method="POST" class="mb-0">
+                                                        <input type="hidden" name="new_status" value="Cancelled">
+                                                        <button type="submit" class="btn btn-sm btn-danger border border-dark fw-bold" onclick="return confirm('Cancel this order?')">🚫 Cancel</button>
+                                                    </form>
+                                                </td>
+                                                <td class="fw-bold align-middle">{{ recipient.recipient_name }}</td>
+                                                <td class="align-middle">{{ recipient.bike_style_preference }}</td>
+                                                <td class="align-middle text-center">{{ recipient.age }}</td>
+                                                <td class="align-middle text-center">{{ recipient.height }}</td>
+                                                <td class="align-middle text-center">{{ recipient.bike_type_first_choice }}</td>
+                                                <td class="align-middle text-center">{{ recipient.bike_type_second_choice }}</td>
+                                                <td class="align-middle text-wrap">{{ recipient.notes }}</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="contacted" role="tabpanel">
+        <div class="table-responsive">
+            <table class="table table-bordered mb-0">
+                <thead class="master-header">
+                    <tr>
+                        <th>Contact Name</th><th>Contact Phone</th><th>Contact Email</th>
+                        <th>Pedal Partner</th><th>Order Date</th><th>Order Type</th>
+                        <th>Shop Name</th><th>Total Bikes</th>
+                    </tr>
+                </thead>
+                <tbody id="tbodyContacted">
+                    {% for order in contacted_orders %}
+                    <tr class="cursor-pointer bg-light collapsed" data-bs-toggle="collapse" data-bs-target="#collapseContacted{{ loop.index }}">
+                        <td class="fw-bold"><span class="toggle-icon"></span>{{ order.contact_name }}</td>
+                        <td>{{ order.contact_phone }}</td>
+                        <td>{{ order.contact_email }}</td>
+                        <td>{{ order.pedal_partner }}</td>
+                        <td class="text-center">{{ order.order_date }}</td>
+                        <td>{{ order.order_type }}</td>
+                        <td>{{ order.shop_name }}</td>
+                        <td class="fw-bold text-center fs-4">{{ order.total_bikes }}</td>
+                    </tr>
+                    <tr>
+                        <td colspan="8" class="p-0 border-0">
+                            <div class="collapse" id="collapseContacted{{ loop.index }}">
+                                <div class="child-table-wrapper">
+                                    <table class="table table-sm table-bordered mb-0 bg-white text-nowrap">
+                                        <thead class="child-header">
+                                            <tr>
+                                                <th>Action</th><th>Recipient Name</th><th>Bike Style</th>
+                                                <th>Age</th><th>Height</th><th>Choice 1</th><th>Choice 2</th><th>Notes</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for recipient in order.recipients %}
+                                            <tr>
+                                                <td style="width: 250px;">
+                                                    <div class="d-flex align-items-center gap-2">
+                                                        <form action="{{ url_for('fulfill', order_id=recipient.order_id) }}" method="POST" class="d-flex align-items-center mb-0 gap-1">
+                                                            <div class="d-flex flex-column w-75">
+                                                                <input type="date" name="date_picked_up" class="form-control form-control-sm mb-1 bg-white" value="{{ today }}" required>
+                                                                <input type="number" name="bike_tag" class="form-control form-control-sm bg-white" placeholder="Tag #" required>
+                                                            </div>
+                                                            <button type="submit" class="btn btn-success border border-dark rounded h-100 fs-5 px-2">✅</button>
+                                                        </form>
+                                                        <form action="{{ url_for('update_status', order_id=recipient.order_id) }}" method="POST" class="mb-0 h-100">
+                                                            <input type="hidden" name="new_status" value="Cancelled">
+                                                            <button type="submit" class="btn btn-sm btn-danger border border-dark h-100" onclick="return confirm('Cancel this order?')">🚫</button>
+                                                        </form>
+                                                    </div>
+                                                </td>
+                                                <td class="fw-bold align-middle">
+                                                    {{ recipient.recipient_name }}
+                                                    {% if not order.pedal_partner %}
+                                                        <br><span class="badge bg-warning text-dark mt-1 border border-dark shadow-sm" style="font-size: 0.8rem;">⚠️ 1 Week Limit</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td class="align-middle">{{ recipient.bike_style_preference }}</td>
+                                                <td class="align-middle text-center">{{ recipient.age }}</td>
+                                                <td class="align-middle text-center">{{ recipient.height }}</td>
+                                                <td class="align-middle text-center">{{ recipient.bike_type_first_choice }}</td>
+                                                <td class="align-middle text-center">{{ recipient.bike_type_second_choice }}</td>
+                                                <td class="align-middle text-wrap">{{ recipient.notes }}</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="completed" role="tabpanel">
+        <div class="table-responsive">
+            <table class="table table-bordered mb-0">
+                <thead class="master-header">
+                    <tr>
+                        <th>Contact Name</th><th>Contact Phone</th><th>Contact Email</th>
+                        <th>Pedal Partner</th><th>Order Date</th><th>Order Type</th>
+                        <th>Shop Name</th><th>Total Bikes</th>
+                    </tr>
+                </thead>
+                <tbody id="tbodyCompleted">
+                    {% for order in completed_orders %}
+                    <tr class="cursor-pointer bg-light collapsed" data-bs-toggle="collapse" data-bs-target="#collapseComp{{ loop.index }}">
+                        <td class="fw-bold"><span class="toggle-icon"></span>{{ order.contact_name }}</td>
+                        <td>{{ order.contact_phone }}</td>
+                        <td>{{ order.contact_email }}</td>
+                        <td>{{ order.pedal_partner }}</td>
+                        <td class="text-center">{{ order.order_date }}</td>
+                        <td>{{ order.order_type }}</td>
+                        <td>{{ order.shop_name }}</td>
+                        <td class="fw-bold text-center fs-4">{{ order.total_bikes }}</td>
+                    </tr>
+                    <tr>
+                        <td colspan="8" class="p-0 border-0">
+                            <div class="collapse" id="collapseComp{{ loop.index }}">
+                                <div class="child-table-wrapper">
+                                    <table class="table table-sm table-bordered mb-0 bg-white">
+                                        <thead class="child-header">
+                                            <tr>
+                                                <th>Pickup Date</th><th>Bike Tag #</th><th>Recipient Name</th>
+                                                <th>Bike Style</th><th>Age</th><th>Height</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for recipient in order.recipients %}
+                                            <tr>
+                                                <td class="fw-bold text-success">{{ recipient.date_picked_up }}</td>
+                                                <td class="fw-bold text-primary">{{ recipient.bike_tag }}</td>
+                                                <td class="fw-bold">{{ recipient.recipient_name }}</td>
+                                                <td>{{ recipient.bike_style_preference }}</td>
+                                                <td class="text-center">{{ recipient.age }}</td>
+                                                <td class="text-center">{{ recipient.height }}</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="cancelled" role="tabpanel">
+        <div class="table-responsive">
+            <table class="table table-bordered mb-0">
+                <thead class="master-header">
+                    <tr>
+                        <th>Contact Name</th><th>Contact Phone</th><th>Contact Email</th>
+                        <th>Pedal Partner</th><th>Order Date</th><th>Order Type</th>
+                        <th>Shop Name</th><th>Total Bikes</th>
+                    </tr>
+                </thead>
+                <tbody id="tbodyCancelled">
+                    {% for order in cancelled_orders %}
+                    <tr class="cursor-pointer bg-light collapsed" data-bs-toggle="collapse" data-bs-target="#collapseCancelled{{ loop.index }}">
+                        <td class="fw-bold text-danger"><span class="toggle-icon"></span>{{ order.contact_name }}</td>
+                        <td>{{ order.contact_phone }}</td>
+                        <td>{{ order.contact_email }}</td>
+                        <td>{{ order.pedal_partner }}</td>
+                        <td class="text-center">{{ order.order_date }}</td>
+                        <td>{{ order.order_type }}</td>
+                        <td>{{ order.shop_name }}</td>
+                        <td class="fw-bold text-center fs-4">{{ order.total_bikes }}</td>
+                    </tr>
+                    <tr>
+                        <td colspan="8" class="p-0 border-0">
+                            <div class="collapse" id="collapseCancelled{{ loop.index }}">
+                                <div class="child-table-wrapper">
+                                    <table class="table table-sm table-bordered mb-0 bg-white">
+                                        <thead class="child-header">
+                                            <tr>
+                                                <th>Action</th><th>Recipient Name</th><th>Bike Style</th>
+                                                <th>Age</th><th>Height</th><th>Notes</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for recipient in order.recipients %}
+                                            <tr>
+                                                <td>
+                                                    <form action="{{ url_for('update_status', order_id=recipient.order_id) }}" method="POST" class="mb-0">
+                                                        <input type="hidden" name="new_status" value="Open">
+                                                        <button type="submit" class="btn btn-sm btn-warning border border-dark fw-bold">♻️ Restore to Open</button>
+                                                    </form>
+                                                </td>
+                                                <td class="fw-bold">{{ recipient.recipient_name }}</td>
+                                                <td>{{ recipient.bike_style_preference }}</td>
+                                                <td class="text-center">{{ recipient.age }}</td>
+                                                <td class="text-center">{{ recipient.height }}</td>
+                                                <td>{{ recipient.notes }}</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="all" role="tabpanel">
+        <div class="table-responsive">
+            <table class="table table-bordered mb-0">
+                <thead class="master-header">
+                    <tr>
+                        <th>Contact Name</th><th>Contact Phone</th><th>Contact Email</th>
+                        <th>Pedal Partner</th><th>Order Date</th><th>Order Type</th>
+                        <th>Shop Name</th><th>Total Bikes</th>
+                    </tr>
+                </thead>
+                <tbody id="tbodyAll">
+                    {% for order in all_orders %}
+                    <tr class="cursor-pointer bg-light collapsed" data-bs-toggle="collapse" data-bs-target="#collapseAll{{ loop.index }}">
+                        <td class="fw-bold"><span class="toggle-icon"></span>{{ order.contact_name }}</td>
+                        <td>{{ order.contact_phone }}</td>
+                        <td>{{ order.contact_email }}</td>
+                        <td>{{ order.pedal_partner }}</td>
+                        <td class="text-center">{{ order.order_date }}</td>
+                        <td>{{ order.order_type }}</td>
+                        <td>{{ order.shop_name }}</td>
+                        <td class="fw-bold text-center fs-4">{{ order.total_bikes }}</td>
+                    </tr>
+                    <tr>
+                        <td colspan="8" class="p-0 border-0">
+                            <div class="collapse" id="collapseAll{{ loop.index }}">
+                                <div class="child-table-wrapper">
+                                    <table class="table table-sm table-bordered mb-0 bg-white">
+                                        <thead class="child-header">
+                                            <tr>
+                                                <th>Current Status</th><th>Recipient Name</th><th>Bike Style</th>
+                                                <th>Age</th><th>Height</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for recipient in order.recipients %}
+                                            <tr>
+                                                <td class="fw-bold">
+                                                    {% if recipient.status == 'Completed' %}
+                                                        <span class="badge bg-success border border-dark fs-6">Picked Up: {{ recipient.date_picked_up }}</span>
+                                                    {% elif recipient.status == 'Contacted' %}
+                                                        <span class="badge bg-info text-dark border border-dark fs-6">Contacted</span>
+                                                    {% elif recipient.status == 'Cancelled' %}
+                                                        <span class="badge bg-danger border border-dark fs-6">Cancelled</span>
+                                                    {% else %}
+                                                        <span class="badge bg-secondary border border-dark fs-6">Open</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td class="fw-bold">{{ recipient.recipient_name }}</td>
+                                                <td>{{ recipient.bike_style_preference }}</td>
+                                                <td class="text-center">{{ recipient.age }}</td>
+                                                <td class="text-center">{{ recipient.height }}</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const allCollapses = document.querySelectorAll('.collapse');
+        allCollapses.forEach(collapse => {
+            collapse.addEventListener('show.bs.collapse', function () {
+                const tbody = this.closest('tbody');
+                if (!tbody) return;
+                const opened = tbody.querySelectorAll('.collapse.show');
+                opened.forEach(openRow => {
+                    if (openRow !== this) {
+                        let bsCollapse = bootstrap.Collapse.getInstance(openRow);
+                        if (bsCollapse) bsCollapse.hide();
+                        const trigger = document.querySelector(`[data-bs-target="#${openRow.id}"]`);
+                        if (trigger) trigger.classList.add('collapsed');
+                    }
+                });
+            });
+        });
+    });
+</script>
+
+{% endblock %}
