@@ -91,14 +91,27 @@
             </button>
             
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto fs-4"> <li class="nav-item me-3">
-                        <a class="nav-link text-dark fw-bold" href="/">Dashboard</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link fw-bold px-3 rounded" href="/add" style="background-color: #9cd4f0; color: #000; border: 1px solid #000;">
-                            ➕ New Order
-                        </a>
-                    </li>
+                <ul class="navbar-nav ms-auto fs-4 align-items-center"> 
+                    {% if session.get('username') %}
+                        <!-- Displays the logged-in username -->
+                        <li class="nav-item me-4">
+                            <span class="navbar-text text-dark fs-5">
+                                👤 Welcome, <strong style="color: #f0ad4e;">{{ session.username }}</strong>!
+                            </span>
+                        </li>
+                        
+                        <li class="nav-item me-3">
+                            <a class="nav-link text-dark fw-bold" href="/">Dashboard</a>
+                        </li>
+                        <li class="nav-item me-3">
+                            <a class="nav-link fw-bold px-3 rounded" href="/add" style="background-color: #9cd4f0; color: #000; border: 1px solid #000;">
+                                ➕ New Order
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-danger fw-bold" href="/logout">Logout</a>
+                        </li>
+                    {% endif %}
                 </ul>
             </div>
         </div>

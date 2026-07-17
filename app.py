@@ -1,10 +1,13 @@
 import sqlite3
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, session, flash
 from datetime import datetime
 import re
+from functools import wraps
+from werkzeug.security import generate_password_hash, check_password_hash
 
 # initialize app & database path
 app = Flask(__name__)
+app.secret_key = 'loremipsum'
 DB_PATH = "data/processed/pif.db"
 
 def get_db_connection():
@@ -23,7 +26,23 @@ def upgrade_db():
         conn.commit()
     except sqlite3.OperationalError:
         pass # Column already exists
+
+    # --- NEW: Add handled_by column ---
+    try:
+        conn.execute("ALTER TABLE orders_50 ADD COLUMN handled_by TEXT DEFAULT 'System'")
+        conn.commit()
+    except sqlite3.OperationalError:
+        pass # Column already exists
     conn.close()
+
+# --- AUTHENTICATION SETUP ---
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'username' not in session:
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
 
 # --- HELPER FUNCTIONS ---
 def format_date(d_str):
@@ -50,6 +69,7 @@ def clean_int(val):
 
 # --- ROUTES ---
 @app.route('/')
+@login_required
 def index():
     conn = get_db_connection()
     # Pull the hidden native rowid alongside the rest of your data
@@ -120,6 +140,7 @@ def index():
     )
 
 @app.route('/add', methods=('GET', 'POST'))
+@login_required
 def add():
     if request.method == 'POST':
         contact_name = request.form.get('contact_name', '')
@@ -159,30 +180,61 @@ def add():
     return render_template('add.html')
 
 @app.route('/update_status/<int:order_id>', methods=['POST'])
+@login_required
 def update_status(order_id):
     new_status = request.form.get('new_status')
+    current_user = session.get('username', 'Unknown') # Get the active user
+    
     conn = get_db_connection()
-    # Update using the native rowid
-    conn.execute("UPDATE orders_50 SET status = ? WHERE rowid = ?", (new_status, order_id))
+    conn.execute('''
+        UPDATE orders_50 
+        SET status = ?, handled_by = ? 
+        WHERE rowid = ?
+    ''', (new_status, current_user, order_id))
     conn.commit()
     conn.close()
     return redirect(url_for('index'))
 
 @app.route('/fulfill/<int:order_id>', methods=['POST'])
+@login_required
 def fulfill(order_id):
     date_picked_up = request.form.get('date_picked_up')
     bike_tag = request.form.get('bike_tag')
+    current_user = session.get('username', 'Unknown') # Get the active user
     
     conn = get_db_connection()
-    # Update using the native rowid
     conn.execute('''
         UPDATE orders_50 
-        SET date_picked_up = ?, bike_tag = ?, status = 'Completed' 
+        SET date_picked_up = ?, bike_tag = ?, status = 'Completed', handled_by = ? 
         WHERE rowid = ?
-    ''', (date_picked_up, bike_tag, order_id))
+    ''', (date_picked_up, bike_tag, current_user, order_id))
     conn.commit()
     conn.close()
     return redirect(url_for('index'))
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        
+        conn = get_db_connection()
+        user = conn.execute("SELECT * FROM users WHERE username = ?", (username,)).fetchone()
+        conn.close()
+
+        # Check if user exists and password matches
+        if user and check_password_hash(user['password_hash'], password):
+            session['username'] = user['username']
+            return redirect(url_for('index'))
+        else:
+            flash("Invalid credentials. Please try again.")
+            
+    return render_template('login.html')
+
+@app.route('/logout')
+def logout():
+    session.pop('username', None)
+    return redirect(url_for('login'))
 
 if __name__ == '__main__':
     upgrade_db() # Runs safely once on startup
