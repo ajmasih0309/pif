@@ -1,6 +1,9 @@
 {% extends 'base.html' %}
-{% block content %}
 
+<!-- Set the browser tab title -->
+{% block title %}New Order - PIF Portal{% endblock %}
+
+{% block content %}
 <div class="row justify-content-center">
     <div class="col-lg-12">
         <div class="card bg-white p-4 shadow-sm border-0 mb-5">
@@ -8,6 +11,9 @@
             
             <form method="POST">
                 
+                <!-- =========================================
+                     MASTER ORDER INFORMATION
+                     ========================================= -->
                 <div class="row align-items-center mb-3 mt-4">
                     <div class="col-md-3 text-md-end"><label class="fw-bold">Order Date</label></div>
                     <div class="col-md-9"><input type="date" id="order_date" name="order_date" class="form-control" required></div>
@@ -55,6 +61,9 @@
                     </div>
                 </div>
 
+                <!-- =========================================
+                     DYNAMIC RECIPIENT LIST
+                     ========================================= -->
                 <h3 class="fw-bold mt-5 mb-2 d-flex align-items-center gap-3">
                     Recipient List 
                     <span class="badge bg-dark rounded-pill fs-5 pb-2">Total Bikes: <span id="bikeCounter" class="text-info">1</span></span>
@@ -71,10 +80,11 @@
                                 <th>Style Choice 1</th>
                                 <th>Style Choice 2</th>
                                 <th style="width: 150px;">Notes</th>
-                                <th style="width: 50px;"></th>
+                                <th style="width: 50px;">Action</th>
                             </tr>
                         </thead>
                         <tbody>
+                            <!-- Base Row (Row 0) -->
                             <tr>
                                 <td>
                                     <div class="form-check mb-1">
@@ -94,14 +104,14 @@
                                 <td><input type="number" name="age[]" class="form-control border-secondary" min="0" max="120" step="1" onkeypress="return event.charCode >= 48 && event.charCode <= 57"></td>
                                 <td><select name="height[]" class="form-select height-dropdown border-secondary"></select></td>
                                 <td>
-                                    <input type="text" name="bike_type_first_choice[]" class="form-control border-secondary bg-white text-center cursor-pointer" readonly placeholder="Click to Select" onclick="openStyleModal(this)">
+                                    <input type="text" name="bike_type_first_choice[]" class="form-control border-secondary bg-white text-center cursor-pointer style-modal-trigger" readonly placeholder="Click to Select" onclick="openStyleModal(this)">
                                 </td>
-                                
                                 <td>
-                                    <input type="text" name="bike_type_second_choice[]" class="form-control border-secondary bg-white text-center cursor-pointer" readonly placeholder="Click to Select" onclick="openStyleModal(this)">
+                                    <input type="text" name="bike_type_second_choice[]" class="form-control border-secondary bg-white text-center cursor-pointer style-modal-trigger" readonly placeholder="Click to Select" onclick="openStyleModal(this)">
                                 </td>
                                 <td><input type="text" name="notes[]" class="form-control border-secondary"></td>
-                                <td></td> </tr>
+                                <td></td> <!-- Empty action cell for the first row to prevent deletion -->
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -110,6 +120,7 @@
                     <button type="button" class="btn btn-info text-white fw-bold px-3 py-1 border border-dark shadow-sm" style="background-color: #9cd4f0;" onclick="addRow()">➕ Add Recipient</button>
                 </div>
 
+                <!-- SUBMIT BUTTON -->
                 <div class="text-center mt-5 border-top border-dark dashed pt-4">
                     <button type="submit" class="btn btn-success px-5 py-2 fw-bold fs-3 shadow" style="background-color: #7ef161; color: #000; border: 2px solid #000; border-radius: 10px;">Submit Order</button>
                 </div>
@@ -119,6 +130,82 @@
     </div>
 </div>
 
+<!-- =========================================
+     BIKE STYLE VISUAL SELECTOR MODAL
+     ========================================= -->
+<div class="modal fade" id="bikeStyleModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-dark" style="font-family: 'Patrick Hand', cursive;">
+            <div class="modal-header border-dark bg-light">
+                <h3 class="modal-title fw-bold">Select Bike Style</h3>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body bg-white">
+                <div class="row g-3">
+                    
+                    <div class="col-md-4">
+                        <div class="card h-100 bike-card" onclick="selectBikeStyle('A')">
+                            <div class="card-body text-center p-2">
+                                <div class="bike-card-title">A</div>
+                                <img src="{{ url_for('static', filename='imgs/BikeA.png') }}" alt="Toddler Bike" class="img-fluid my-2 rounded">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="card h-100 bike-card" onclick="selectBikeStyle('B')">
+                            <div class="card-body text-center p-2">
+                                <div class="bike-card-title">B</div>
+                                <img src="{{ url_for('static', filename='imgs/BikeB.png') }}" alt="Kid Bike" class="img-fluid my-2 rounded">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="card h-100 bike-card" onclick="selectBikeStyle('C')">
+                            <div class="card-body text-center p-2">
+                                <div class="bike-card-title">C</div>
+                                <img src="{{ url_for('static', filename='imgs/BikeC.png') }}" alt="BMX Bike" class="img-fluid my-2 rounded">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="card h-100 bike-card" onclick="selectBikeStyle('D')">
+                            <div class="card-body text-center p-2">
+                                <div class="bike-card-title">D</div>
+                                <img src="{{ url_for('static', filename='imgs/BikeD.png') }}" alt="BMX Bike" class="img-fluid my-2 rounded">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="card h-100 bike-card" onclick="selectBikeStyle('E')">
+                            <div class="card-body text-center p-2">
+                                <div class="bike-card-title">E</div>
+                                <img src="{{ url_for('static', filename='imgs/BikeE.png') }}" alt="BMX Bike" class="img-fluid my-2 rounded">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="card h-100 bike-card" onclick="selectBikeStyle('F')">
+                            <div class="card-body text-center p-2">
+                                <div class="bike-card-title">F</div>
+                                <img src="{{ url_for('static', filename='imgs/BikeF.png') }}" alt="BMX Bike" class="img-fluid my-2 rounded">
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- =========================================
+     JAVASCRIPT LOGIC
+     ========================================= -->
 <script>
     // --- Generate Height Options ---
     let heightOptionsHTML = '<option value="" selected disabled></option>';
@@ -135,7 +222,7 @@
     document.addEventListener('DOMContentLoaded', (event) => {
         document.getElementById('order_date').valueAsDate = new Date();
         document.querySelector('.height-dropdown').innerHTML = heightOptionsHTML;
-        updateCounter(); // Initialize counter
+        updateCounter(); 
     });
 
     // --- Phone Formatter ---
@@ -166,13 +253,13 @@
         }
     }
 
-    // --- NEW: Update Bike Counter ---
+    // --- Update Bike Counter ---
     function updateCounter() {
         const rowCount = document.querySelectorAll('#recipient_table tbody tr').length;
         document.getElementById('bikeCounter').innerText = rowCount;
     }
 
-    // --- NEW: Copy Previous Row Logic ---
+    // --- Copy Previous Row Logic ---
     function copyPrevious(checkboxElem) {
         if (!checkboxElem.checked) return;
 
@@ -187,7 +274,7 @@
                 select.value = prevSelects[index].value;
             });
 
-            // 2. Copy Age & Notes (We skip Name so it doesn't duplicate individuals)
+            // 2. Copy Age & Notes
             const currentAge = currentRow.querySelector('input[name="age[]"]');
             const prevAge = prevRow.querySelector('input[name="age[]"]');
             if (currentAge && prevAge) currentAge.value = prevAge.value;
@@ -195,20 +282,28 @@
             const currentNotes = currentRow.querySelector('input[name="notes[]"]');
             const prevNotes = prevRow.querySelector('input[name="notes[]"]');
             if (currentNotes && prevNotes) currentNotes.value = prevNotes.value;
+
+            // 3. Copy Modal Inputs (Choices 1 & 2)
+            const currentModalInputs = currentRow.querySelectorAll('.style-modal-trigger');
+            const prevModalInputs = prevRow.querySelectorAll('.style-modal-trigger');
+            currentModalInputs.forEach((input, index) => {
+                input.value = prevModalInputs[index].value;
+            });
         }
     }
 
-    // --- Update Add Row Function ---
+    // --- Add Row Function ---
     function addRow() {
         const table = document.getElementById('recipient_table').getElementsByTagName('tbody')[0];
         const newRow = table.insertRow();
         
-        // Notice the new checkbox added above the Recipient Name input
+        // BUG FIX: Replaced the <select> tags for Choices 1 and 2 with the modal-trigger inputs 
+        // to match the exact behavior of the first row.
         newRow.innerHTML = `
             <td>
                 <div class="form-check mb-1">
                     <input class="form-check-input border-dark" type="checkbox" onchange="copyPrevious(this)">
-                    <label class="form-check-label small text-primary fw-bold">Copy Prev Config</label>
+                    <label class="form-check-label small text-primary fw-bold">Copy from Above</label>
                 </div>
                 <input type="text" name="recipient_name[]" class="form-control border-secondary" required>
             </td>
@@ -223,20 +318,10 @@
             <td><input type="number" name="age[]" class="form-control border-secondary" min="0" max="120" step="1" onkeypress="return event.charCode >= 48 && event.charCode <= 57"></td>
             <td><select name="height[]" class="form-select border-secondary">${heightOptionsHTML}</select></td>
             <td>
-                <select name="bike_type_first_choice[]" class="form-select border-secondary">
-                    <option value="" selected disabled></option>
-                    <option value="A">A</option><option value="B">B</option>
-                    <option value="C">C</option><option value="D">D</option>
-                    <option value="E">E</option><option value="F">F</option>
-                </select>
+                <input type="text" name="bike_type_first_choice[]" class="form-control border-secondary bg-white text-center cursor-pointer style-modal-trigger" readonly placeholder="Click to Select" onclick="openStyleModal(this)">
             </td>
             <td>
-                <select name="bike_type_second_choice[]" class="form-select border-secondary">
-                    <option value="" selected disabled></option>
-                    <option value="A">A</option><option value="B">B</option>
-                    <option value="C">C</option><option value="D">D</option>
-                    <option value="E">E</option><option value="F">F</option>
-                </select>
+                <input type="text" name="bike_type_second_choice[]" class="form-control border-secondary bg-white text-center cursor-pointer style-modal-trigger" readonly placeholder="Click to Select" onclick="openStyleModal(this)">
             </td>
             <td><input type="text" name="notes[]" class="form-control border-secondary"></td>
             <td class="text-center align-middle">
@@ -244,26 +329,22 @@
             </td>
         `;
         
-        updateCounter(); // Recalculate counter after row is added
+        updateCounter(); 
     }
 
     // --- Visual Card Selector Logic ---
     let currentTargetInput = null;
 
     function openStyleModal(inputElement) {
-        // Remember which input box was clicked
         currentTargetInput = inputElement;
-        // Show the Bootstrap modal
         const styleModal = new bootstrap.Modal(document.getElementById('bikeStyleModal'));
         styleModal.show();
     }
 
     function selectBikeStyle(styleName) {
         if (currentTargetInput) {
-            // Put the selected bike name into the table input
             currentTargetInput.value = styleName;
         }
-        // Hide the modal
         const modalElement = document.getElementById('bikeStyleModal');
         const styleModalInstance = bootstrap.Modal.getInstance(modalElement);
         if (styleModalInstance) {
@@ -271,73 +352,5 @@
         }
     }
 </script>
-<div class="modal fade" id="bikeStyleModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content border-dark" style="font-family: 'Patrick Hand', cursive;">
-            <div class="modal-header border-dark bg-light">
-                <h3 class="modal-title fw-bold">Select Bike Style</h3>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body bg-white">
-                <div class="row g-3">
-                    
-                    <div class="col-md-4">
-                        <div class="card h-100 bike-card" onclick="selectBikeStyle('A')">
-                            <div class="card-body text-center p-2">
-                                <div class="bike-card-title">A</div>
-                                <img src="{{ url_for('static', filename='imgs/BikeA.png') }}" alt="Toddler Bike" class="img-fluid my-2 rounded">
-                            </div>
-                        </div>
-                    </div>
 
-                    <div class="col-md-4">
-                        <div class="card h-100 bike-card" onclick="selectBikeStyle('B')">
-                            <div class="card-body text-center p-2">
-                                <div class="bike-card-title">B</div>
-                                <img src="{{ url_for('static', filename='imgs/BikeB.png') }}"  alt="Kid Bike" class="img-fluid my-2 rounded">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-md-4">
-                        <div class="card h-100 bike-card" onclick="selectBikeStyle('C')">
-                            <div class="card-body text-center p-2">
-                                <div class="bike-card-title">C</div>
-                                <img src="{{ url_for('static', filename='imgs/BikeC.png') }}"  alt="BMX Bike" class="img-fluid my-2 rounded">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-md-4">
-                        <div class="card h-100 bike-card" onclick="selectBikeStyle('D')">
-                            <div class="card-body text-center p-2">
-                                <div class="bike-card-title">D</div>
-                                <img src="{{ url_for('static', filename='imgs/BikeD.png') }}"  alt="BMX Bike" class="img-fluid my-2 rounded">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-md-4">
-                        <div class="card h-100 bike-card" onclick="selectBikeStyle('E')">
-                            <div class="card-body text-center p-2">
-                                <div class="bike-card-title">E</div>
-                                <img src="{{ url_for('static', filename='imgs/BikeE.png') }}"  alt="BMX Bike" class="img-fluid my-2 rounded">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-md-4">
-                        <div class="card h-100 bike-card" onclick="selectBikeStyle('F')">
-                            <div class="card-body text-center p-2">
-                                <div class="bike-card-title">F</div>
-                                <img src="{{ url_for('static', filename='imgs/BikeF.png') }}"  alt="BMX Bike" class="img-fluid my-2 rounded">
-                            </div>
-                        </div>
-                    </div>
-
-                    </div>
-            </div>
-        </div>
-    </div>
-</div>
 {% endblock %}

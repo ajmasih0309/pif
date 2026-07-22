@@ -1,5 +1,8 @@
 {% extends "base.html" %}
 
+<!-- Override the page tab title -->
+{% block title %}Login - PIF Portal{% endblock %}
+
 {% block content %}
 <div class="row justify-content-center mt-5">
     <div class="col-md-6 col-lg-5">
@@ -7,34 +10,25 @@
             <div class="card-body p-5">
                 <h2 class="text-center chalk-header mb-4 text-dark">Login</h2>
                 
-                <!-- Flash Messages -->
-                {% with messages = get_flashed_messages() %}
-                  {% if messages %}
-                    <div class="alert alert-danger shadow-sm" role="alert" style="border-radius: 8px;">
-                        <ul class="mb-0 fw-bold" style="list-style-type: none; padding-left: 0;">
-                        {% for message in messages %}
-                          <li>{{ message }}</li>
-                        {% endfor %}
-                        </ul>
-                    </div>
-                  {% endif %}
-                {% endwith %}
-
                 <!-- Login Form -->
                 <form action="{{ url_for('login') }}" method="POST">
+                    
                     <div class="mb-3">
                         <label for="username" class="form-label fw-bold fs-5">Username</label>
                         <input type="text" class="form-control shadow-sm" id="username" name="username" required autofocus>
                     </div>
+                    
                     <div class="mb-4">
                         <label for="password" class="form-label fw-bold fs-5">Password</label>
                         <input type="password" class="form-control shadow-sm" id="password" name="password" required>
                     </div>
+                    
                     <div class="d-grid gap-2 mt-4">
                         <button type="submit" class="btn btn-dark fw-bold shadow-sm" style="font-size: 1.25rem; border-radius: 8px;">
                             Log In
                         </button>
                     </div>
+                    
                 </form>
             </div>
         </div>

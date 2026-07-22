@@ -1,83 +1,43 @@
-import sqlite3
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+"""
+Main Application Entry Point (app.py)
+-------------------------------------
+Handles route definitions and background scheduling. 
+Database logic, utilities, and configurations are imported from external modules.
+"""
+
+import os
 from datetime import datetime, timedelta
-import re
 from functools import wraps
-from werkzeug.security import generate_password_hash, check_password_hash
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
+
+from flask import Flask, render_template, request, redirect, url_for, session, flash
+from werkzeug.security import check_password_hash
 from flask_apscheduler import APScheduler
+from dotenv import load_dotenv
 
-# initialize app & database path
+# Load environment variables
+load_dotenv()
+
+# --- Local Module Imports ---
+from database import get_db_connection
+from utils import send_email, format_date, format_phone, clean_int
+
+
+# =============================================================================
+# APP CONFIGURATION & SCHEDULER
+# =============================================================================
 app = Flask(__name__)
-app.secret_key = 'loremipsum'
-DB_PATH = "data/processed/pif.db"
+app.secret_key = os.getenv('SECRET_KEY', 'loremipsum')
+app.config['DB_PATH'] = os.getenv('DB_PATH', 'data/processed/pif.db')
 
-def get_db_connection():
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    return conn
-
-# --- AUTO-UPGRADE DATABASE ---
-def upgrade_db():
-    conn = get_db_connection()
-    try:
-        # Tries to add the status column. If it exists, it safely ignores this.
-        conn.execute("ALTER TABLE orders_50 ADD COLUMN status TEXT DEFAULT 'Open'")
-        # Migrate old completed orders to the new status
-        conn.execute("UPDATE orders_50 SET status = 'Completed' WHERE date_picked_up IS NOT NULL AND date_picked_up != ''")
-        conn.commit()
-    except sqlite3.OperationalError:
-        pass # Column already exists
-
-    # --- NEW: Add handled_by column ---
-    try:
-        conn.execute("ALTER TABLE orders_50 ADD COLUMN handled_by TEXT DEFAULT 'System'")
-        conn.commit()
-    except sqlite3.OperationalError:
-        pass # Column already exists
-    conn.close()
-
-# --- EMAIL CONFIGURATION ---
-MAIL_USERNAME = 'your_official_email@gmail.com'
-MAIL_PASSWORD = 'your_16_character_app_password' # Do not use your real password
-MAIL_SERVER = 'smtp.gmail.com'
-MAIL_PORT = 587
-MAIL_DEFAULT_SENDER = MAIL_USERNAME # Hardcoded to you for testing
-
-# --- SCHEDULER SETUP ---
 scheduler = APScheduler()
 scheduler.init_app(app)
 scheduler.start()
 
-def send_email(to_email, subject, template_name, **kwargs):
-    # For testing, we are forcing all emails to go to your test account
-    test_recipient = MAIL_DEFAULT_SENDER 
-    
-    msg = MIMEMultipart('alternative')
-    msg['Subject'] = subject
-    msg['From'] = MAIL_DEFAULT_SENDER
-    msg['To'] = test_recipient 
-
-    # Render the HTML template, passing in variables like recipient_name
-    html_body = render_template(f"emails/{template_name}.html", **kwargs)
-    
-    part = MIMEText(html_body, 'html')
-    msg.attach(part)
-
-    try:
-        server = smtplib.SMTP(MAIL_SERVER, MAIL_PORT)
-        server.starttls()
-        server.login(MAIL_USERNAME, MAIL_PASSWORD)
-        server.sendmail(MAIL_DEFAULT_SENDER, test_recipient, msg.as_string())
-        server.quit()
-        print(f"Email sent successfully to {test_recipient}")
-    except Exception as e:
-        print(f"Failed to send email: {e}")
-
-# --- AUTHENTICATION SETUP ---
+# =============================================================================
+# AUTHENTICATION
+# =============================================================================
 def login_required(f):
+    """Decorator to protect routes requiring authentication."""
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if 'username' not in session:
@@ -85,46 +45,22 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-# --- HELPER FUNCTIONS ---
-def format_date(d_str):
-    if not d_str: return ""
-    try:
-        clean_date = str(d_str).split()[0].split('T')[0]
-        return datetime.strptime(clean_date, '%Y-%m-%d').strftime('%m/%d/%Y')
-    except:
-        return d_str 
-
-def format_phone(p_str):
-    if not p_str: return ""
-    digits = re.sub(r'\D', '', str(p_str))
-    if len(digits) == 10:
-        return f"({digits[:3]})-{digits[3:6]}-{digits[6:]}"
-    return p_str
-
-def clean_int(val):
-    if val in [None, '', 'nan', 'NaN']: return ""
-    try:
-        return str(int(float(val)))
-    except:
-        return str(val)
-
-# --- ROUTES ---
+# =============================================================================
+# APP ROUTES
+# =============================================================================
 @app.route('/')
 @login_required
 def index():
     conn = get_db_connection()
-    # Pull the hidden native rowid alongside the rest of your data
     raw_items = conn.execute('SELECT rowid, * FROM orders_50').fetchall()
     conn.close()
 
     items = []
     for row in raw_items:
         row_dict = dict(row)
-        
-        # Force the frontend to use the indestructible rowid
         row_dict['order_id'] = row_dict['rowid']
         
-        # Ensure status exists for old records
+        # Fallback for legacy records missing a status
         if not row_dict.get('status'):
             row_dict['status'] = 'Completed' if row_dict.get('date_picked_up') else 'Open'
             
@@ -153,13 +89,11 @@ def index():
             groups[key]['recipients'].append(item)
         return list(groups.values())
 
-    # Filter data into the 4 buckets based on Status
     open_items = [i for i in items if i['status'] == 'Open']
     contacted_items = [i for i in items if i['status'] == 'Contacted']
     completed_items = [i for i in items if i['status'] == 'Completed']
     cancelled_items = [i for i in items if i['status'] == 'Cancelled']
 
-    # Group and Sort (Contacted = Earliest First)
     open_orders = sorted(group_data(open_items), key=lambda x: x['order_date'])
     contacted_orders = sorted(group_data(contacted_items), key=lambda x: x['order_date'])
     cancelled_orders = sorted(group_data(cancelled_items), key=lambda x: x['order_date'], reverse=True)
@@ -168,6 +102,7 @@ def index():
     def get_max_pickup(group):
         dates = [r['date_picked_up'] for r in group['recipients'] if r['date_picked_up']]
         return max(dates) if dates else ''
+    
     completed_orders = sorted(group_data(completed_items), key=get_max_pickup, reverse=True)
 
     return render_template(
@@ -199,8 +134,6 @@ def add():
         first_choices = request.form.getlist('bike_type_first_choice[]')
         second_choices = request.form.getlist('bike_type_second_choice[]')
         notes_list = request.form.getlist('notes[]')
-        
-        current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
         conn = get_db_connection()
         for i in range(len(recipients)):
@@ -218,9 +151,8 @@ def add():
                 first_choices[i], second_choices[i], notes_list[i]
             ))
         
-        # TRIGGER EVENT 1: New Order Received
             send_email(
-                to_email=contact_email, # Will override to test email in helper function
+                to_email=contact_email, 
                 subject="We received your bike request!",
                 template_name="order_received",
                 recipient_name=recipients[i],
@@ -230,6 +162,7 @@ def add():
         conn.commit()
         conn.close()
         return redirect(url_for('index'))
+    
     return render_template('add.html')
 
 @app.route('/update_status/<int:order_id>', methods=['POST'])
@@ -240,11 +173,8 @@ def update_status(order_id):
     current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     
     conn = get_db_connection()
-    
-    # Get current record to fetch recipient details for the email
     order = conn.execute("SELECT * FROM orders_50 WHERE rowid = ?", (order_id,)).fetchone()
     
-    # Update the database
     conn.execute('''
         UPDATE orders_50 
         SET status = ?, last_status = status, handled_by = ?, last_updated_date = ?
@@ -253,7 +183,6 @@ def update_status(order_id):
     conn.commit()
     conn.close()
 
-    # TRIGGER EVENT 2: Contacted / Ready for Pickup
     if new_status == 'Contacted' and order['status'] != 'Contacted':
         pickup_deadline = (datetime.now() + timedelta(days=7)).strftime('%m/%d/%Y')
         send_email(
@@ -271,7 +200,7 @@ def update_status(order_id):
 def fulfill(order_id):
     date_picked_up = request.form.get('date_picked_up')
     bike_tag = request.form.get('bike_tag')
-    current_user = session.get('username', 'Unknown') # Get the active user
+    current_user = session.get('username', 'Unknown') 
     
     conn = get_db_connection()
     conn.execute('''
@@ -281,6 +210,7 @@ def fulfill(order_id):
     ''', (date_picked_up, bike_tag, current_user, order_id))
     conn.commit()
     conn.close()
+    
     return redirect(url_for('index'))
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -293,7 +223,6 @@ def login():
         user = conn.execute("SELECT * FROM users WHERE username = ?", (username,)).fetchone()
         conn.close()
 
-        # Check if user exists and password matches
         if user and check_password_hash(user['password_hash'], password):
             session['username'] = user['username']
             return redirect(url_for('index'))
@@ -307,17 +236,17 @@ def logout():
     session.pop('username', None)
     return redirect(url_for('login'))
 
+# =============================================================================
+# BACKGROUND TASKS
+# =============================================================================
 @scheduler.task('cron', id='daily_pickup_reminder', hour=9, minute=0)
 def check_pickup_deadlines():
     with app.app_context():
         print("Running daily pickup reminder check...")
         conn = get_db_connection()
         
-        # Calculate the date exactly 6 days ago (which is 1 day before the 7-day deadline)
         target_date_str = (datetime.now() - timedelta(days=6)).strftime('%Y-%m-%d')
         
-        # Find all orders that are Contacted and were updated on that exact day
-        # We use LIKE to match the date part of the datetime string
         orders = conn.execute('''
             SELECT * FROM orders_50 
             WHERE status = 'Contacted' 
@@ -325,9 +254,9 @@ def check_pickup_deadlines():
         ''', (f"{target_date_str}%",)).fetchall()
         
         for order in orders:
-            deadline = (datetime.strptime(order['last_updated_date'].split()[0], '%Y-%m-%d') + timedelta(days=7)).strftime('%m/%d/%Y')
+            base_date = datetime.strptime(order['last_updated_date'].split()[0], '%Y-%m-%d')
+            deadline = (base_date + timedelta(days=7)).strftime('%m/%d/%Y')
             
-            # TRIGGER EVENT 3: 24-Hour Reminder
             send_email(
                 to_email=order['contact_email'],
                 subject="URGENT: Pick up your bike tomorrow!",
@@ -338,6 +267,9 @@ def check_pickup_deadlines():
             
         conn.close()
 
+# =============================================================================
+# EXECUTION
+# =============================================================================
 if __name__ == '__main__':
-    upgrade_db() # Runs safely once on startup
+    # DB upgrade removed here — assume you run `python manage_db.py` on deployments
     app.run(debug=True)

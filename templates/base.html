@@ -4,43 +4,56 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
+    <!-- Logo for Portal-->
+    <link rel="icon" type="image/png" href="static/imgs/pif-logo.png">
+
+    <!-- Dynamic Title Block: Child templates can override this to set specific tab names -->
+    <title>{% block title %}PIF Portal{% endblock %}</title>
+    
+    <!-- Fonts & Bootstrap Configuration -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap" rel="stylesheet">
-    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     
     <style>
-        /* Apply chalkboard font to the whole portal */
+        /* =========================================
+           GLOBAL TYPOGRAPHY & LAYOUT
+           ========================================= */
         body, input, select, textarea, button, .table {
             font-family: 'Patrick Hand', cursive !important;
             font-size: 1.15rem;
             background-color: #f8f9fa; 
         }
         
-        .navbar-brand {
-            font-size: 2.2rem;
-            letter-spacing: 2px;
-        }
-
-        /* Nav Link Hover Effect */
-        .nav-link {
-            transition: 0.2s ease-in-out;
-        }
-        .nav-link:hover {
-            color: #000 !important;
-            transform: scale(1.05);
-            text-decoration: underline dashed 2px;
-        }
-
-        /* Chalkboard Specific Styles */
         .chalk-header {
             font-size: 2.5rem;
             border-bottom: 2px dashed #000;
             padding-bottom: 10px;
             margin-bottom: 20px;
         }
+
+        /* =========================================
+           NAVIGATION STYLES
+           ========================================= */
+        .navbar-brand {
+            font-size: 2.2rem;
+            letter-spacing: 2px;
+        }
+
+        .nav-link {
+            transition: 0.2s ease-in-out;
+        }
         
+        .nav-link:hover {
+            color: #000 !important;
+            transform: scale(1.05);
+            text-decoration: underline dashed 2px;
+        }
+
+        /* =========================================
+           FORM & COMPONENT STYLES
+           ========================================= */
         .form-control, .form-select {
             background-color: #e9ecef;
             border: 1px solid #ccc;
@@ -54,12 +67,12 @@
             border: 1px solid #adb5bd;
             font-size: 1.25rem;
         }
+        
         .table td {
             border: 1px solid #adb5bd;
             vertical-align: middle;
         }
-    </style>
-    <style>
+
         /* Bike Selector Card Styles */
         .bike-card {
             transition: transform 0.2s, box-shadow 0.2s;
@@ -67,24 +80,29 @@
             border: 2px solid #e9ecef;
             border-radius: 12px;
         }
+        
         .bike-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-            border-color: #f0ad4e; /* Highlights orange on hover like your mockup */
+            border-color: #f0ad4e; /* Highlights orange on hover */
         }
+        
         .bike-card-title {
-            color: #f0ad4e; /* Orange color from your mockup */
+            color: #f0ad4e; /* Orange brand color */
             font-weight: bold;
             font-size: 1.4rem;
         }
     </style>
-    <title>PIF Portal</title>
 </head>
 <body>
     
+    <!-- NAVIGATION BAR -->
     <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom border-dark mb-4 shadow-sm">
         <div class="container">
-            <a class="navbar-brand fw-bold text-dark" href="/">PIF Portal</a>
+            <a class="navbar-brand fw-bold text-dark" href="/">
+                <img src="{{ url_for('static', filename='imgs/pif-logo.png') }}" alt="PIF Logo" width="45" height="45" class="me-2">
+                PIF Portal
+            </a>
             
             <button class="navbar-toggler border-dark" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -93,13 +111,14 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto fs-4 align-items-center"> 
                     {% if session.get('username') %}
-                        <!-- Displays the logged-in username -->
+                        <!-- User Greeting -->
                         <li class="nav-item me-4">
                             <span class="navbar-text text-dark fs-5">
                                 👤 Welcome, <strong style="color: #f0ad4e;">{{ session.username }}</strong>!
                             </span>
                         </li>
                         
+                        <!-- Links -->
                         <li class="nav-item me-3">
                             <a class="nav-link text-dark fw-bold" href="/">Dashboard</a>
                         </li>
@@ -117,10 +136,29 @@
         </div>
     </nav>
 
+    <!-- MAIN CONTENT AREA -->
     <div class="container pb-5">
+        
+        <!-- Global Flash Message Handler -->
+        <!-- Placed here so ANY page can flash alerts without repeating code -->
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="alert alert-warning shadow-sm border-dark mb-4" role="alert" style="border-radius: 8px;">
+                    <ul class="mb-0 fw-bold fs-5" style="list-style-type: none; padding-left: 0;">
+                    {% for message in messages %}
+                        <li>{{ message }}</li>
+                    {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <!-- Child Templates Inject Content Here -->
         {% block content %}{% endblock %}
+        
     </div>
     
+    <!-- Bootstrap JS Payload -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

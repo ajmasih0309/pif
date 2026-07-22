@@ -1,8 +1,14 @@
 {% extends 'base.html' %}
+
+<!-- Set the browser tab title -->
+{% block title %}Dashboard - PIF Portal{% endblock %}
+
 {% block content %}
 
 <style>
-    /* Tab Styling */
+    /* =========================================
+       TAB NAVIGATION STYLES
+       ========================================= */
     .nav-tabs .nav-link {
         font-family: 'Patrick Hand', cursive;
         font-size: 1.5rem;
@@ -15,20 +21,23 @@
     }
     .nav-tabs .nav-link.active { opacity: 1; font-weight: bold; }
     
-    /* 5 Tab Colors */
+    /* Individual Tab Colors */
     #tab-open { background-color: #008000; }
     #tab-contacted { background-color: #17a2b8; } 
     #tab-completed { background-color: #80ff80; color: black !important; }
     #tab-cancelled { background-color: #dc3545; }
     #tab-all { background-color: #ffb347; color: black !important; }
     
+    /* =========================================
+       NESTED TABLE STYLES
+       ========================================= */
     .master-header th { background-color: #b3b3b3 !important; color: #000; border-bottom: 2px dashed #000; }
     .child-header th { background-color: #cccccc !important; color: #000; font-size: 1.1rem; }
     
     .cursor-pointer { cursor: pointer; }
     .child-table-wrapper { background-color: #fffaf0; padding: 10px; border: 1px solid #000; border-top: none; }
 
-    /* Visual Arrow Toggle CSS */
+    /* Visual Arrow Toggle Animation for expanded rows */
     .toggle-icon::before {
         content: "▶";
         display: inline-block;
@@ -40,10 +49,32 @@
     tr:not(.collapsed) .toggle-icon::before { transform: rotate(90deg); color: #000; }
 </style>
 
+<!-- =========================================
+     JINJA MACROS (Code Reusability)
+     ========================================= -->
+<!-- This macro prevents us from typing the same 8 table headers 5 times! -->
+{% macro master_table_header() %}
+<thead class="master-header">
+    <tr>
+        <th>Contact Name</th>
+        <th>Contact Phone</th>
+        <th>Contact Email</th>
+        <th>Pedal Partner</th>
+        <th class="text-center">Order Date</th>
+        <th>Order Type</th>
+        <th>Shop Name</th>
+        <th class="text-center">Total Bikes</th>
+    </tr>
+</thead>
+{% endmacro %}
+
+
+<!-- PAGE HEADER -->
 <div class="d-flex justify-content-center mb-2 mt-3">
     <h1 class="chalk-header fw-bold text-center w-100">View Orders</h1>
 </div>
 
+<!-- TAB BUTTONS -->
 <ul class="nav nav-tabs border-0" id="orderTabs" role="tablist">
     <li class="nav-item" role="presentation"><button class="nav-link active px-4 rounded-0" id="tab-open" data-bs-toggle="tab" data-bs-target="#open" type="button" role="tab">Open</button></li>
     <li class="nav-item" role="presentation"><button class="nav-link px-4 rounded-0" id="tab-contacted" data-bs-toggle="tab" data-bs-target="#contacted" type="button" role="tab">Contacted</button></li>
@@ -52,20 +83,19 @@
     <li class="nav-item" role="presentation"><button class="nav-link px-4 rounded-0" id="tab-all" data-bs-toggle="tab" data-bs-target="#all" type="button" role="tab">All</button></li>
 </ul>
 
+<!-- TAB CONTENT CONTAINER -->
 <div class="tab-content" id="orderTabsContent">
     
+    <!-- =========================================
+         TAB 1: OPEN ORDERS
+         ========================================= -->
     <div class="tab-pane fade show active" id="open" role="tabpanel">
         <div class="table-responsive">
             <table class="table table-bordered mb-0">
-                <thead class="master-header">
-                    <tr>
-                        <th>Contact Name</th><th>Contact Phone</th><th>Contact Email</th>
-                        <th>Pedal Partner</th><th>Order Date</th><th>Order Type</th>
-                        <th>Shop Name</th><th>Total Bikes</th>
-                    </tr>
-                </thead>
+                {{ master_table_header() }}
                 <tbody id="tbodyOpen">
                     {% for order in open_orders %}
+                    <!-- Master Row -->
                     <tr class="cursor-pointer bg-light collapsed" data-bs-toggle="collapse" data-bs-target="#collapseOpen{{ loop.index }}">
                         <td class="fw-bold"><span class="toggle-icon"></span>{{ order.contact_name }}</td>
                         <td>{{ order.contact_phone }}</td>
@@ -76,6 +106,7 @@
                         <td>{{ order.shop_name }}</td>
                         <td class="fw-bold text-center fs-4">{{ order.total_bikes }}</td>
                     </tr>
+                    <!-- Child Row (Hidden until clicked) -->
                     <tr>
                         <td colspan="8" class="p-0 border-0">
                             <div class="collapse" id="collapseOpen{{ loop.index }}">
@@ -91,10 +122,12 @@
                                             {% for recipient in order.recipients %}
                                             <tr>
                                                 <td class="d-flex gap-2 border-0">
+                                                    <!-- Contact Button -->
                                                     <form action="{{ url_for('update_status', order_id=recipient.order_id) }}" method="POST" class="mb-0">
                                                         <input type="hidden" name="new_status" value="Contacted">
                                                         <button type="submit" class="btn btn-sm btn-info border border-dark fw-bold">📞 Contact</button>
                                                     </form>
+                                                    <!-- Cancel Button -->
                                                     <form action="{{ url_for('update_status', order_id=recipient.order_id) }}" method="POST" class="mb-0">
                                                         <input type="hidden" name="new_status" value="Cancelled">
                                                         <button type="submit" class="btn btn-sm btn-danger border border-dark fw-bold" onclick="return confirm('Cancel this order?')">🚫 Cancel</button>
@@ -121,16 +154,13 @@
         </div>
     </div>
 
+    <!-- =========================================
+         TAB 2: CONTACTED ORDERS
+         ========================================= -->
     <div class="tab-pane fade" id="contacted" role="tabpanel">
         <div class="table-responsive">
             <table class="table table-bordered mb-0">
-                <thead class="master-header">
-                    <tr>
-                        <th>Contact Name</th><th>Contact Phone</th><th>Contact Email</th>
-                        <th>Pedal Partner</th><th>Order Date</th><th>Order Type</th>
-                        <th>Shop Name</th><th>Total Bikes</th>
-                    </tr>
-                </thead>
+                {{ master_table_header() }}
                 <tbody id="tbodyContacted">
                     {% for order in contacted_orders %}
                     <tr class="cursor-pointer bg-light collapsed" data-bs-toggle="collapse" data-bs-target="#collapseContacted{{ loop.index }}">
@@ -159,6 +189,7 @@
                                             <tr>
                                                 <td style="width: 250px;">
                                                     <div class="d-flex align-items-center gap-2">
+                                                        <!-- Fulfill Form -->
                                                         <form action="{{ url_for('fulfill', order_id=recipient.order_id) }}" method="POST" class="d-flex align-items-center mb-0 gap-1">
                                                             <div class="d-flex flex-column w-75">
                                                                 <input type="date" name="date_picked_up" class="form-control form-control-sm mb-1 bg-white" value="{{ today }}" required>
@@ -166,6 +197,7 @@
                                                             </div>
                                                             <button type="submit" class="btn btn-success border border-dark rounded h-100 fs-5 px-2">✅</button>
                                                         </form>
+                                                        <!-- Cancel Form -->
                                                         <form action="{{ url_for('update_status', order_id=recipient.order_id) }}" method="POST" class="mb-0 h-100">
                                                             <input type="hidden" name="new_status" value="Cancelled">
                                                             <button type="submit" class="btn btn-sm btn-danger border border-dark h-100" onclick="return confirm('Cancel this order?')">🚫</button>
@@ -174,6 +206,7 @@
                                                 </td>
                                                 <td class="fw-bold align-middle">
                                                     {{ recipient.recipient_name }}
+                                                    <!-- Warning Badge if NO Pedal Partner -->
                                                     {% if not order.pedal_partner %}
                                                         <br><span class="badge bg-warning text-dark mt-1 border border-dark shadow-sm" style="font-size: 0.8rem;">⚠️ 1 Week Limit</span>
                                                     {% endif %}
@@ -198,16 +231,13 @@
         </div>
     </div>
 
+    <!-- =========================================
+         TAB 3: COMPLETED ORDERS
+         ========================================= -->
     <div class="tab-pane fade" id="completed" role="tabpanel">
         <div class="table-responsive">
             <table class="table table-bordered mb-0">
-                <thead class="master-header">
-                    <tr>
-                        <th>Contact Name</th><th>Contact Phone</th><th>Contact Email</th>
-                        <th>Pedal Partner</th><th>Order Date</th><th>Order Type</th>
-                        <th>Shop Name</th><th>Total Bikes</th>
-                    </tr>
-                </thead>
+                {{ master_table_header() }}
                 <tbody id="tbodyCompleted">
                     {% for order in completed_orders %}
                     <tr class="cursor-pointer bg-light collapsed" data-bs-toggle="collapse" data-bs-target="#collapseComp{{ loop.index }}">
@@ -254,16 +284,13 @@
         </div>
     </div>
 
+    <!-- =========================================
+         TAB 4: CANCELLED ORDERS
+         ========================================= -->
     <div class="tab-pane fade" id="cancelled" role="tabpanel">
         <div class="table-responsive">
             <table class="table table-bordered mb-0">
-                <thead class="master-header">
-                    <tr>
-                        <th>Contact Name</th><th>Contact Phone</th><th>Contact Email</th>
-                        <th>Pedal Partner</th><th>Order Date</th><th>Order Type</th>
-                        <th>Shop Name</th><th>Total Bikes</th>
-                    </tr>
-                </thead>
+                {{ master_table_header() }}
                 <tbody id="tbodyCancelled">
                     {% for order in cancelled_orders %}
                     <tr class="cursor-pointer bg-light collapsed" data-bs-toggle="collapse" data-bs-target="#collapseCancelled{{ loop.index }}">
@@ -291,6 +318,7 @@
                                             {% for recipient in order.recipients %}
                                             <tr>
                                                 <td>
+                                                    <!-- Restore Button -->
                                                     <form action="{{ url_for('update_status', order_id=recipient.order_id) }}" method="POST" class="mb-0">
                                                         <input type="hidden" name="new_status" value="Open">
                                                         <button type="submit" class="btn btn-sm btn-warning border border-dark fw-bold">♻️ Restore to Open</button>
@@ -315,16 +343,13 @@
         </div>
     </div>
 
+    <!-- =========================================
+         TAB 5: ALL ORDERS (Historical View)
+         ========================================= -->
     <div class="tab-pane fade" id="all" role="tabpanel">
         <div class="table-responsive">
             <table class="table table-bordered mb-0">
-                <thead class="master-header">
-                    <tr>
-                        <th>Contact Name</th><th>Contact Phone</th><th>Contact Email</th>
-                        <th>Pedal Partner</th><th>Order Date</th><th>Order Type</th>
-                        <th>Shop Name</th><th>Total Bikes</th>
-                    </tr>
-                </thead>
+                {{ master_table_header() }}
                 <tbody id="tbodyAll">
                     {% for order in all_orders %}
                     <tr class="cursor-pointer bg-light collapsed" data-bs-toggle="collapse" data-bs-target="#collapseAll{{ loop.index }}">
@@ -352,6 +377,7 @@
                                             {% for recipient in order.recipients %}
                                             <tr>
                                                 <td class="fw-bold">
+                                                    <!-- Dynamic Status Badges -->
                                                     {% if recipient.status == 'Completed' %}
                                                         <span class="badge bg-success border border-dark fs-6">Picked Up: {{ recipient.date_picked_up }}</span>
                                                     {% elif recipient.status == 'Contacted' %}
@@ -382,10 +408,12 @@
 
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
+<!-- =========================================
+     JAVASCRIPT: ACCORDION LOGIC
+     ========================================= -->
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // This ensures only ONE child table is expanded at a time per tab.
         const allCollapses = document.querySelectorAll('.collapse');
         allCollapses.forEach(collapse => {
             collapse.addEventListener('show.bs.collapse', function () {
