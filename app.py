@@ -1,9 +1,13 @@
 import sqlite3
 from flask import Flask, render_template, request, redirect, url_for, session, flash
-from datetime import datetime
+from datetime import datetime, timedelta
 import re
 from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from flask_apscheduler import APScheduler
 
 # initialize app & database path
 app = Flask(__name__)
@@ -34,6 +38,43 @@ def upgrade_db():
     except sqlite3.OperationalError:
         pass # Column already exists
     conn.close()
+
+# --- EMAIL CONFIGURATION ---
+MAIL_USERNAME = 'your_official_email@gmail.com'
+MAIL_PASSWORD = 'your_16_character_app_password' # Do not use your real password
+MAIL_SERVER = 'smtp.gmail.com'
+MAIL_PORT = 587
+MAIL_DEFAULT_SENDER = MAIL_USERNAME # Hardcoded to you for testing
+
+# --- SCHEDULER SETUP ---
+scheduler = APScheduler()
+scheduler.init_app(app)
+scheduler.start()
+
+def send_email(to_email, subject, template_name, **kwargs):
+    # For testing, we are forcing all emails to go to your test account
+    test_recipient = MAIL_DEFAULT_SENDER 
+    
+    msg = MIMEMultipart('alternative')
+    msg['Subject'] = subject
+    msg['From'] = MAIL_DEFAULT_SENDER
+    msg['To'] = test_recipient 
+
+    # Render the HTML template, passing in variables like recipient_name
+    html_body = render_template(f"emails/{template_name}.html", **kwargs)
+    
+    part = MIMEText(html_body, 'html')
+    msg.attach(part)
+
+    try:
+        server = smtplib.SMTP(MAIL_SERVER, MAIL_PORT)
+        server.starttls()
+        server.login(MAIL_USERNAME, MAIL_PASSWORD)
+        server.sendmail(MAIL_DEFAULT_SENDER, test_recipient, msg.as_string())
+        server.quit()
+        print(f"Email sent successfully to {test_recipient}")
+    except Exception as e:
+        print(f"Failed to send email: {e}")
 
 # --- AUTHENTICATION SETUP ---
 def login_required(f):
@@ -157,7 +198,9 @@ def add():
         heights = request.form.getlist('height[]')
         first_choices = request.form.getlist('bike_type_first_choice[]')
         second_choices = request.form.getlist('bike_type_second_choice[]')
-        notes_list = request.form.getlist('notes[]') 
+        notes_list = request.form.getlist('notes[]')
+        
+        current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
         conn = get_db_connection()
         for i in range(len(recipients)):
@@ -174,6 +217,16 @@ def add():
                 recipients[i], bike_styles[i], ages[i], heights[i],
                 first_choices[i], second_choices[i], notes_list[i]
             ))
+        
+        # TRIGGER EVENT 1: New Order Received
+            send_email(
+                to_email=contact_email, # Will override to test email in helper function
+                subject="We received your bike request!",
+                template_name="order_received",
+                recipient_name=recipients[i],
+                shop_name=shop_name
+            )
+        
         conn.commit()
         conn.close()
         return redirect(url_for('index'))
@@ -183,16 +236,34 @@ def add():
 @login_required
 def update_status(order_id):
     new_status = request.form.get('new_status')
-    current_user = session.get('username', 'Unknown') # Get the active user
+    current_user = session.get('username', 'Unknown')
+    current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     
     conn = get_db_connection()
+    
+    # Get current record to fetch recipient details for the email
+    order = conn.execute("SELECT * FROM orders_50 WHERE rowid = ?", (order_id,)).fetchone()
+    
+    # Update the database
     conn.execute('''
         UPDATE orders_50 
-        SET status = ?, handled_by = ? 
+        SET status = ?, last_status = status, handled_by = ?, last_updated_date = ?
         WHERE rowid = ?
-    ''', (new_status, current_user, order_id))
+    ''', (new_status, current_user, current_time, order_id))
     conn.commit()
     conn.close()
+
+    # TRIGGER EVENT 2: Contacted / Ready for Pickup
+    if new_status == 'Contacted' and order['status'] != 'Contacted':
+        pickup_deadline = (datetime.now() + timedelta(days=7)).strftime('%m/%d/%Y')
+        send_email(
+            to_email=order['contact_email'],
+            subject="Your bike is ready for pickup!",
+            template_name="pickup_ready",
+            recipient_name=order['recipient_name'],
+            deadline=pickup_deadline
+        )
+
     return redirect(url_for('index'))
 
 @app.route('/fulfill/<int:order_id>', methods=['POST'])
@@ -235,6 +306,37 @@ def login():
 def logout():
     session.pop('username', None)
     return redirect(url_for('login'))
+
+@scheduler.task('cron', id='daily_pickup_reminder', hour=9, minute=0)
+def check_pickup_deadlines():
+    with app.app_context():
+        print("Running daily pickup reminder check...")
+        conn = get_db_connection()
+        
+        # Calculate the date exactly 6 days ago (which is 1 day before the 7-day deadline)
+        target_date_str = (datetime.now() - timedelta(days=6)).strftime('%Y-%m-%d')
+        
+        # Find all orders that are Contacted and were updated on that exact day
+        # We use LIKE to match the date part of the datetime string
+        orders = conn.execute('''
+            SELECT * FROM orders_50 
+            WHERE status = 'Contacted' 
+            AND last_updated_date LIKE ?
+        ''', (f"{target_date_str}%",)).fetchall()
+        
+        for order in orders:
+            deadline = (datetime.strptime(order['last_updated_date'].split()[0], '%Y-%m-%d') + timedelta(days=7)).strftime('%m/%d/%Y')
+            
+            # TRIGGER EVENT 3: 24-Hour Reminder
+            send_email(
+                to_email=order['contact_email'],
+                subject="URGENT: Pick up your bike tomorrow!",
+                template_name="pickup_reminder",
+                recipient_name=order['recipient_name'],
+                deadline=deadline
+            )
+            
+        conn.close()
 
 if __name__ == '__main__':
     upgrade_db() # Runs safely once on startup
