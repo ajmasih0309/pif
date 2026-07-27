@@ -19,12 +19,45 @@ def format_date(d_str):
     except:
         return d_str 
 
-def format_phone(p_str):
-    if not p_str: return ""
-    digits = re.sub(r'\D', '', str(p_str))
+def format_phone(phone):
+    """
+    Convert:
+        1234567890 or 1234567890.0 -> (123) 456-7890
+    """
+    if not phone or phone in ['nan', 'NaN']:
+        return ""
+
+    # Catch floats (like 1234567890.0) and convert them to clean strings
+    try:
+        phone_str = str(int(float(phone)))
+    except (ValueError, TypeError):
+        phone_str = str(phone)
+
+    # Strip any remaining non-digits (like hyphens or parentheses if already formatted)
+    digits = re.sub(r"\D", "", phone_str)
+
     if len(digits) == 10:
-        return f"({digits[:3]})-{digits[3:6]}-{digits[6:]}"
-    return p_str
+        return f"({digits[:3]}) {digits[3:6]}-{digits[6:]}"
+    
+    # Return the cleaned string, not the raw float, as a fallback
+    return phone_str
+
+
+def unformat_phone(phone):
+    """
+    Convert:
+        (123) 456-7890 -> 1234567890
+        123-456-7890  -> 1234567890
+        1234567890    -> 1234567890
+    """
+    if not phone:
+        return ""
+
+    digits = re.sub(r"\D", "", str(phone))
+
+    if len(digits) == 10:
+        return digits
+    return phone
 
 def clean_int(val):
     if val in [None, '', 'nan', 'NaN']: return ""

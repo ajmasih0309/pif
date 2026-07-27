@@ -23,16 +23,19 @@
                     <div class="col-md-3 text-md-end"><label class="fw-bold">Bike Shop</label></div>
                     <div class="col-md-9">
                         <select name="shop_name" class="form-select">
-                            <option value="BENTONVILLE">BENTONVILLE</option>
-                            <option value="ROGERS">ROGERS</option>
-                            <option value="SPRINGDALE">SPRINGDALE</option>
+                            <option value="B">Bentonville</option>
+                            <option value="R">Rogers</option>
+                            <option value="S">Springdale</option>
                         </select>
                     </div>
                 </div>
 
                 <div class="row align-items-center mb-3">
                     <div class="col-md-3 text-md-end"><label class="fw-bold">Contact Name</label></div>
-                    <div class="col-md-9"><input type="text" id="contact_name" name="contact_name" class="form-control" placeholder="First Name Last Name" oninput="syncFirstRow()" required></div>
+                    <div class="col-md-9">
+                        <input type="text" id="contact_name" name="contact_name" class="form-control" placeholder="First Name Last Name" list="contact-list" autocomplete="off" oninput="syncFirstRow()" required>
+                        <datalist id="contact-list"></datalist>
+                    </div>
                 </div>
 
                 <div class="row align-items-center mb-3">
@@ -47,15 +50,18 @@
 
                 <div class="row align-items-center mb-3">
                     <div class="col-md-3 text-md-end"><label class="fw-bold">Pedal Partner</label></div>
-                    <div class="col-md-9"><input type="text" name="pedal_partner_name" class="form-control" placeholder="First Name Last Name"></div>
+                    <div class="col-md-9">
+                        <input type="text" id="pedal_partner_name" name="pedal_partner_name" class="form-control" placeholder="First Name Last Name" list="partner-list" autocomplete="off">
+                        <datalist id="partner-list"></datalist>
+                    </div>
                 </div>
 
                 <div class="row align-items-center mb-4">
                     <div class="col-md-3 text-md-end"><label class="fw-bold">Order Type</label></div>
                     <div class="col-md-9">
                         <select name="order_type" class="form-select">
-                            <option value="Standard" selected>Standard</option>
-                            <option value="Walkin">Walkin</option>
+                            <option value="Public" selected>Public</option>
+                            <option value="Pedal Partner">Pedal Partner</option>
                             <option value="Speciality">Speciality</option>
                         </select>
                     </div>
@@ -218,11 +224,57 @@
     heightOptionsHTML += '<option value="7\'0&quot;">7\'0"</option>';
     heightOptionsHTML += '<option value="> 7\'0&quot;">> 7\'0"</option>';
 
+    // --- Debounce & Autocomplete Logic ---
+    function debounce(func, delay) {
+        let timeoutId;
+        return function (...args) {
+            clearTimeout(timeoutId);
+            timeoutId = setTimeout(() => {
+                func.apply(this, args);
+            }, delay);
+        };
+    }
+
+    async function fetchSuggestions(query, endpoint, datalistId) {
+        if (query.length < 2) return; // Wait for 2 chars
+        
+        try {
+            const response = await fetch(`${endpoint}?q=${encodeURIComponent(query)}`);
+            const data = await response.json();
+            
+            const datalist = document.getElementById(datalistId);
+            datalist.innerHTML = ''; // Clear old suggestions
+            
+            data.forEach(item => {
+                const option = document.createElement('option');
+                option.value = item;
+                datalist.appendChild(option);
+            });
+        } catch (error) {
+            console.error('Error fetching suggestions:', error);
+        }
+    }
+
     // --- On Page Load ---
     document.addEventListener('DOMContentLoaded', (event) => {
         document.getElementById('order_date').valueAsDate = new Date();
         document.querySelector('.height-dropdown').innerHTML = heightOptionsHTML;
         updateCounter(); 
+
+        // Attach Debounced Listeners for Autocomplete
+        const contactInput = document.getElementById('contact_name');
+        if (contactInput) {
+            contactInput.addEventListener('input', debounce(function(e) {
+                fetchSuggestions(e.target.value, '/api/search_contacts', 'contact-list');
+            }, 300));
+        }
+
+        const partnerInput = document.getElementById('pedal_partner_name');
+        if (partnerInput) {
+            partnerInput.addEventListener('input', debounce(function(e) {
+                fetchSuggestions(e.target.value, '/api/search_partners', 'partner-list');
+            }, 300));
+        }
     });
 
     // --- Phone Formatter ---
@@ -297,8 +349,6 @@
         const table = document.getElementById('recipient_table').getElementsByTagName('tbody')[0];
         const newRow = table.insertRow();
         
-        // BUG FIX: Replaced the <select> tags for Choices 1 and 2 with the modal-trigger inputs 
-        // to match the exact behavior of the first row.
         newRow.innerHTML = `
             <td>
                 <div class="form-check mb-1">

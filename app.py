@@ -14,12 +14,15 @@ from werkzeug.security import check_password_hash
 from flask_apscheduler import APScheduler
 from dotenv import load_dotenv
 
+# for search api
+from flask import jsonify
+
 # Load environment variables
 load_dotenv()
 
 # --- Local Module Imports ---
 from database import get_db_connection
-from utils import send_email, format_date, format_phone, clean_int
+from utils import send_email, format_date, format_phone, clean_int, unformat_phone
 
 
 # =============================================================================
@@ -52,13 +55,36 @@ def login_required(f):
 @login_required
 def index():
     conn = get_db_connection()
-    raw_items = conn.execute('SELECT rowid, * FROM orders_50').fetchall()
+    query = '''
+    SELECT 
+        o.order_id,
+        o.linked_order_id,
+        c.contact_name,
+        c.contact_email,
+        c.contact_phone_number,
+        p.pedal_partner_name,
+        s.shop_location,
+        s.shop_name,
+        r.recipient_name,
+        COALESCE(r.age, o.age) AS age,
+        COALESCE(r.height, o.height) AS height,
+        COALESCE(r.bike_style_preference, o.bike_style_preference) AS bike_style_preference,
+        o.order_date,
+        o.status,
+        o.pickup_date AS date_picked_up,
+        o.order_type 
+    FROM orders o
+    JOIN contacts c ON o.contact_id = c.contact_id
+    JOIN recipients r ON o.recipient_id = r.recipient_id
+    JOIN shops s ON o.shop_name = s.shop_name
+    LEFT JOIN pedal_partners p ON o.pedal_partner_id = p.pedal_partner_id;
+    '''
+    raw_items = conn.execute(query).fetchall()
     conn.close()
 
     items = []
     for row in raw_items:
         row_dict = dict(row)
-        row_dict['order_id'] = row_dict['rowid']
         
         # Fallback for legacy records missing a status
         if not row_dict.get('status'):
@@ -77,14 +103,15 @@ def index():
                     'contact_email': item['contact_email'],
                     'pedal_partner': item['pedal_partner_name'],
                     'order_date': format_date(item['order_date']),
-                    'order_type': item.get('order_type', 'Standard'),
-                    'shop_name': item['shop_name'],
+                    'order_type': item.get('order_type', 'Public'),
+                    #'shop_name': item.get('shop_name', ''),
+                    'shop_name': item.get('shop_location', ''),
                     'total_bikes': 0,
                     'recipients': []
                 }
             groups[key]['total_bikes'] += 1
             item['age'] = clean_int(item['age'])
-            item['bike_tag'] = clean_int(item['bike_tag'])
+            item['bike_tag'] = clean_int(item.get('bike_tag'))
             item['date_picked_up'] = format_date(item['date_picked_up'])
             groups[key]['recipients'].append(item)
         return list(groups.values())
@@ -120,12 +147,18 @@ def index():
 def add():
     if request.method == 'POST':
         contact_name = request.form.get('contact_name', '')
-        contact_phone = request.form.get('contact_phone_number', '')
+        contact_phone = unformat_phone(request.form.get('contact_phone_number', ''))
         contact_email = request.form.get('contact_email', '')
-        pedal_partner = request.form.get('pedal_partner_name', '')
+        pedal_partner = request.form.get('pedal_partner_name', '').strip()
         order_date = request.form.get('order_date', '')
         shop_name = request.form.get('shop_name', '')
-        order_type = request.form.get('order_type', 'Standard')
+        
+        # Order Type Logic Translation
+        order_type = request.form.get('order_type', 'Public')
+        
+        # Safety fallback: If marked as 'Pedal Partner' but the name field was left blank, revert to 'Public'
+        if order_type == 'Pedal Partner' and not pedal_partner:
+            order_type = 'Public'
 
         recipients = request.form.getlist('recipient_name[]')
         bike_styles = request.form.getlist('bike_style_preference[]')
@@ -135,21 +168,39 @@ def add():
         second_choices = request.form.getlist('bike_type_second_choice[]')
         notes_list = request.form.getlist('notes[]')
 
+        current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         conn = get_db_connection()
+        
+        # 1. Manage Contact
+        conn.execute('''INSERT OR IGNORE INTO contacts (contact_name, contact_phone_number, contact_email) 
+                        VALUES (?, ?, ?)''', (contact_name, contact_phone, contact_email))
+        contact_id = conn.execute('SELECT contact_id FROM contacts WHERE contact_email = ? AND contact_name = ?', 
+                                  (contact_email, contact_name)).fetchone()['contact_id']
+
+        # 2. Manage Pedal Partner
+        pedal_partner_id = None
+        if pedal_partner:
+            conn.execute('INSERT OR IGNORE INTO pedal_partners (pedal_partner_name) VALUES (?)', (pedal_partner,))
+            pp_row = conn.execute('SELECT pedal_partner_id FROM pedal_partners WHERE pedal_partner_name = ?', (pedal_partner,)).fetchone()
+            if pp_row:
+                pedal_partner_id = pp_row['pedal_partner_id']
+
+        # 3. Manage Shop
+        conn.execute('INSERT OR IGNORE INTO shops (shop_name) VALUES (?)', (shop_name,))
+
+        # 4. Insert Recipients and Orders
         for i in range(len(recipients)):
+            conn.execute('''INSERT INTO recipients (recipient_name, age, height, bike_style_preference) 
+                            VALUES (?, ?, ?, ?)''', 
+                         (recipients[i], ages[i], heights[i], bike_styles[i]))
+            recipient_id = conn.execute('SELECT last_insert_rowid()').fetchone()[0]
+
             conn.execute('''
-                INSERT INTO orders_50 (
-                    contact_name, contact_phone_number, contact_email, pedal_partner_name,
-                    order_date, order_type, shop_name, 
-                    recipient_name, bike_style_preference, age, height,
-                    bike_type_first_choice, bike_type_second_choice, notes, status
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Open')
-            ''', (
-                contact_name, contact_phone, contact_email, pedal_partner,
-                order_date, order_type, shop_name, 
-                recipients[i], bike_styles[i], ages[i], heights[i],
-                first_choices[i], second_choices[i], notes_list[i]
-            ))
+                INSERT INTO orders (
+                    contact_id, recipient_id, shop_name, pedal_partner_id,
+                    order_date, order_type, status, last_status, last_updated_date
+                ) VALUES (?, ?, ?, ?, ?, ?, 'Open', 'Open', ?)
+            ''', (contact_id, recipient_id, shop_name, pedal_partner_id, order_date, order_type, current_time))
         
             send_email(
                 to_email=contact_email, 
@@ -173,12 +224,18 @@ def update_status(order_id):
     current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     
     conn = get_db_connection()
-    order = conn.execute("SELECT * FROM orders_50 WHERE rowid = ?", (order_id,)).fetchone()
+    order = conn.execute('''
+        SELECT o.status, c.contact_email, r.recipient_name 
+        FROM orders o
+        JOIN contacts c ON o.contact_id = c.contact_id
+        JOIN recipients r ON o.recipient_id = r.recipient_id
+        WHERE o.order_id = ?
+    ''', (order_id,)).fetchone()
     
     conn.execute('''
-        UPDATE orders_50 
+        UPDATE orders 
         SET status = ?, last_status = status, handled_by = ?, last_updated_date = ?
-        WHERE rowid = ?
+        WHERE order_id = ?
     ''', (new_status, current_user, current_time, order_id))
     conn.commit()
     conn.close()
@@ -203,10 +260,11 @@ def fulfill(order_id):
     current_user = session.get('username', 'Unknown') 
     
     conn = get_db_connection()
+    # Note: Using pickup_date to align with index SQL schema
     conn.execute('''
-        UPDATE orders_50 
-        SET date_picked_up = ?, bike_tag = ?, status = 'Completed', handled_by = ? 
-        WHERE rowid = ?
+        UPDATE orders 
+        SET pickup_date = ?, bike_tag = ?, status = 'Completed', handled_by = ? 
+        WHERE order_id = ?
     ''', (date_picked_up, bike_tag, current_user, order_id))
     conn.commit()
     conn.close()
@@ -236,6 +294,114 @@ def logout():
     session.pop('username', None)
     return redirect(url_for('login'))
 
+@app.route('/api/search_contacts')
+@login_required
+def search_contacts():
+    query = request.args.get('q', '').strip()
+    if len(query) < 2:
+        return jsonify([]) # Don't search until at least 2 characters are typed
+    
+    conn = get_db_connection()
+    # Using LIKE with a wildcard at the end to match prefixes
+    results = conn.execute(
+        "SELECT DISTINCT contact_name FROM contacts WHERE contact_name LIKE ? ORDER BY contact_name LIMIT 10", 
+        (f"{query}%",)
+    ).fetchall()
+    conn.close()
+    
+    return jsonify([row['contact_name'] for row in results])
+
+@app.route('/api/search_partners')
+@login_required
+def search_partners():
+    query = request.args.get('q', '').strip()
+    if len(query) < 2:
+        return jsonify([])
+    
+    conn = get_db_connection()
+    results = conn.execute(
+        "SELECT DISTINCT pedal_partner_name FROM pedal_partners WHERE pedal_partner_name LIKE ? ORDER BY pedal_partner_name LIMIT 10", 
+        (f"{query}%",)
+    ).fetchall()
+    conn.close()
+    
+    return jsonify([row['pedal_partner_name'] for row in results])
+
+
+@app.route('/dashboard')
+@login_required
+def dashboard():
+    conn = get_db_connection()
+    
+    # Determine if this is a form submission or initial load
+    if not request.args:
+        selected_year = '2026'
+        selected_shops = ['B', 'R', 'S']
+        selected_months = [str(i).zfill(2) for i in range(1, 13)] # '01' to '12'
+    else:
+        selected_year = request.args.get('year', '2026')
+        selected_shops = request.args.getlist('shop')
+        # Pad month numbers with leading zeros for SQLite strftime compatibility
+        selected_months = [m.zfill(2) for m in request.args.getlist('month')]
+
+    # Fallback if filters are completely cleared (prevent SQL errors)
+    if not selected_shops or not selected_months:
+        monthly_counts = [0] * 12
+        this_year_total = 0
+        last_year_total = 0
+    else:
+        shop_placeholders = ','.join(['?'] * len(selected_shops))
+        month_placeholders = ','.join(['?'] * len(selected_months))
+        
+        # 1. Monthly Chart Data (Groups by month)
+        chart_query = f'''
+            SELECT strftime('%m', o.order_date) as month, COUNT(r.recipient_id) as total_bikes
+            FROM orders o
+            JOIN recipients r ON o.recipient_id = r.recipient_id
+            WHERE strftime('%Y', o.order_date) = ? 
+              AND o.shop_name IN ({shop_placeholders})
+              AND strftime('%m', o.order_date) IN ({month_placeholders})
+            GROUP BY month
+            ORDER BY month
+        '''
+        params = [selected_year] + selected_shops + selected_months
+        chart_data_raw = conn.execute(chart_query, params).fetchall()
+        
+        monthly_counts = [0] * 12
+        for row in chart_data_raw:
+            if row['month']:
+                monthly_counts[int(row['month']) - 1] = row['total_bikes']
+
+        # 2. Totals Query (Reusable for This Year and Last Year)
+        totals_query = f'''
+            SELECT COUNT(r.recipient_id) as total
+            FROM orders o
+            JOIN recipients r ON o.recipient_id = r.recipient_id
+            WHERE strftime('%Y', o.order_date) = ? 
+              AND o.shop_name IN ({shop_placeholders})
+              AND strftime('%m', o.order_date) IN ({month_placeholders})
+        '''
+        
+        # This Year
+        this_year_total = conn.execute(totals_query, params).fetchone()['total'] or 0
+        
+        # Last Year
+        last_year = str(int(selected_year) - 1)
+        last_year_params = [last_year] + selected_shops + selected_months
+        last_year_total = conn.execute(totals_query, last_year_params).fetchone()['total'] or 0
+        
+    conn.close()
+
+    return render_template(
+        'dashboard.html',
+        monthly_counts=monthly_counts,
+        this_year_total=this_year_total,
+        last_year_total=last_year_total,
+        selected_year=selected_year,
+        selected_shops=selected_shops,
+        selected_months=[int(m) for m in selected_months] # Converted to int for easier Jinja template checking
+    )
+
 # =============================================================================
 # BACKGROUND TASKS
 # =============================================================================
@@ -248,9 +414,12 @@ def check_pickup_deadlines():
         target_date_str = (datetime.now() - timedelta(days=6)).strftime('%Y-%m-%d')
         
         orders = conn.execute('''
-            SELECT * FROM orders_50 
-            WHERE status = 'Contacted' 
-            AND last_updated_date LIKE ?
+            SELECT o.last_updated_date, c.contact_email, r.recipient_name 
+            FROM orders o
+            JOIN contacts c ON o.contact_id = c.contact_id
+            JOIN recipients r ON o.recipient_id = r.recipient_id
+            WHERE o.status = 'Contacted' 
+            AND o.last_updated_date LIKE ?
         ''', (f"{target_date_str}%",)).fetchall()
         
         for order in orders:

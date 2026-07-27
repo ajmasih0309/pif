@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard Analytics - PIF Portal{% endblock %}
+
+{% block content %}
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <h1 class="chalk-header fw-bold text-center mb-4">Analytics Dashboard</h1>
+    </div>
+</div>
+
+<div class="row">
+    <!-- FILTERS SIDEBAR -->
+    <div class="col-lg-3 mb-4">
+        <div class="card shadow-sm border-dark">
+            <div class="card-header bg-light border-dark">
+                <h3 class="mb-0 fw-bold">Filters</h3>
+            </div>
+            <div class="card-body">
+                <form action="{{ url_for('dashboard') }}" method="GET">
+                    
+                    <!-- Year Filter -->
+                    <div class="mb-4">
+                        <label class="fw-bold fs-5 mb-2 border-bottom border-dark w-100">Year</label>
+                        <select name="year" class="form-select border-dark shadow-sm">
+                            <option value="2026" {% if selected_year == '2026' %}selected{% endif %}>2026</option>
+                            <option value="2025" {% if selected_year == '2025' %}selected{% endif %}>2025</option>
+                            <option value="2024" {% if selected_year == '2024' %}selected{% endif %}>2024</option>
+                        </select>
+                    </div>
+
+                    <!-- Shop Filter -->
+                    <div class="mb-4">
+                        <label class="fw-bold fs-5 mb-2 border-bottom border-dark w-100">Shop Name</label>
+                        <div class="form-check">
+                            <input class="form-check-input border-dark" type="checkbox" name="shop" value="B" id="shopB" {% if 'B' in selected_shops %}checked{% endif %}>
+                            <label class="form-check-label" for="shopB">Bentonville</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input border-dark" type="checkbox" name="shop" value="R" id="shopR" {% if 'R' in selected_shops %}checked{% endif %}>
+                            <label class="form-check-label" for="shopR">Rogers</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input border-dark" type="checkbox" name="shop" value="S" id="shopS" {% if 'S' in selected_shops %}checked{% endif %}>
+                            <label class="form-check-label" for="shopS">Springdale</label>
+                        </div>
+                    </div>
+
+                    <!-- Month Filter -->
+                    <div class="mb-4">
+                        <label class="fw-bold fs-5 mb-2 border-bottom border-dark w-100">Months</label>
+                        <div class="row">
+                            {% for i in range(1, 13) %}
+                            <div class="col-6">
+                                <div class="form-check">
+                                    <input class="form-check-input border-dark" type="checkbox" name="month" value="{{ i }}" id="month{{ i }}" {% if i in selected_months %}checked{% endif %}>
+                                    <label class="form-check-label" for="month{{ i }}">{{ i }}</label>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-dark w-100 fw-bold fs-5 shadow-sm">Apply Filters</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN DATA VIEW -->
+    <div class="col-lg-9">
+        
+        <!-- KPI Row -->
+        <div class="row mb-4">
+            <div class="col-md-6 mb-3 mb-md-0">
+                <div class="card shadow-sm border-dark h-100" style="background-color: #e6f7ff;">
+                    <div class="card-body text-center d-flex flex-column justify-content-center">
+                        <h2 class="fw-bold text-dark mb-0">This Year ({{ selected_year }})</h2>
+                        <span class="display-3 fw-bold text-primary">{{ this_year_total }} Bikes</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card shadow-sm border-dark h-100" style="background-color: #fdf5e6;">
+                    <div class="card-body text-center d-flex flex-column justify-content-center">
+                        <h2 class="fw-bold text-dark mb-0">Last Year ({{ selected_year | int - 1 }})</h2>
+                        <span class="display-3 fw-bold text-warning" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.2);">{{ last_year_total }} Bikes</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chart Row -->
+        <div class="card shadow-sm border-dark">
+            <div class="card-body bg-white">
+                <canvas id="monthlyBikeChart" height="120"></canvas>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Apply Patrick Hand font to Chart.js globally
+        Chart.defaults.font.family = "'Patrick Hand', cursive";
+        Chart.defaults.font.size = 16;
+        Chart.defaults.color = '#000';
+
+        const ctx = document.getElementById('monthlyBikeChart').getContext('2d');
+        const bikeData = {{ monthly_counts | tojson }};
+        
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                datasets: [{
+                    label: 'Total Bikes Fulfilled',
+                    data: bikeData,
+                    borderColor: '#f0ad4e', // Matching your amber highlight
+                    backgroundColor: 'rgba(240, 173, 78, 0.2)',
+                    borderWidth: 4,
+                    pointBackgroundColor: '#000',
+                    pointBorderColor: '#000',
+                    pointRadius: 6,
+                    pointHoverRadius: 9,
+                    tension: 0.3, // Adds a slight curve to the line
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        backgroundColor: '#000',
+                        titleFont: { size: 18, family: "'Patrick Hand', cursive" },
+                        bodyFont: { size: 16, family: "'Patrick Hand', cursive" },
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0 // Prevents decimals on the Y-axis
+                        },
+                        grid: {
+                            color: '#e9ecef',
+                            borderDash: [5, 5] // Dashed grid lines for chalkboard feel
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}
