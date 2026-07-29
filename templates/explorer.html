@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+
+{% block title %}Data Explorer - PIF Portal{% endblock %}
+
+{% block content %}
+<!-- DataTables CSS for Bootstrap 5 -->
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+
+<style>
+    /* Ensure DataTables inherits your chalkboard font and sizing */
+    .dataTables_wrapper {
+        font-family: 'Patrick Hand', cursive !important;
+        font-size: 1.15rem;
+    }
+    table.dataTable thead th {
+        background-color: #b3b3b3 !important;
+        color: #000;
+        border-bottom: 2px dashed #000 !important;
+    }
+    .dataTables_filter input {
+        border: 1px solid #000;
+        border-radius: 5px;
+    }
+</style>
+
+<div class="row mt-4 mb-3">
+    <div class="col-12">
+        <h1 class="chalk-header fw-bold text-center">Data Explorer</h1>
+    </div>
+</div>
+
+<div class="card shadow-sm border-dark mb-5">
+    <div class="card-body bg-white table-responsive">
+        <table id="explorerTable" class="table table-bordered table-hover w-100 align-middle text-nowrap">
+            <thead>
+                <tr>
+                    <th>Order Date</th>
+                    <th>Status</th>
+                    <th>Type</th>
+                    <th>Contact Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Pedal Partner</th>
+                    <th>Shop</th>
+                    <th>Recipient</th>
+                    <th>Style</th>
+                    <th>Age</th>
+                    <th>Height</th>
+                    <th>Pickup Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td data-sort="{{ item.order_date }}">{{ item.order_date }}</td>
+                    <td>
+                        {% if item.status == 'Completed' %}
+                            <span class="badge bg-success border border-dark text-dark">Completed</span>
+                        {% elif item.status == 'Contacted' %}
+                            <span class="badge bg-info text-dark border border-dark">Contacted</span>
+                        {% elif item.status == 'Cancelled' %}
+                            <span class="badge bg-danger border border-dark">Cancelled</span>
+                        {% else %}
+                            <span class="badge bg-secondary border border-dark">Open</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ item.order_type }}</td>
+                    <td>{{ item.contact_name }}</td>
+                    <td>{{ item.contact_email }}</td>
+                    <td>{{ item.contact_phone_number }}</td>
+                    <td>{{ item.pedal_partner_name }}</td>
+                    <td>{{ item.shop_location }}</td>
+                    <td class="fw-bold">{{ item.recipient_name }}</td>
+                    <td>{{ item.bike_style_preference }}</td>
+                    <td class="text-center">{{ item.age }}</td>
+                    <td>{{ item.height }}</td>
+                    <td class="text-success fw-bold">{{ item.date_picked_up }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- jQuery and DataTables JS Scripts -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+        $('#explorerTable').DataTable({
+            pageLength: 50, // Display 50 rows per page by default
+            order: [[0, 'desc']], // Sort by Order Date descending automatically
+            language: {
+                search: "🔍 Search Database:",
+                lengthMenu: "Show _MENU_ records per page"
+            }
+        });
+    });
+</script>
+{% endblock %}

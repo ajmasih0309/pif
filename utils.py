@@ -10,6 +10,7 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from flask import render_template, current_app
+from database import get_db_connection
 
 def format_date(d_str):
     if not d_str: return ""
@@ -118,3 +119,54 @@ def send_email(to_email, subject, template_name, **kwargs):
         print(f"Email sent successfully to {test_recipient}")
     except Exception as e:
         print(f"Failed to send email: {e}")
+
+def fetch_all_orders():
+    """
+    Executes the master join query, cleans formats (dates, phones, ints),
+    and returns a list of dictionaries ready for any frontend view.
+    """
+    conn = get_db_connection()
+    query = '''
+    SELECT 
+        o.order_id,
+        o.linked_order_id,
+        c.contact_name,
+        c.contact_email,
+        c.contact_phone_number,
+        p.pedal_partner_name,
+        s.shop_location,
+        s.shop_name,
+        r.recipient_name,
+        COALESCE(r.age, o.age) AS age,
+        COALESCE(r.height, o.height) AS height,
+        COALESCE(r.bike_style_preference, o.bike_style_preference) AS bike_style_preference,
+        o.order_date,
+        o.status,
+        o.pickup_date AS date_picked_up,
+        o.order_type 
+    FROM orders o
+    LEFT JOIN contacts c ON o.contact_id = c.contact_id
+    LEFT JOIN recipients r ON o.recipient_id = r.recipient_id
+    LEFT JOIN shops s ON o.shop_name = s.shop_name
+    LEFT JOIN pedal_partners p ON o.pedal_partner_id = p.pedal_partner_id;
+    '''
+    raw_items = conn.execute(query).fetchall()
+    conn.close()
+
+    items = []
+    for row in raw_items:
+        row_dict = dict(row)
+        
+        # Fallback for legacy records missing a status
+        if not row_dict.get('status'):
+            row_dict['status'] = 'Completed' if row_dict.get('date_picked_up') else 'Open'
+            
+        # Clean formatting directly at the source
+        row_dict['contact_phone_number'] = format_phone(row_dict.get('contact_phone_number'))
+        row_dict['order_date'] = format_date(row_dict.get('order_date'))
+        row_dict['date_picked_up'] = format_date(row_dict.get('date_picked_up'))
+        row_dict['age'] = clean_int(row_dict.get('age'))
+        
+        items.append(row_dict)
+        
+    return items

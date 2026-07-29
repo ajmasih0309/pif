@@ -22,7 +22,7 @@ load_dotenv()
 
 # --- Local Module Imports ---
 from database import get_db_connection
-from utils import send_email, format_date, format_phone, clean_int, unformat_phone
+from utils import send_email, format_date, format_phone, clean_int, unformat_phone, fetch_all_orders
 
 
 # =============================================================================
@@ -54,48 +54,14 @@ def login_required(f):
 @app.route('/')
 @login_required
 def index():
-    conn = get_db_connection()
-    query = '''
-    SELECT 
-        o.order_id,
-        o.linked_order_id,
-        c.contact_name,
-        c.contact_email,
-        c.contact_phone_number,
-        p.pedal_partner_name,
-        s.shop_location,
-        s.shop_name,
-        r.recipient_name,
-        COALESCE(r.age, o.age) AS age,
-        COALESCE(r.height, o.height) AS height,
-        COALESCE(r.bike_style_preference, o.bike_style_preference) AS bike_style_preference,
-        o.order_date,
-        o.status,
-        o.pickup_date AS date_picked_up,
-        o.order_type 
-    FROM orders o
-    JOIN contacts c ON o.contact_id = c.contact_id
-    JOIN recipients r ON o.recipient_id = r.recipient_id
-    JOIN shops s ON o.shop_name = s.shop_name
-    LEFT JOIN pedal_partners p ON o.pedal_partner_id = p.pedal_partner_id;
-    '''
-    raw_items = conn.execute(query).fetchall()
-    conn.close()
+    # 1. Fetch pre-cleaned data
+    items = fetch_all_orders()
 
-    items = []
-    for row in raw_items:
-        row_dict = dict(row)
-        
-        # Fallback for legacy records missing a status
-        if not row_dict.get('status'):
-            row_dict['status'] = 'Completed' if row_dict.get('date_picked_up') else 'Open'
-            
-        items.append(row_dict)
-
+    # 2. group data for tabbed view
     def group_data(data_list):
         groups = {}
         for item in data_list:
-            key = f"{item['contact_email']}_{item['order_date']}"
+            key = f"{item['contact_name']}_{item['order_date']}"
             if key not in groups:
                 groups[key] = {
                     'contact_name': item['contact_name'],
@@ -402,6 +368,12 @@ def dashboard():
         selected_months=[int(m) for m in selected_months] # Converted to int for easier Jinja template checking
     )
 
+@app.route('/explorer')
+@login_required
+def explorer():
+    items = fetch_all_orders()
+    return render_template('explorer.html', items=items)
+
 # =============================================================================
 # BACKGROUND TASKS
 # =============================================================================
@@ -441,4 +413,4 @@ def check_pickup_deadlines():
 # =============================================================================
 if __name__ == '__main__':
     # DB upgrade removed here — assume you run `python manage_db.py` on deployments
-    app.run(debug=True)
+    app.run(debug=True, port=5001)

@@ -91,11 +91,31 @@
 
 <!-- TAB BUTTONS -->
 <ul class="nav nav-tabs border-0" id="orderTabs" role="tablist">
-    <li class="nav-item" role="presentation"><button class="nav-link active px-4 rounded-0" id="tab-open" data-bs-toggle="tab" data-bs-target="#open" type="button" role="tab">Open</button></li>
-    <li class="nav-item" role="presentation"><button class="nav-link px-4 rounded-0" id="tab-contacted" data-bs-toggle="tab" data-bs-target="#contacted" type="button" role="tab">Contacted</button></li>
-    <li class="nav-item" role="presentation"><button class="nav-link px-4 rounded-0" id="tab-completed" data-bs-toggle="tab" data-bs-target="#completed" type="button" role="tab">Completed</button></li>
-    <li class="nav-item" role="presentation"><button class="nav-link px-4 rounded-0" id="tab-cancelled" data-bs-toggle="tab" data-bs-target="#cancelled" type="button" role="tab">Cancelled</button></li>
-    <li class="nav-item" role="presentation"><button class="nav-link px-4 rounded-0" id="tab-all" data-bs-toggle="tab" data-bs-target="#all" type="button" role="tab">All</button></li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active px-4 rounded-0" id="tab-open" data-bs-toggle="tab" data-bs-target="#open" type="button" role="tab">
+            Open ({{ open_orders | sum(attribute='total_bikes') }})
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link px-4 rounded-0" id="tab-contacted" data-bs-toggle="tab" data-bs-target="#contacted" type="button" role="tab">
+            Contacted ({{ contacted_orders | sum(attribute='total_bikes') }})
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link px-4 rounded-0" id="tab-completed" data-bs-toggle="tab" data-bs-target="#completed" type="button" role="tab">
+            Completed ({{ completed_orders | sum(attribute='total_bikes') }})
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link px-4 rounded-0" id="tab-cancelled" data-bs-toggle="tab" data-bs-target="#cancelled" type="button" role="tab">
+            Cancelled ({{ cancelled_orders | sum(attribute='total_bikes') }})
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link px-4 rounded-0" id="tab-all" data-bs-toggle="tab" data-bs-target="#all" type="button" role="tab">
+            All ({{ all_orders | sum(attribute='total_bikes') }})
+        </button>
+    </li>
 </ul>
 
 <!-- TAB CONTENT CONTAINER -->
