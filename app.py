@@ -8,6 +8,7 @@ Database logic, utilities, and configurations are imported from external modules
 import os
 from datetime import datetime, timedelta
 from functools import wraps
+import subprocess
 
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from werkzeug.security import check_password_hash
@@ -409,8 +410,25 @@ def check_pickup_deadlines():
         conn.close()
 
 # =============================================================================
+# VERSION DETAILS
+# =============================================================================
+
+def get_git_revision_short_hash():
+    try:
+        return subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD']).decode('ascii').strip()
+    except Exception:
+        return "dev"
+
+@app.context_processor
+def inject_global_vars():
+    return dict(
+        app_version=f"v1.0.0 ({get_git_revision_short_hash()})"
+    )
+
+
+# =============================================================================
 # EXECUTION
 # =============================================================================
 if __name__ == '__main__':
     # DB upgrade removed here — assume you run `python manage_db.py` on deployments
-    app.run(debug=True, port=5001)
+    app.run(debug=True, port=5000)
