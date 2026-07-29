@@ -52,6 +52,45 @@ def login_required(f):
 # =============================================================================
 # APP ROUTES
 # =============================================================================
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        
+        conn = get_db_connection()
+        user = conn.execute("SELECT * FROM users WHERE username = ?", (username,)).fetchone()
+        conn.close()
+
+        if user and check_password_hash(user['password_hash'], password):
+            session['username'] = user['username']
+            
+            # --- Capture and Log Device Info ---
+            ip_address = request.headers.get('X-Forwarded-For', request.remote_addr)
+            ip_address = ip_address.split(',')[0].strip() if ip_address else None
+
+            log_conn = None
+            try:
+                log_conn = get_db_connection()
+                log_conn.execute(
+                    "INSERT INTO login_logs (username, ip_address, device_info) VALUES (?, ?, ?)",
+                    (user['username'], ip_address, request.user_agent.string)
+                )
+                log_conn.commit()
+            except Exception as e:
+                print(f"Failed to log login: {e}")
+            finally:
+                if log_conn:
+                    log_conn.close()
+            # -----------------------------------
+
+            return redirect(url_for('index'))
+        else:
+            flash("Invalid credentials. Please try again.")
+            
+    return render_template('login.html')
+
+
 @app.route('/')
 @login_required
 def index():
@@ -238,24 +277,6 @@ def fulfill(order_id):
     
     return redirect(url_for('index'))
 
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
-        
-        conn = get_db_connection()
-        user = conn.execute("SELECT * FROM users WHERE username = ?", (username,)).fetchone()
-        conn.close()
-
-        if user and check_password_hash(user['password_hash'], password):
-            session['username'] = user['username']
-            return redirect(url_for('index'))
-        else:
-            flash("Invalid credentials. Please try again.")
-            
-    return render_template('login.html')
-
 @app.route('/logout')
 def logout():
     session.pop('username', None)
@@ -422,7 +443,7 @@ def get_git_revision_short_hash():
 @app.context_processor
 def inject_global_vars():
     return dict(
-        app_version=f"v1.0.0 ({get_git_revision_short_hash()})"
+        app_version=f"v1.0.1 ({get_git_revision_short_hash()})"
     )
 
 
