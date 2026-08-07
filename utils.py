@@ -141,7 +141,7 @@ def fetch_all_orders():
         COALESCE(r.height, o.height) AS height,
         COALESCE(r.bike_style_preference, o.bike_style_preference) AS bike_style_preference,
         o.order_date,
-        o.status,
+        o.order_status,
         o.pickup_date AS date_picked_up,
         o.order_type 
     FROM orders o
@@ -158,8 +158,8 @@ def fetch_all_orders():
         row_dict = dict(row)
         
         # Fallback for legacy records missing a status
-        if not row_dict.get('status'):
-            row_dict['status'] = 'Completed' if row_dict.get('date_picked_up') else 'Open'
+        if not row_dict.get('order_status'):
+            row_dict['order_status'] = 'Completed' if row_dict.get('date_picked_up') else 'Open'
             
         # Clean formatting directly at the source
         row_dict['contact_phone_number'] = format_phone(row_dict.get('contact_phone_number'))

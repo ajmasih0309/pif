@@ -122,10 +122,10 @@ def index():
             groups[key]['recipients'].append(item)
         return list(groups.values())
 
-    open_items = [i for i in items if i['status'] == 'Open']
-    contacted_items = [i for i in items if i['status'] == 'Contacted']
-    completed_items = [i for i in items if i['status'] == 'Completed']
-    cancelled_items = [i for i in items if i['status'] == 'Cancelled']
+    open_items = [i for i in items if i['order_status'] == 'Open']
+    contacted_items = [i for i in items if i['order_status'] == 'Contacted']
+    completed_items = [i for i in items if i['order_status'] == 'Completed']
+    cancelled_items = [i for i in items if i['order_status'] == 'Cancelled']
 
     open_orders = sorted(group_data(open_items), key=lambda x: x['order_date'])
     contacted_orders = sorted(group_data(contacted_items), key=lambda x: x['order_date'])
@@ -204,7 +204,7 @@ def add():
             conn.execute('''
                 INSERT INTO orders (
                     contact_id, recipient_id, shop_name, pedal_partner_id,
-                    order_date, order_type, status, last_status, last_updated_date
+                    order_date, order_type, order_status, last_status, last_updated_date
                 ) VALUES (?, ?, ?, ?, ?, ?, 'Open', 'Open', ?)
             ''', (contact_id, recipient_id, shop_name, pedal_partner_id, order_date, order_type, current_time))
         
@@ -231,7 +231,7 @@ def update_status(order_id):
     
     conn = get_db_connection()
     order = conn.execute('''
-        SELECT o.status, c.contact_email, r.recipient_name 
+        SELECT o.order_status, c.contact_email, r.recipient_name 
         FROM orders o
         JOIN contacts c ON o.contact_id = c.contact_id
         JOIN recipients r ON o.recipient_id = r.recipient_id
@@ -240,13 +240,13 @@ def update_status(order_id):
     
     conn.execute('''
         UPDATE orders 
-        SET status = ?, last_status = status, handled_by = ?, last_updated_date = ?
+        SET order_status = ?, last_status = order_status, handled_by = ?, last_updated_date = ?
         WHERE order_id = ?
     ''', (new_status, current_user, current_time, order_id))
     conn.commit()
     conn.close()
 
-    if new_status == 'Contacted' and order['status'] != 'Contacted':
+    if new_status == 'Contacted' and order['order_status'] != 'Contacted':
         pickup_deadline = (datetime.now() + timedelta(days=7)).strftime('%m/%d/%Y')
         send_email(
             to_email=order['contact_email'],
@@ -269,7 +269,7 @@ def fulfill(order_id):
     # Note: Using pickup_date to align with index SQL schema
     conn.execute('''
         UPDATE orders 
-        SET pickup_date = ?, bike_tag = ?, status = 'Completed', handled_by = ? 
+        SET pickup_date = ?, bike_tag = ?, order_status = 'Completed', handled_by = ? 
         WHERE order_id = ?
     ''', (date_picked_up, bike_tag, current_user, order_id))
     conn.commit()
@@ -412,7 +412,7 @@ def check_pickup_deadlines():
             FROM orders o
             JOIN contacts c ON o.contact_id = c.contact_id
             JOIN recipients r ON o.recipient_id = r.recipient_id
-            WHERE o.status = 'Contacted' 
+            WHERE o.order_status = 'Contacted' 
             AND o.last_updated_date LIKE ?
         ''', (f"{target_date_str}%",)).fetchall()
         
@@ -452,4 +452,4 @@ def inject_global_vars():
 # =============================================================================
 if __name__ == '__main__':
     # DB upgrade removed here — assume you run `python manage_db.py` on deployments
-    app.run(debug=True, port=5000)
+    app.run(debug=True, port=5003)
