@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <!-- Logo for Portal-->
-    <link rel="icon" type="image/png" href="static/imgs/pif-logo.png">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='imgs/pif-logo.png') }}">
 
     <!-- Dynamic Title Block: Child templates can override this to set specific tab names -->
     <title>{% block title %}PIF Portal{% endblock %}</title>
@@ -113,24 +113,27 @@
             color: #8c959f;
         }
     </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/whiteboard.css') }}">
 </head>
 <body>
     
     <!-- NAVIGATION BAR -->
     <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom border-dark mb-4 shadow-sm">
         <div class="container">
-            <a class="navbar-brand fw-bold text-dark" href="/">
+            <a class="navbar-brand fw-bold text-dark" href="{{ '#' if requester_mode else url_for('index') }}">
                 <img src="{{ url_for('static', filename='imgs/pif-logo.png') }}" alt="PIF Logo" width="45" height="45" class="me-2">
                 PIF Portal
             </a>
             
+            {% if session.get('username') and not requester_mode %}
             <button class="navbar-toggler border-dark" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
+            {% endif %}
             
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto fs-4 align-items-center"> 
-                    {% if session.get('username') %}
+                    {% if session.get('username') and not requester_mode %}
                         <!-- Welcome Message -->
                         <li class="nav-item me-4">
                             <span class="navbar-text text-dark fs-5">
@@ -151,6 +154,7 @@
                             <ul class="dropdown-menu border-dark shadow-sm" aria-labelledby="navbarDropdown" style="background-color: #f8f9fa;">
                                 <li><a class="dropdown-item fw-bold text-dark fs-5" href="/dashboard">Dashboard</a></li>
                                 <li><a class="dropdown-item fw-bold text-dark fs-5" href="/explorer">Data Explorer</a></li>
+                                <li><a class="dropdown-item fw-bold text-dark fs-5" href="{{ url_for('requester_links.manage') }}">Requester Links</a></li>
                             </ul>
                         </li>
                 
@@ -176,17 +180,13 @@
         
         <!-- Global Flash Message Handler -->
         <!-- Placed here so ANY page can flash alerts without repeating code -->
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                <div class="alert alert-warning shadow-sm border-dark mb-4" role="alert" style="border-radius: 8px;">
-                    <ul class="mb-0 fw-bold fs-5" style="list-style-type: none; padding-left: 0;">
-                    {% for message in messages %}
-                        <li>{{ message }}</li>
-                    {% endfor %}
-                    </ul>
-                </div>
-            {% endif %}
+        {% if not requester_mode %}
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category if category in ['success','warning','danger','info'] else 'warning' }} border-dark mb-4" role="{{ 'alert' if category in ['danger','warning','message'] else 'status' }}">{{ message }}</div>
+            {% endfor %}
         {% endwith %}
+        {% endif %}
 
         <!-- Child Templates Inject Content Here -->
         {% block content %}{% endblock %}

@@ -1,0 +1,23 @@
+/* Whiteboard surfaces, marker outlines, and readable entered data. */
+body { background: #fafaf7; color: #202521; }
+.form-control, .form-select { background-color: #fff; border-color: #606860; border-radius: .35rem; }
+.form-control, .form-select, .data-value { font-family: system-ui, sans-serif !important; font-size: 1rem; font-variant-numeric: tabular-nums; }
+.marker-panel { padding: 1.25rem; border: 1.5px solid #343b34; border-radius: .4rem .7rem .35rem .6rem; background: #fff; }
+.intake-page { max-width: 1000px; }
+:focus-visible { outline: 3px solid #15659b !important; outline-offset: 3px; }
+.form-control:focus, .form-select:focus { border-color: #15659b; box-shadow: 0 0 0 .15rem #15659b26; }
+.form-control[readonly] { background: #f1f3ee; }
+.invalid-feedback { font-family: system-ui, sans-serif; font-size: .875rem; }
+.bike-card { border-color: #646b64; border-radius: .4rem; }
+.bike-card:hover { border-color: #15659b; transform: none; box-shadow: 0 2px 6px #0002; }
+.nav-link:hover { transform: none; }
+.order-toggle { font: inherit; color: inherit; text-align: left; padding: .25rem; border: 0; background: transparent; }
+@media (max-width: 575.98px) {
+    .marker-panel { padding: .85rem; }
+    .chalk-header { font-size: 2rem; }
+    #orderTabs .nav-link { padding: .5rem .65rem !important; font-size: 1.1rem; }
+    #submit-order { width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition: none !important; scroll-behavior: auto !important; }
+}

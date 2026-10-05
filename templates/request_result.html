@@ -1,0 +1,8 @@
+{% extends 'base.html' %}
+{% block title %}Bike Request - PIF Portal{% endblock %}
+{% block content %}
+<div class="marker-panel mx-auto my-5" style="max-width: 650px" role="status">
+{% if state == 'Used' %}<h1 class="chalk-header">Request received</h1><p>A request has been saved using this link. Thank you! PIF will review the information.</p><p class="mb-0">This link has been used. Please contact PIF if you need to correct anything or request another bike.</p>
+{% else %}<h1 class="chalk-header">This link is unavailable</h1><p>It may have expired or been withdrawn. Please contact PIF for a new link.</p>{% endif %}
+</div>
+{% endblock %}

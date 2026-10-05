@@ -6,11 +6,12 @@ Database logic, utilities, and configurations are imported from external modules
 """
 
 import os
+from contextlib import closing
 from datetime import datetime, timedelta
 from functools import wraps
 import subprocess
 
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+from flask import Flask, render_template, request, redirect, url_for, session, flash, abort
 from werkzeug.security import check_password_hash
 from flask_apscheduler import APScheduler
 from dotenv import load_dotenv
@@ -22,8 +23,12 @@ from flask import jsonify
 load_dotenv()
 
 # --- Local Module Imports ---
+from config import Config
 from database import get_db_connection
-from utils import send_email, format_date, format_phone, clean_int, unformat_phone, fetch_all_orders
+from order_search import search_orders
+from order_intake import (ensure_schema, form_token, check_token, form_values, validate,
+                          save_order, existing_submission, shops, HEIGHTS, TYPES)
+from utils import send_email, email_feedback, unformat_phone, fetch_all_orders
 
 
 # =============================================================================
@@ -32,6 +37,13 @@ from utils import send_email, format_date, format_phone, clean_int, unformat_pho
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', 'loremipsum')
 app.config['DB_PATH'] = os.getenv('DB_PATH', 'data/processed/pif.db')
+for setting in ('MAIL_USERNAME', 'MAIL_PASSWORD', 'MAIL_SERVER', 'MAIL_PORT',
+                'MAIL_DEFAULT_SENDER', 'MAIL_TEST_RECIPIENT', 'EMAIL_MODE',
+                'EMAIL_PREVIEW_DIR', 'EMAIL_LIVE_ENABLED', 'EMAIL_REMINDERS_ENABLED'):
+    app.config[setting] = getattr(Config, setting)
+
+from requester_links import requester_links
+app.register_blueprint(requester_links)
 
 scheduler = APScheduler()
 scheduler.init_app(app)
@@ -96,19 +108,27 @@ def login():
 def index():
     # 1. Fetch pre-cleaned data
     items = fetch_all_orders()
+    items, filters = search_orders(items, request.args.get('q', ''), request.args.get('order_type', 'all'))
+    active_tab = request.args.get('status', 'all' if filters['filters_active'] else 'open')
+    if active_tab not in {'open', 'contacted', 'completed', 'cancelled', 'all'}:
+        active_tab = 'all' if filters['filters_active'] else 'open'
 
     # 2. group data for tabbed view
     def group_data(data_list):
         groups = {}
         for item in data_list:
-            key = f"{item['contact_name']}_{item['order_date']}"
+            # Keep different contacts, shops and order types separate even when
+            # they share a name and date. Missing contacts stay separate too.
+            key = (item['contact_id'] if item.get('contact_id') is not None else ('order', item['order_id']),
+                   item['order_date_iso'], item['shop_name'], item['order_type'])
             if key not in groups:
                 groups[key] = {
                     'contact_name': item['contact_name'],
-                    'contact_phone': format_phone(item['contact_phone_number']),
+                    'contact_phone': item['contact_phone_number'],
                     'contact_email': item['contact_email'],
                     'pedal_partner': item['pedal_partner_name'],
-                    'order_date': format_date(item['order_date']),
+                    'order_date': item['order_date'],
+                    'order_date_iso': item['order_date_iso'],
                     'order_type': item.get('order_type', 'Public'),
                     #'shop_name': item.get('shop_name', ''),
                     'shop_name': item.get('shop_location', ''),
@@ -116,9 +136,6 @@ def index():
                     'recipients': []
                 }
             groups[key]['total_bikes'] += 1
-            item['age'] = clean_int(item['age'])
-            item['bike_tag'] = clean_int(item.get('bike_tag'))
-            item['date_picked_up'] = format_date(item['date_picked_up'])
             groups[key]['recipients'].append(item)
         return list(groups.values())
 
@@ -127,136 +144,132 @@ def index():
     completed_items = [i for i in items if i['order_status'] == 'Completed']
     cancelled_items = [i for i in items if i['order_status'] == 'Cancelled']
 
-    open_orders = sorted(group_data(open_items), key=lambda x: x['order_date'])
-    contacted_orders = sorted(group_data(contacted_items), key=lambda x: x['order_date'])
-    cancelled_orders = sorted(group_data(cancelled_items), key=lambda x: x['order_date'], reverse=True)
-    all_orders = sorted(group_data(items), key=lambda x: x['order_date'], reverse=True)
+    open_orders = sorted(group_data(open_items), key=lambda x: x['order_date_iso'])
+    contacted_orders = sorted(group_data(contacted_items), key=lambda x: x['order_date_iso'])
+    cancelled_orders = sorted(group_data(cancelled_items), key=lambda x: x['order_date_iso'], reverse=True)
+    all_orders = sorted(group_data(items), key=lambda x: x['order_date_iso'], reverse=True)
     
     def get_max_pickup(group):
-        dates = [r['date_picked_up'] for r in group['recipients'] if r['date_picked_up']]
+        dates = [r['pickup_date_iso'] for r in group['recipients'] if r['pickup_date_iso']]
         return max(dates) if dates else ''
     
     completed_orders = sorted(group_data(completed_items), key=get_max_pickup, reverse=True)
 
+    status_groups = {
+        'open': open_orders, 'contacted': contacted_orders, 'completed': completed_orders,
+        'cancelled': cancelled_orders, 'all': all_orders,
+    }
+    status_counts = {status: sum(group['total_bikes'] for group in groups)
+                     for status, groups in status_groups.items()}
+    groups = status_groups[active_tab]
+    page_size = 25
+    page_count = max(1, (len(groups) + page_size - 1) // page_size)
+    page = min(max(1, request.args.get('page', 1, type=int)), page_count)
+    start = (page - 1) * page_size
+    pagination = {'page': page, 'pages': page_count, 'total': len(groups),
+                  'first': start + 1 if groups else 0, 'last': min(start + page_size, len(groups))}
+    # Keep families together, but send only the current page of the selected tab.
+    visible_groups = {status + '_orders': (groups[start:start + page_size] if status == active_tab else [])
+                      for status in status_groups}
+
     return render_template(
         'index.html', 
-        open_orders=open_orders, 
-        contacted_orders=contacted_orders,
-        completed_orders=completed_orders, 
-        cancelled_orders=cancelled_orders,
-        all_orders=all_orders,
-        today=datetime.now().strftime('%Y-%m-%d')
+        **visible_groups,
+        status_counts=status_counts,
+        pagination=pagination,
+        today=datetime.now().strftime('%Y-%m-%d'),
+        active_tab=active_tab,
+        **filters,
     )
 
 @app.route('/add', methods=('GET', 'POST'))
 @login_required
 def add():
-    if request.method == 'POST':
-        contact_name = request.form.get('contact_name', '')
-        contact_phone = unformat_phone(request.form.get('contact_phone_number', ''))
-        contact_email = request.form.get('contact_email', '')
-        pedal_partner = request.form.get('pedal_partner_name', '').strip()
-        order_date = request.form.get('order_date', '')
-        shop_name = request.form.get('shop_name', '')
-        
-        # Order Type Logic Translation
-        order_type = request.form.get('order_type', 'Public')
-        
-        # Safety fallback: If marked as 'Pedal Partner' but the name field was left blank, revert to 'Public'
-        if order_type == 'Pedal Partner' and not pedal_partner:
-            order_type = 'Public'
-
-        recipients = request.form.getlist('recipient_name[]')
-        bike_styles = request.form.getlist('bike_style_preference[]')
-        ages = request.form.getlist('age[]')
-        heights = request.form.getlist('height[]')
-        first_choices = request.form.getlist('bike_type_first_choice[]')
-        second_choices = request.form.getlist('bike_type_second_choice[]')
-        notes_list = request.form.getlist('notes[]')
-
-        current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        conn = get_db_connection()
-        
-        # 1. Manage Contact
-        conn.execute('''INSERT OR IGNORE INTO contacts (contact_name, contact_phone_number, contact_email) 
-                        VALUES (?, ?, ?)''', (contact_name, contact_phone, contact_email))
-        contact_id = conn.execute('SELECT contact_id FROM contacts WHERE contact_email = ? AND contact_name = ?', 
-                                  (contact_email, contact_name)).fetchone()['contact_id']
-
-        # 2. Manage Pedal Partner
-        pedal_partner_id = None
-        if pedal_partner:
-            conn.execute('INSERT OR IGNORE INTO pedal_partners (pedal_partner_name) VALUES (?)', (pedal_partner,))
-            pp_row = conn.execute('SELECT pedal_partner_id FROM pedal_partners WHERE pedal_partner_name = ?', (pedal_partner,)).fetchone()
-            if pp_row:
-                pedal_partner_id = pp_row['pedal_partner_id']
-
-        # 3. Manage Shop
-        conn.execute('INSERT OR IGNORE INTO shops (shop_name) VALUES (?)', (shop_name,))
-
-        # 4. Insert Recipients and Orders
-        for i in range(len(recipients)):
-            conn.execute('''INSERT INTO recipients (recipient_name, age, height, bike_style_preference) 
-                            VALUES (?, ?, ?, ?)''', 
-                         (recipients[i], ages[i], heights[i], bike_styles[i]))
-            recipient_id = conn.execute('SELECT last_insert_rowid()').fetchone()[0]
-
-            conn.execute('''
-                INSERT INTO orders (
-                    contact_id, recipient_id, shop_name, pedal_partner_id,
-                    order_date, order_type, order_status, last_status, last_updated_date
-                ) VALUES (?, ?, ?, ?, ?, ?, 'Open', 'Open', ?)
-            ''', (contact_id, recipient_id, shop_name, pedal_partner_id, order_date, order_type, current_time))
-        
-            send_email(
-                to_email=contact_email, 
-                subject="We received your bike request!",
-                template_name="order_received",
-                recipient_name=recipients[i],
-                shop_name=shop_name
-            )
-        
-        conn.commit()
-        conn.close()
+    token = request.form.get('form_token', '') if request.method == 'POST' else form_token('staff-order')
+    values, recipients = form_values(request.form if request.method == 'POST' else None)
+    errors = {}
+    with closing(get_db_connection()) as conn, conn:
+        ensure_schema(conn)
+        available_shops = shops(conn)
+        if request.method == 'POST':
+            key = check_token(token, 'staff-order')
+            conn.execute('BEGIN IMMEDIATE')
+            if existing_submission(conn, key):
+                flash('This order was already saved. No duplicate was created.', 'info')
+                return redirect(url_for('index'))
+            values, recipients, phone, errors = validate(request.form, {s['shop_name'] for s in available_shops})
+            if not errors:
+                ids, created = save_order(conn, values, recipients, phone, session['username'], key)
+    if request.method == 'POST' and not errors:
+        # Confirmation email is sent only after the entire submission commits.
+        notifications = []
+        for recipient in recipients:
+            sent = send_email(to_email=values['contact_email'], subject="We received your bike request!",
+                              template_name='order_received', recipient_name=recipient['recipient_name'],
+                              shop_name=values['shop_name'])
+            notifications.append(sent)
+        flash(f'Order saved for {len(ids)} recipient(s).', 'success')
+        email_feedback(notifications, 'Order saved. Confirmation email could not be sent.')
         return redirect(url_for('index'))
-    
-    return render_template('add.html')
+    return render_template('add.html', values=values, recipients=recipients, errors=errors,
+                           form_token=token, shops=available_shops, heights=HEIGHTS,
+                           order_types=TYPES, requester_mode=False), (400 if errors else 200)
+
+def redirect_to_desk():
+    """Keep the user's search and tab after an order action, using local URLs only."""
+    params = {key: request.form['return_' + key] for key in ('q', 'order_type', 'status', 'page')
+              if request.form.get('return_' + key)}
+    return redirect(url_for('index', **params))
+
 
 @app.route('/update_status/<int:order_id>', methods=['POST'])
 @login_required
 def update_status(order_id):
     new_status = request.form.get('new_status')
+    if new_status not in {'Open', 'Contacted', 'Cancelled'}:
+        abort(400, 'Invalid status. Use the pickup form to complete an order.')
     current_user = session.get('username', 'Unknown')
     current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     
-    conn = get_db_connection()
-    order = conn.execute('''
+    with closing(get_db_connection()) as conn, conn:
+        conn.execute('BEGIN IMMEDIATE')
+        order = conn.execute('''
         SELECT o.order_status, c.contact_email, r.recipient_name 
         FROM orders o
-        JOIN contacts c ON o.contact_id = c.contact_id
-        JOIN recipients r ON o.recipient_id = r.recipient_id
+        LEFT JOIN contacts c ON o.contact_id = c.contact_id
+        LEFT JOIN recipients r ON o.recipient_id = r.recipient_id
         WHERE o.order_id = ?
-    ''', (order_id,)).fetchone()
-    
-    conn.execute('''
+        ''', (order_id,)).fetchone()
+        if order is None:
+            abort(404)
+        if order['order_status'] == new_status:
+            return redirect_to_desk()
+        allowed_transitions = {
+            'Open': {'Contacted', 'Cancelled'},
+            'Contacted': {'Cancelled'},
+            'Cancelled': {'Open'},
+        }
+        if new_status not in allowed_transitions.get(order['order_status'], set()):
+            abort(409, 'This order has changed. Reload My Desk before taking another action.')
+        conn.execute('''
         UPDATE orders 
-        SET order_status = ?, last_status = order_status, handled_by = ?, last_updated_date = ?
+        SET order_status = ?, last_status = order_status, last_updated_by = ?, last_updated_date = ?
         WHERE order_id = ?
-    ''', (new_status, current_user, current_time, order_id))
-    conn.commit()
-    conn.close()
+        ''', (new_status, current_user, current_time, order_id))
 
     if new_status == 'Contacted' and order['order_status'] != 'Contacted':
         pickup_deadline = (datetime.now() + timedelta(days=7)).strftime('%m/%d/%Y')
-        send_email(
+        sent = send_email(
             to_email=order['contact_email'],
             subject="Your bike is ready for pickup!",
             template_name="pickup_ready",
             recipient_name=order['recipient_name'],
             deadline=pickup_deadline
         )
+        email_feedback([sent], 'Status saved. Pickup email could not be sent.')
 
-    return redirect(url_for('index'))
+    flash(f'Order #{order_id} moved to {new_status}.', 'success')
+    return redirect_to_desk()
 
 @app.route('/fulfill/<int:order_id>', methods=['POST'])
 @login_required
@@ -264,18 +277,36 @@ def fulfill(order_id):
     date_picked_up = request.form.get('date_picked_up')
     bike_tag = request.form.get('bike_tag')
     current_user = session.get('username', 'Unknown') 
-    
-    conn = get_db_connection()
+    try:
+        datetime.strptime(date_picked_up or '', '%Y-%m-%d')
+        bike_tag = int(bike_tag)
+        if bike_tag <= 0:
+            raise ValueError
+    except (TypeError, ValueError):
+        abort(400, 'A pickup date and positive whole-number bike tag are required.')
+    current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
     # Note: Using pickup_date to align with index SQL schema
-    conn.execute('''
+    with closing(get_db_connection()) as conn, conn:
+        conn.execute('BEGIN IMMEDIATE')
+        order = conn.execute('''SELECT order_status, pickup_date, bike_tag
+            FROM orders WHERE order_id = ?''', (order_id,)).fetchone()
+        if order is None:
+            abort(404)
+        if order['order_status'] == 'Completed' and order['pickup_date'] == date_picked_up and order['bike_tag'] == bike_tag:
+            # A double click or retry must not overwrite the original audit trail.
+            return redirect_to_desk()
+        if order['order_status'] != 'Contacted':
+            abort(409, 'Only Contacted orders can be picked up. Reload My Desk to see this order’s current status.')
+        conn.execute('''
         UPDATE orders 
-        SET pickup_date = ?, bike_tag = ?, order_status = 'Completed', handled_by = ? 
+        SET pickup_date = ?, bike_tag = ?, last_status = order_status,
+            order_status = 'Completed', last_updated_by = ?, last_updated_date = ?
         WHERE order_id = ?
-    ''', (date_picked_up, bike_tag, current_user, order_id))
-    conn.commit()
-    conn.close()
+        ''', (date_picked_up, bike_tag, current_user, current_time, order_id))
     
-    return redirect(url_for('index'))
+    flash(f'Order #{order_id} completed. Pickup date and bike tag saved.', 'success')
+    return redirect_to_desk()
 
 @app.route('/logout')
 def logout():
@@ -394,7 +425,8 @@ def dashboard():
 @login_required
 def explorer():
     items = fetch_all_orders()
-    return render_template('explorer.html', items=items)
+    items, filters = search_orders(items, request.args.get('q', ''), request.args.get('order_type', 'all'))
+    return render_template('explorer.html', items=items, **filters)
 
 # =============================================================================
 # BACKGROUND TASKS
@@ -402,7 +434,9 @@ def explorer():
 @scheduler.task('cron', id='daily_pickup_reminder', hour=9, minute=0)
 def check_pickup_deadlines():
     with app.app_context():
-        print("Running daily pickup reminder check...")
+        if not app.config.get('EMAIL_REMINDERS_ENABLED', False):
+            return
+        app.logger.info('Running daily pickup reminder check.')
         conn = get_db_connection()
         
         target_date_str = (datetime.now() - timedelta(days=6)).strftime('%Y-%m-%d')

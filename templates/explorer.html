@@ -21,6 +21,12 @@
         border: 1px solid #000;
         border-radius: 5px;
     }
+    .explorer-table-controls .dataTables_info {
+        padding-top: 0;
+    }
+    .explorer-table-controls .pagination {
+        flex-wrap: wrap;
+    }
 </style>
 
 <div class="row mt-4 mb-3">
@@ -29,11 +35,14 @@
     </div>
 </div>
 
+{% include '_order_filters.html' %}
+
 <div class="card shadow-sm border-dark mb-5">
-    <div class="card-body bg-white table-responsive">
+    <div class="card-body bg-white">
         <table id="explorerTable" class="table table-bordered table-hover w-100 align-middle text-nowrap">
             <thead>
                 <tr>
+                    <th>Order ID</th>
                     <th>Order Date</th>
                     <th>Status</th>
                     <th>Type</th>
@@ -47,18 +56,22 @@
                     <th>Age</th>
                     <th>Height</th>
                     <th>Pickup Date</th>
+                    <th>Bike Tag</th>
+                    <th>Notes</th>
+                    <th>More Details</th>
                 </tr>
             </thead>
             <tbody>
                 {% for item in items %}
                 <tr>
-                    <td data-sort="{{ item.order_date }}">{{ item.order_date }}</td>
+                    <td><a href="{{ url_for('index', q='#' ~ item.order_id, status=item.order_status|lower) }}" aria-label="Open order {{ item.order_id }} on My Desk">#{{ item.order_id }}</a></td>
+                    <td data-sort="{{ item.order_date_iso }}">{{ item.order_date }}</td>
                     <td>
-                        {% if item.status == 'Completed' %}
+                        {% if item.order_status == 'Completed' %}
                             <span class="badge bg-success border border-dark text-dark">Completed</span>
-                        {% elif item.status == 'Contacted' %}
+                        {% elif item.order_status == 'Contacted' %}
                             <span class="badge bg-info text-dark border border-dark">Contacted</span>
-                        {% elif item.status == 'Cancelled' %}
+                        {% elif item.order_status == 'Cancelled' %}
                             <span class="badge bg-danger border border-dark">Cancelled</span>
                         {% else %}
                             <span class="badge bg-secondary border border-dark">Open</span>
@@ -70,11 +83,25 @@
                     <td>{{ item.contact_phone_number }}</td>
                     <td>{{ item.pedal_partner_name }}</td>
                     <td>{{ item.shop_location }}</td>
-                    <td class="fw-bold">{{ item.recipient_name }}</td>
+                    <td class="fw-bold">{{ item.recipient_name or '—' }}</td>
                     <td>{{ item.bike_style_preference }}</td>
                     <td class="text-center">{{ item.age }}</td>
                     <td>{{ item.height }}</td>
-                    <td class="text-success fw-bold">{{ item.date_picked_up }}</td>
+                    <td class="text-success fw-bold" data-sort="{{ item.pickup_date_iso }}">{{ item.date_picked_up }}</td>
+                    <td>{{ item.bike_tag or '' }}</td>
+                    <td class="text-wrap" style="min-width: 180px; max-width: 300px;">{{ item.notes or '' }}</td>
+                    <td>
+                        <details {% if search_query %}open{% endif %}>
+                            <summary>Order details</summary>
+                            <dl class="small mb-0 text-wrap" style="min-width: 180px;">
+                                <dt>Choice 1 / Choice 2</dt><dd>{{ item.bike_type_first_choice or '—' }} / {{ item.bike_type_second_choice or '—' }}</dd>
+                                <dt>Last updated</dt><dd>{{ item.last_updated_date or '—' }} by {{ item.last_updated_by or '—' }}</dd>
+                                <dt>Previous status</dt><dd>{{ item.last_status or '—' }}</dd>
+                                <dt>Linked order ID</dt><dd>{{ item.linked_order_id or '—' }}</dd>
+                                <dt>Contact / Recipient / Partner IDs</dt><dd>{{ item.contact_id or '—' }} / {{ item.recipient_id or '—' }} / {{ item.pedal_partner_id or '—' }}</dd>
+                            </dl>
+                        </details>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -90,11 +117,15 @@
 <script>
     $(document).ready(function() {
         $('#explorerTable').DataTable({
+            // Keep all navigation above the table, outside its horizontal scroll area.
+            dom: '<"explorer-table-controls d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3"<"d-flex flex-wrap align-items-center gap-3"li>p><"table-responsive"t>',
             pageLength: 50, // Display 50 rows per page by default
-            order: [[0, 'desc']], // Sort by Order Date descending automatically
+            searching: false, // The shared search covers all fields before pagination.
+            order: [[1, 'desc']], // Sort ISO order dates, across years.
+            columnDefs: [{ targets: -1, orderable: false }],
             language: {
-                search: "🔍 Search Database:",
-                lengthMenu: "Show _MENU_ records per page"
+                lengthMenu: "Show _MENU_ records per page",
+                emptyTable: "No orders match these filters."
             }
         });
     });

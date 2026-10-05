@@ -16,26 +16,26 @@
         border: 1px solid #000;
         border-bottom: none;
         margin-right: 2px;
-        opacity: 0.6;
+        opacity: 1;
         transition: 0.3s;
     }
-    .nav-tabs .nav-link.active { opacity: 1; font-weight: bold; }
+    .nav-tabs .nav-link.active { font-weight: bold; box-shadow: inset 0 -4px 0 #202521; }
     
     /* Individual Tab Colors */
-    #tab-open { background-color: #008000; }
-    #tab-contacted { background-color: #17a2b8; } 
-    #tab-completed { background-color: #80ff80; color: black !important; }
-    #tab-cancelled { background-color: #dc3545; }
-    #tab-all { background-color: #ffb347; color: black !important; }
+    #tab-open { background-color: #edf2ed; color: #202521 !important; }
+    #tab-contacted { background-color: #e2eef3; color: #202521 !important; }
+    #tab-completed { background-color: #e0eddf; color: black !important; }
+    #tab-cancelled { background-color: #f4e4e4; color: #202521 !important; }
+    #tab-all { background-color: #f2eddd; color: black !important; }
     
     /* =========================================
        NESTED TABLE STYLES
        ========================================= */
-    .master-header th { background-color: #b3b3b3 !important; color: #000; border-bottom: 2px dashed #000; }
-    .child-header th { background-color: #cccccc !important; color: #000; font-size: 1.1rem; }
+    .master-header th { background-color: #eef0eb !important; color: #000; border-bottom: 2px dashed #000; }
+    .child-header th { background-color: #f5f6f2 !important; color: #000; font-size: 1.1rem; }
     
     .cursor-pointer { cursor: pointer; }
-    .child-table-wrapper { background-color: #fffaf0; padding: 10px; border: 1px solid #000; border-top: none; }
+    .child-table-wrapper { background-color: #fff; padding: 10px; border: 1px solid #000; border-top: none; }
 
     /* Visual Arrow Toggle Animation for expanded rows */
     .toggle-icon::before {
@@ -46,16 +46,8 @@
         font-size: 0.85em;
         transition: transform 0.2s ease;
     }
-    tr:not(.collapsed) .toggle-icon::before { transform: rotate(90deg); color: #000; }
+    .order-toggle:not(.collapsed) .toggle-icon::before { transform: rotate(90deg); color: #000; }
 
-    /* Soft Amber Highlight for Pedal Partner Rows 
-       Targeting the <td> ensures Bootstrap 5 doesn't overwrite it */
-    tr.pp-highlight > td {
-        background-color: #fff3cd !important;
-    }
-    tr.pp-highlight:hover > td {
-        background-color: #ffe8a1 !important;
-    }
 </style>
 
 <!-- =========================================
@@ -71,52 +63,66 @@
         <th class="text-center">Order Date</th>
         <th>Order Type</th>
         <th>Shop Name</th>
-        <th class="text-center">Total Bikes</th>
+        <th class="text-center">{{ "Matching Bikes" if filters_active else "Total Bikes" }}</th>
     </tr>
 </thead>
 {% endmacro %}
 
+{% macro desk_return_fields() %}
+<input type="hidden" name="return_q" value="{{ search_query }}">
+<input type="hidden" name="return_order_type" value="{{ selected_order_type }}">
+<input type="hidden" name="return_status" value="{{ active_tab }}">
+<input type="hidden" name="return_page" value="{{ pagination.page }}">
+{% endmacro %}
 
-<!-- PAGE HEADER & LEGEND -->
-<div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-3 mt-3 pb-2 border-bottom border-dark">
-    <!-- Updated Page Header -->
-    <h1 class="chalk-header fw-bold mb-2 mb-md-0 border-0 p-0">My Desk</h1>
-    
-    <!-- Clean Color Swatch Legend -->
-    <div class="d-flex align-items-center fs-5">
-        <span class="d-inline-block border border-dark me-2" style="width: 22px; height: 22px; background-color: #fff3cd; border-radius: 4px;"></span>
-        <span class="fw-bold text-dark">= Pedal Partner Orders</span>
-    </div>
+
+<!-- PAGE HEADER -->
+<div class="mb-3 mt-3 pb-2 border-bottom border-dark">
+    <h1 class="chalk-header fw-bold mb-0 border-0 p-0">My Desk</h1>
 </div>
 
+{% include '_order_filters.html' %}
+
 <!-- TAB BUTTONS -->
-<ul class="nav nav-tabs border-0" id="orderTabs" role="tablist">
-    <li class="nav-item" role="presentation">
-        <button class="nav-link active px-4 rounded-0" id="tab-open" data-bs-toggle="tab" data-bs-target="#open" type="button" role="tab">
-            Open ({{ open_orders | sum(attribute='total_bikes') }})
-        </button>
+<ul class="nav nav-tabs border-0" id="orderTabs">
+    <li class="nav-item">
+        <a class="nav-link {% if active_tab == 'open' %}active{% endif %} px-4 rounded-0" id="tab-open" href="{{ url_for('index', q=search_query, order_type=selected_order_type, status='open') }}" {% if active_tab == 'open' %}aria-current="page"{% endif %}>
+            Open ({{ status_counts['open'] }})
+        </a>
     </li>
-    <li class="nav-item" role="presentation">
-        <button class="nav-link px-4 rounded-0" id="tab-contacted" data-bs-toggle="tab" data-bs-target="#contacted" type="button" role="tab">
-            Contacted ({{ contacted_orders | sum(attribute='total_bikes') }})
-        </button>
+    <li class="nav-item">
+        <a class="nav-link {% if active_tab == 'contacted' %}active{% endif %} px-4 rounded-0" id="tab-contacted" href="{{ url_for('index', q=search_query, order_type=selected_order_type, status='contacted') }}" {% if active_tab == 'contacted' %}aria-current="page"{% endif %}>
+            Contacted ({{ status_counts['contacted'] }})
+        </a>
     </li>
-    <li class="nav-item" role="presentation">
-        <button class="nav-link px-4 rounded-0" id="tab-completed" data-bs-toggle="tab" data-bs-target="#completed" type="button" role="tab">
-            Completed ({{ completed_orders | sum(attribute='total_bikes') }})
-        </button>
+    <li class="nav-item">
+        <a class="nav-link {% if active_tab == 'completed' %}active{% endif %} px-4 rounded-0" id="tab-completed" href="{{ url_for('index', q=search_query, order_type=selected_order_type, status='completed') }}" {% if active_tab == 'completed' %}aria-current="page"{% endif %}>
+            Completed ({{ status_counts['completed'] }})
+        </a>
     </li>
-    <li class="nav-item" role="presentation">
-        <button class="nav-link px-4 rounded-0" id="tab-cancelled" data-bs-toggle="tab" data-bs-target="#cancelled" type="button" role="tab">
-            Cancelled ({{ cancelled_orders | sum(attribute='total_bikes') }})
-        </button>
+    <li class="nav-item">
+        <a class="nav-link {% if active_tab == 'cancelled' %}active{% endif %} px-4 rounded-0" id="tab-cancelled" href="{{ url_for('index', q=search_query, order_type=selected_order_type, status='cancelled') }}" {% if active_tab == 'cancelled' %}aria-current="page"{% endif %}>
+            Cancelled ({{ status_counts['cancelled'] }})
+        </a>
     </li>
-    <li class="nav-item" role="presentation">
-        <button class="nav-link px-4 rounded-0" id="tab-all" data-bs-toggle="tab" data-bs-target="#all" type="button" role="tab">
-            All ({{ all_orders | sum(attribute='total_bikes') }})
-        </button>
+    <li class="nav-item">
+        <a class="nav-link {% if active_tab == 'all' %}active{% endif %} px-4 rounded-0" id="tab-all" href="{{ url_for('index', q=search_query, order_type=selected_order_type, status='all') }}" {% if active_tab == 'all' %}aria-current="page"{% endif %}>
+            All ({{ status_counts['all'] }})
+        </a>
     </li>
 </ul>
+
+<p id="order-action-feedback" class="alert alert-info my-3" role="status" aria-live="polite" hidden></p>
+{% if pagination.total %}
+<nav class="d-flex flex-wrap justify-content-between align-items-center gap-2 py-3" aria-label="Order group pages">
+    <span>Order groups {{ pagination.first }}–{{ pagination.last }} of {{ pagination.total }} <span class="text-muted small">· {{ status_counts[active_tab] }} bike requests in this status</span></span>
+    <div class="d-flex align-items-center gap-2">
+        {% if pagination.page > 1 %}<a class="btn btn-outline-dark btn-sm" href="{{ url_for('index', q=search_query, order_type=selected_order_type, status=active_tab, page=pagination.page - 1) }}">← Previous</a>{% endif %}
+        <span>Page {{ pagination.page }} of {{ pagination.pages }}</span>
+        {% if pagination.page < pagination.pages %}<a class="btn btn-outline-dark btn-sm" href="{{ url_for('index', q=search_query, order_type=selected_order_type, status=active_tab, page=pagination.page + 1) }}">Next →</a>{% endif %}
+    </div>
+</nav>
+{% endif %}
 
 <!-- TAB CONTENT CONTAINER -->
 <div class="tab-content" id="orderTabsContent">
@@ -124,32 +130,31 @@
     <!-- =========================================
          TAB 1: OPEN ORDERS
          ========================================= -->
-    <div class="tab-pane fade show active" id="open" role="tabpanel">
+    <div class="tab-pane fade {% if active_tab == 'open' %}show active{% endif %}" id="open" aria-labelledby="tab-open">
         <div class="table-responsive">
             <table class="table table-bordered mb-0">
                 {{ master_table_header() }}
                 <tbody id="tbodyOpen">
                     {% for order in open_orders %}
                     <!-- Master Row with Singular Value Check -->
-                    <tr class="cursor-pointer {% if order.order_type == 'Pedal Partner' %}pp-highlight{% else %}bg-light{% endif %} collapsed" data-bs-toggle="collapse" data-bs-target="#collapseOpen{{ loop.index }}">
-                        <td class="fw-bold"><span class="toggle-icon"></span>{{ order.contact_name }}</td>
-                        <td>{{ order.contact_phone }}</td>
-                        <td>{{ order.contact_email }}</td>
-                        <td>{{ order.pedal_partner }}</td>
+                    <tr class="bg-light"><td class="fw-bold"><button type="button" class="order-toggle {% if not search_query %}collapsed{% endif %}" data-bs-toggle="collapse" data-bs-target="#collapseOpen{{ loop.index }}" aria-controls="collapseOpen{{ loop.index }}" aria-expanded="{{ 'true' if search_query else 'false' }}"><span class="toggle-icon" aria-hidden="true"></span>{{ order.contact_name or '—' }}</button></td>
+                        <td>{{ order.contact_phone or '—' }}</td>
+                        <td>{{ order.contact_email or '—' }}</td>
+                        <td>{{ order.pedal_partner or '—' }}</td>
                         <td class="text-center">{{ order.order_date }}</td>
                         <td>{{ order.order_type }}</td>
-                        <td>{{ order.shop_name }}</td>
+                        <td>{{ order.shop_name or '—' }}</td>
                         <td class="fw-bold text-center fs-4">{{ order.total_bikes }}</td>
                     </tr>
                     <!-- Child Row (Hidden until clicked) -->
                     <tr>
                         <td colspan="8" class="p-0 border-0">
-                            <div class="collapse" id="collapseOpen{{ loop.index }}">
+                            <div class="collapse {% if search_query %}show{% endif %}" id="collapseOpen{{ loop.index }}">
                                 <div class="child-table-wrapper">
                                     <table class="table table-sm table-bordered mb-0 bg-white text-nowrap">
                                         <thead class="child-header">
                                             <tr>
-                                                <th>Action</th><th>Recipient Name</th><th>Bike Style</th>
+                                                <th>Action</th><th scope="col">Order ID</th><th>Recipient Name</th><th>Bike Style</th>
                                                 <th>Age</th><th>Height</th><th>Choice 1</th><th>Choice 2</th><th>Notes</th>
                                             </tr>
                                         </thead>
@@ -159,16 +164,19 @@
                                                 <td class="d-flex gap-2 border-0">
                                                     <!-- Contact Button -->
                                                     <form action="{{ url_for('update_status', order_id=recipient.order_id) }}" method="POST" class="mb-0">
+                                                        {{ desk_return_fields() }}
                                                         <input type="hidden" name="new_status" value="Contacted">
                                                         <button type="submit" class="btn btn-sm btn-info border border-dark fw-bold">📞 Contact</button>
                                                     </form>
                                                     <!-- Cancel Button -->
                                                     <form action="{{ url_for('update_status', order_id=recipient.order_id) }}" method="POST" class="mb-0">
+                                                        {{ desk_return_fields() }}
                                                         <input type="hidden" name="new_status" value="Cancelled">
-                                                        <button type="submit" class="btn btn-sm btn-danger border border-dark fw-bold" onclick="return confirm('Cancel this order?')">🚫 Cancel</button>
+                                                        <button type="submit" class="btn btn-sm btn-danger border border-dark fw-bold" data-confirm="Cancel this order?" data-pending-label="Cancelling…">🚫 Cancel</button>
                                                     </form>
                                                 </td>
-                                                <td class="fw-bold align-middle">{{ recipient.recipient_name }}</td>
+                                                <td class="align-middle text-nowrap"><a class="small text-nowrap" href="{{ url_for('explorer', q='#' ~ recipient.order_id) }}" aria-label="View order {{ recipient.order_id }}">#{{ recipient.order_id }}</a></td>
+                                                <td class="fw-bold align-middle">{{ recipient.recipient_name or '—' }}</td>
                                                 <td class="align-middle">{{ recipient.bike_style_preference }}</td>
                                                 <td class="align-middle text-center">{{ recipient.age }}</td>
                                                 <td class="align-middle text-center">{{ recipient.height }}</td>
@@ -183,6 +191,8 @@
                             </div>
                         </td>
                     </tr>
+                    {% else %}
+                    <tr><td colspan="8" class="text-center text-muted py-4">No {{ 'matching ' if filters_active else '' }}orders in this status. Check All or adjust your filters.</td></tr>
                     {% endfor %}
                 </tbody>
             </table>
@@ -192,30 +202,29 @@
     <!-- =========================================
          TAB 2: CONTACTED ORDERS
          ========================================= -->
-    <div class="tab-pane fade" id="contacted" role="tabpanel">
+    <div class="tab-pane fade {% if active_tab == 'contacted' %}show active{% endif %}" id="contacted" aria-labelledby="tab-contacted">
         <div class="table-responsive">
             <table class="table table-bordered mb-0">
                 {{ master_table_header() }}
                 <tbody id="tbodyContacted">
                     {% for order in contacted_orders %}
-                    <tr class="cursor-pointer {% if order.order_type == 'Pedal Partner' %}pp-highlight{% else %}bg-light{% endif %} collapsed" data-bs-toggle="collapse" data-bs-target="#collapseContacted{{ loop.index }}">
-                        <td class="fw-bold"><span class="toggle-icon"></span>{{ order.contact_name }}</td>
-                        <td>{{ order.contact_phone }}</td>
-                        <td>{{ order.contact_email }}</td>
-                        <td>{{ order.pedal_partner }}</td>
+                    <tr class="bg-light"><td class="fw-bold"><button type="button" class="order-toggle {% if not search_query %}collapsed{% endif %}" data-bs-toggle="collapse" data-bs-target="#collapseContacted{{ loop.index }}" aria-controls="collapseContacted{{ loop.index }}" aria-expanded="{{ 'true' if search_query else 'false' }}"><span class="toggle-icon" aria-hidden="true"></span>{{ order.contact_name or '—' }}</button></td>
+                        <td>{{ order.contact_phone or '—' }}</td>
+                        <td>{{ order.contact_email or '—' }}</td>
+                        <td>{{ order.pedal_partner or '—' }}</td>
                         <td class="text-center">{{ order.order_date }}</td>
                         <td>{{ order.order_type }}</td>
-                        <td>{{ order.shop_name }}</td>
+                        <td>{{ order.shop_name or '—' }}</td>
                         <td class="fw-bold text-center fs-4">{{ order.total_bikes }}</td>
                     </tr>
                     <tr>
                         <td colspan="8" class="p-0 border-0">
-                            <div class="collapse" id="collapseContacted{{ loop.index }}">
+                            <div class="collapse {% if search_query %}show{% endif %}" id="collapseContacted{{ loop.index }}">
                                 <div class="child-table-wrapper">
                                     <table class="table table-sm table-bordered mb-0 bg-white text-nowrap">
                                         <thead class="child-header">
                                             <tr>
-                                                <th>Action</th><th>Recipient Name</th><th>Bike Style</th>
+                                                <th>Action</th><th scope="col">Order ID</th><th>Recipient Name</th><th>Bike Style</th>
                                                 <th>Age</th><th>Height</th><th>Choice 1</th><th>Choice 2</th><th>Notes</th>
                                             </tr>
                                         </thead>
@@ -226,6 +235,7 @@
                                                     <div class="d-flex align-items-center gap-2">
                                                         <!-- Fulfill Form -->
                                                         <form action="{{ url_for('fulfill', order_id=recipient.order_id) }}" method="POST" class="d-flex align-items-center mb-0 gap-1">
+                                                        {{ desk_return_fields() }}
                                                             <div class="d-flex flex-column w-75">
                                                                 <input type="date" name="date_picked_up" class="form-control form-control-sm mb-1 bg-white" value="{{ today }}" required>
                                                                 <input type="number" name="bike_tag" class="form-control form-control-sm bg-white" placeholder="Tag #" required>
@@ -234,16 +244,18 @@
                                                         </form>
                                                         <!-- Cancel Form -->
                                                         <form action="{{ url_for('update_status', order_id=recipient.order_id) }}" method="POST" class="mb-0 h-100">
+                                                        {{ desk_return_fields() }}
                                                             <input type="hidden" name="new_status" value="Cancelled">
-                                                            <button type="submit" class="btn btn-sm btn-danger border border-dark h-100" onclick="return confirm('Cancel this order?')">🚫</button>
+                                                            <button type="submit" class="btn btn-sm btn-danger border border-dark h-100" data-confirm="Cancel this order?" data-pending-label="Cancelling…">🚫</button>
                                                         </form>
                                                     </div>
-                                                </td>
-                                                <td class="fw-bold align-middle">
-                                                    {{ recipient.recipient_name }}
                                                     {% if not order.pedal_partner %}
                                                         <br><span class="badge bg-warning text-dark mt-1 border border-dark shadow-sm" style="font-size: 0.8rem;">⚠️ 1 Week Limit</span>
                                                     {% endif %}
+                                                </td>
+                                                <td class="align-middle text-nowrap"><a class="small text-nowrap" href="{{ url_for('explorer', q='#' ~ recipient.order_id) }}" aria-label="View order {{ recipient.order_id }}">#{{ recipient.order_id }}</a></td>
+                                                <td class="fw-bold align-middle">
+                                                    {{ recipient.recipient_name or '—' }}
                                                 </td>
                                                 <td class="align-middle">{{ recipient.bike_style_preference }}</td>
                                                 <td class="align-middle text-center">{{ recipient.age }}</td>
@@ -259,6 +271,8 @@
                             </div>
                         </td>
                     </tr>
+                    {% else %}
+                    <tr><td colspan="8" class="text-center text-muted py-4">No {{ 'matching ' if filters_active else '' }}orders in this status. Check All or adjust your filters.</td></tr>
                     {% endfor %}
                 </tbody>
             </table>
@@ -268,30 +282,29 @@
     <!-- =========================================
          TAB 3: COMPLETED ORDERS
          ========================================= -->
-    <div class="tab-pane fade" id="completed" role="tabpanel">
+    <div class="tab-pane fade {% if active_tab == 'completed' %}show active{% endif %}" id="completed" aria-labelledby="tab-completed">
         <div class="table-responsive">
             <table class="table table-bordered mb-0">
                 {{ master_table_header() }}
                 <tbody id="tbodyCompleted">
                     {% for order in completed_orders %}
-                    <tr class="cursor-pointer {% if order.order_type == 'Pedal Partner' %}pp-highlight{% else %}bg-light{% endif %} collapsed" data-bs-toggle="collapse" data-bs-target="#collapseComp{{ loop.index }}">
-                        <td class="fw-bold"><span class="toggle-icon"></span>{{ order.contact_name }}</td>
-                        <td>{{ order.contact_phone }}</td>
-                        <td>{{ order.contact_email }}</td>
-                        <td>{{ order.pedal_partner }}</td>
+                    <tr class="bg-light"><td class="fw-bold"><button type="button" class="order-toggle {% if not search_query %}collapsed{% endif %}" data-bs-toggle="collapse" data-bs-target="#collapseComp{{ loop.index }}" aria-controls="collapseComp{{ loop.index }}" aria-expanded="{{ 'true' if search_query else 'false' }}"><span class="toggle-icon" aria-hidden="true"></span>{{ order.contact_name or '—' }}</button></td>
+                        <td>{{ order.contact_phone or '—' }}</td>
+                        <td>{{ order.contact_email or '—' }}</td>
+                        <td>{{ order.pedal_partner or '—' }}</td>
                         <td class="text-center">{{ order.order_date }}</td>
                         <td>{{ order.order_type }}</td>
-                        <td>{{ order.shop_name }}</td>
+                        <td>{{ order.shop_name or '—' }}</td>
                         <td class="fw-bold text-center fs-4">{{ order.total_bikes }}</td>
                     </tr>
                     <tr>
                         <td colspan="8" class="p-0 border-0">
-                            <div class="collapse" id="collapseComp{{ loop.index }}">
+                            <div class="collapse {% if search_query %}show{% endif %}" id="collapseComp{{ loop.index }}">
                                 <div class="child-table-wrapper">
                                     <table class="table table-sm table-bordered mb-0 bg-white">
                                         <thead class="child-header">
                                             <tr>
-                                                <th>Pickup Date</th><th>Bike Tag #</th><th>Recipient Name</th>
+                                                <th>Pickup Date</th><th>Bike Tag #</th><th scope="col">Order ID</th><th>Recipient Name</th>
                                                 <th>Bike Style</th><th>Age</th><th>Height</th>
                                             </tr>
                                         </thead>
@@ -300,7 +313,8 @@
                                             <tr>
                                                 <td class="fw-bold text-success">{{ recipient.date_picked_up }}</td>
                                                 <td class="fw-bold text-primary">{{ recipient.bike_tag }}</td>
-                                                <td class="fw-bold">{{ recipient.recipient_name }}</td>
+                                                <td class="align-middle text-nowrap"><a class="small text-nowrap" href="{{ url_for('explorer', q='#' ~ recipient.order_id) }}" aria-label="View order {{ recipient.order_id }}">#{{ recipient.order_id }}</a></td>
+                                                <td class="fw-bold">{{ recipient.recipient_name or '—' }}</td>
                                                 <td>{{ recipient.bike_style_preference }}</td>
                                                 <td class="text-center">{{ recipient.age }}</td>
                                                 <td class="text-center">{{ recipient.height }}</td>
@@ -312,6 +326,8 @@
                             </div>
                         </td>
                     </tr>
+                    {% else %}
+                    <tr><td colspan="8" class="text-center text-muted py-4">No {{ 'matching ' if filters_active else '' }}orders in this status. Check All or adjust your filters.</td></tr>
                     {% endfor %}
                 </tbody>
             </table>
@@ -321,30 +337,29 @@
     <!-- =========================================
          TAB 4: CANCELLED ORDERS
          ========================================= -->
-    <div class="tab-pane fade" id="cancelled" role="tabpanel">
+    <div class="tab-pane fade {% if active_tab == 'cancelled' %}show active{% endif %}" id="cancelled" aria-labelledby="tab-cancelled">
         <div class="table-responsive">
             <table class="table table-bordered mb-0">
                 {{ master_table_header() }}
                 <tbody id="tbodyCancelled">
                     {% for order in cancelled_orders %}
-                    <tr class="cursor-pointer {% if order.order_type == 'Pedal Partner' %}pp-highlight{% else %}bg-light{% endif %} collapsed" data-bs-toggle="collapse" data-bs-target="#collapseCancelled{{ loop.index }}">
-                        <td class="fw-bold text-danger"><span class="toggle-icon"></span>{{ order.contact_name }}</td>
-                        <td>{{ order.contact_phone }}</td>
-                        <td>{{ order.contact_email }}</td>
-                        <td>{{ order.pedal_partner }}</td>
+                    <tr class="bg-light"><td class="fw-bold text-danger"><button type="button" class="order-toggle {% if not search_query %}collapsed{% endif %}" data-bs-toggle="collapse" data-bs-target="#collapseCancelled{{ loop.index }}" aria-controls="collapseCancelled{{ loop.index }}" aria-expanded="{{ 'true' if search_query else 'false' }}"><span class="toggle-icon" aria-hidden="true"></span>{{ order.contact_name or '—' }}</button></td>
+                        <td>{{ order.contact_phone or '—' }}</td>
+                        <td>{{ order.contact_email or '—' }}</td>
+                        <td>{{ order.pedal_partner or '—' }}</td>
                         <td class="text-center">{{ order.order_date }}</td>
                         <td>{{ order.order_type }}</td>
-                        <td>{{ order.shop_name }}</td>
+                        <td>{{ order.shop_name or '—' }}</td>
                         <td class="fw-bold text-center fs-4">{{ order.total_bikes }}</td>
                     </tr>
                     <tr>
                         <td colspan="8" class="p-0 border-0">
-                            <div class="collapse" id="collapseCancelled{{ loop.index }}">
+                            <div class="collapse {% if search_query %}show{% endif %}" id="collapseCancelled{{ loop.index }}">
                                 <div class="child-table-wrapper">
                                     <table class="table table-sm table-bordered mb-0 bg-white">
                                         <thead class="child-header">
                                             <tr>
-                                                <th>Action</th><th>Recipient Name</th><th>Bike Style</th>
+                                                <th>Action</th><th scope="col">Order ID</th><th>Recipient Name</th><th>Bike Style</th>
                                                 <th>Age</th><th>Height</th><th>Notes</th>
                                             </tr>
                                         </thead>
@@ -354,11 +369,13 @@
                                                 <td>
                                                     <!-- Restore Button -->
                                                     <form action="{{ url_for('update_status', order_id=recipient.order_id) }}" method="POST" class="mb-0">
+                                                        {{ desk_return_fields() }}
                                                         <input type="hidden" name="new_status" value="Open">
                                                         <button type="submit" class="btn btn-sm btn-warning border border-dark fw-bold">♻️ Restore to Open</button>
                                                     </form>
                                                 </td>
-                                                <td class="fw-bold">{{ recipient.recipient_name }}</td>
+                                                <td class="align-middle text-nowrap"><a class="small text-nowrap" href="{{ url_for('explorer', q='#' ~ recipient.order_id) }}" aria-label="View order {{ recipient.order_id }}">#{{ recipient.order_id }}</a></td>
+                                                <td class="fw-bold">{{ recipient.recipient_name or '—' }}</td>
                                                 <td>{{ recipient.bike_style_preference }}</td>
                                                 <td class="text-center">{{ recipient.age }}</td>
                                                 <td class="text-center">{{ recipient.height }}</td>
@@ -371,6 +388,8 @@
                             </div>
                         </td>
                     </tr>
+                    {% else %}
+                    <tr><td colspan="8" class="text-center text-muted py-4">No {{ 'matching ' if filters_active else '' }}orders in this status. Check All or adjust your filters.</td></tr>
                     {% endfor %}
                 </tbody>
             </table>
@@ -380,51 +399,55 @@
     <!-- =========================================
          TAB 5: ALL ORDERS (Historical View)
          ========================================= -->
-    <div class="tab-pane fade" id="all" role="tabpanel">
+    <div class="tab-pane fade {% if active_tab == 'all' %}show active{% endif %}" id="all" aria-labelledby="tab-all">
         <div class="table-responsive">
             <table class="table table-bordered mb-0">
                 {{ master_table_header() }}
                 <tbody id="tbodyAll">
                     {% for order in all_orders %}
-                    <tr class="cursor-pointer {% if order.order_type == 'Pedal Partner' %}pp-highlight{% else %}bg-light{% endif %} collapsed" data-bs-toggle="collapse" data-bs-target="#collapseAll{{ loop.index }}">
-                        <td class="fw-bold"><span class="toggle-icon"></span>{{ order.contact_name }}</td>
-                        <td>{{ order.contact_phone }}</td>
-                        <td>{{ order.contact_email }}</td>
-                        <td>{{ order.pedal_partner }}</td>
+                    <tr class="bg-light"><td class="fw-bold"><button type="button" class="order-toggle {% if not search_query %}collapsed{% endif %}" data-bs-toggle="collapse" data-bs-target="#collapseAll{{ loop.index }}" aria-controls="collapseAll{{ loop.index }}" aria-expanded="{{ 'true' if search_query else 'false' }}"><span class="toggle-icon" aria-hidden="true"></span>{{ order.contact_name or '—' }}</button></td>
+                        <td>{{ order.contact_phone or '—' }}</td>
+                        <td>{{ order.contact_email or '—' }}</td>
+                        <td>{{ order.pedal_partner or '—' }}</td>
                         <td class="text-center">{{ order.order_date }}</td>
                         <td>{{ order.order_type }}</td>
-                        <td>{{ order.shop_name }}</td>
+                        <td>{{ order.shop_name or '—' }}</td>
                         <td class="fw-bold text-center fs-4">{{ order.total_bikes }}</td>
                     </tr>
                     <tr>
                         <td colspan="8" class="p-0 border-0">
-                            <div class="collapse" id="collapseAll{{ loop.index }}">
+                            <div class="collapse {% if search_query %}show{% endif %}" id="collapseAll{{ loop.index }}">
                                 <div class="child-table-wrapper">
                                     <table class="table table-sm table-bordered mb-0 bg-white">
                                         <thead class="child-header">
                                             <tr>
-                                                <th>Current Status</th><th>Recipient Name</th><th>Bike Style</th>
-                                                <th>Age</th><th>Height</th>
+                                                <th>Current Status</th><th scope="col">Order ID</th><th>Recipient Name</th><th>Bike Style</th>
+                                                <th>Age</th><th>Height</th><th>Bike Tag</th><th>Choice 1</th><th>Choice 2</th><th>Notes</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             {% for recipient in order.recipients %}
                                             <tr>
                                                 <td class="fw-bold">
-                                                    {% if recipient.status == 'Completed' %}
+                                                    {% if recipient.order_status == 'Completed' %}
                                                         <span class="badge bg-success border border-dark fs-6">Picked Up: {{ recipient.date_picked_up }}</span>
-                                                    {% elif recipient.status == 'Contacted' %}
+                                                    {% elif recipient.order_status == 'Contacted' %}
                                                         <span class="badge bg-info text-dark border border-dark fs-6">Contacted</span>
-                                                    {% elif recipient.status == 'Cancelled' %}
+                                                    {% elif recipient.order_status == 'Cancelled' %}
                                                         <span class="badge bg-danger border border-dark fs-6">Cancelled</span>
                                                     {% else %}
                                                         <span class="badge bg-secondary border border-dark fs-6">Open</span>
                                                     {% endif %}
                                                 </td>
-                                                <td class="fw-bold">{{ recipient.recipient_name }}</td>
+                                                <td class="align-middle text-nowrap"><a class="small text-nowrap" href="{{ url_for('explorer', q='#' ~ recipient.order_id) }}" aria-label="View order {{ recipient.order_id }}">#{{ recipient.order_id }}</a></td>
+                                                <td class="fw-bold">{{ recipient.recipient_name or '—' }}</td>
                                                 <td>{{ recipient.bike_style_preference }}</td>
                                                 <td class="text-center">{{ recipient.age }}</td>
                                                 <td class="text-center">{{ recipient.height }}</td>
+                                                <td>{{ recipient.bike_tag or '' }}</td>
+                                                <td>{{ recipient.bike_type_first_choice or '' }}</td>
+                                                <td>{{ recipient.bike_type_second_choice or '' }}</td>
+                                                <td class="text-wrap" style="min-width: 180px;">{{ recipient.notes or '' }}</td>
                                             </tr>
                                             {% endfor %}
                                         </tbody>
@@ -433,6 +456,8 @@
                             </div>
                         </td>
                     </tr>
+                    {% else %}
+                    <tr><td colspan="8" class="text-center text-muted py-4">No {{ 'matching ' if filters_active else '' }}orders in this status. Check All or adjust your filters.</td></tr>
                     {% endfor %}
                 </tbody>
             </table>
@@ -446,7 +471,7 @@
      ========================================= -->
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const allCollapses = document.querySelectorAll('.collapse');
+        const allCollapses = document.querySelectorAll('#orderTabsContent .collapse');
         allCollapses.forEach(collapse => {
             collapse.addEventListener('show.bs.collapse', function () {
                 const tbody = this.closest('tbody');
@@ -464,5 +489,7 @@
         });
     });
 </script>
+
+<script src="{{ url_for('static', filename='js/order_actions.js') }}" defer></script>
 
 {% endblock %}

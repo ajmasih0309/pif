@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block title %}Requester Links - PIF Portal{% endblock %}
+{% block content %}
+<h1 class="chalk-header fw-bold">Requester Links</h1>
+<p>Create a link for one completed request. A request can include several recipients. Opening a link does not use it.</p>
+{% if created_link %}
+<div class="marker-panel mb-4" role="status">
+    <h2 class="fs-3">Your link is ready</h2>
+    <p>Copy it now and share it with the requester. For privacy, the full link is only shown here after creation.</p>
+    <label for="created-link" class="form-label">Requester link</label>
+    <div class="d-flex flex-wrap gap-2"><input class="form-control flex-grow-1" style="flex-basis: 280px; width:auto" id="created-link" value="{{ created_link }}" readonly><button type="button" class="btn btn-dark" id="copy-link">Copy link</button></div>
+    <p id="copy-feedback" class="small mb-0 mt-2" aria-live="polite"></p>
+</div>
+{% endif %}
+{% if errors %}<div class="alert alert-danger" role="alert"><strong>Please check the link settings.</strong>{% for message in errors.values() %}<div>{{ message }}</div>{% endfor %}</div>{% endif %}
+<form method="post" class="marker-panel mb-4" id="create-link-form">
+    <input type="hidden" name="form_token" value="{{ form_token }}">
+    <h2 class="fs-3">Create a requester link</h2>
+    <div class="row g-3">
+        <div class="col-md-6"><label class="form-label" for="label">Label for staff (optional)</label><input class="form-control" id="label" name="label" maxlength="100" placeholder="For example: Smith family" value="{{ values.label }}"></div>
+        <div class="col-md-6"><label class="form-label" for="shop_name">Bike shop</label><select class="form-select" name="shop_name" id="shop_name" required><option value="">Choose a shop</option>{% for shop in shops %}<option value="{{ shop.shop_name }}" {% if shop.shop_name == values.shop_name %}selected{% endif %}>{{ shop.shop_location or shop.shop_name }}</option>{% endfor %}</select></div>
+        <div class="col-md-6"><label class="form-label" for="order_type">Order type</label><select class="form-select" name="order_type" id="order_type" required>{% for kind in order_types %}<option {% if kind == values.order_type %}selected{% endif %}>{{ kind }}</option>{% endfor %}</select></div>
+        <div class="col-md-6"><label class="form-label" for="pedal_partner_name">Pedal Partner (required for partner orders)</label><input class="form-control" name="pedal_partner_name" id="pedal_partner_name" maxlength="150" value="{{ values.pedal_partner_name }}"></div>
+        <div class="col-md-6"><label class="form-label" for="days">Valid for</label><select class="form-select" name="days" id="days">{% for days in ['1','7','14'] %}<option value="{{ days }}" {% if values.days == days %}selected{% endif %}>{{ days }} day{{ 's' if days != '1' }}</option>{% endfor %}</select></div>
+    </div>
+    <button type="submit" class="btn btn-dark mt-3">Create link</button>
+    <p class="small text-muted mt-2 mb-0">The requester fills in contact and recipient details. These shop and order-type settings stay fixed.</p>
+</form>
+<h2 class="fs-3">Link history</h2>
+<div class="table-responsive"><table class="table bg-white"><thead><tr><th>Link</th><th>Label</th><th>Shop / type</th><th>Status</th><th>Expires</th><th>Action</th></tr></thead><tbody>
+{% for invite in invites %}<tr><td>#{{ invite.invite_id }}</td><td>{{ invite.label or '—' }}</td><td>{{ invite.shop_name }} / {{ invite.order_type }}</td><td>{{ invite.state }}</td><td class="data-value">{{ invite.expires_display }}</td><td>{% if invite.state == 'Unused' %}<form method="post" action="{{ url_for('requester_links.revoke', invite_id=invite.invite_id) }}"><input type="hidden" name="form_token" value="{{ revoke_token }}"><button type="submit" class="btn btn-outline-danger btn-sm">Revoke</button></form>{% else %}—{% endif %}</td></tr>
+{% else %}<tr><td colspan="6">No requester links yet.</td></tr>{% endfor %}
+</tbody></table></div>
+<nav class="d-flex gap-3" aria-label="Link history pages">{% if page > 1 %}<a href="{{ url_for('requester_links.manage', page=page-1) }}">← Previous</a>{% endif %}{% if has_next %}<a href="{{ url_for('requester_links.manage', page=page+1) }}">Next →</a>{% endif %}</nav>
+<script src="{{ url_for('static', filename='js/request_links.js') }}" defer></script>
+{% endblock %}

@@ -1,0 +1,50 @@
+<section class="card border-dark shadow-sm mb-4" aria-label="Search and filter orders">
+    <div class="card-body bg-white rounded">
+        <form method="get" action="{{ url_for(request.endpoint) }}" role="search" id="order-search-form">
+            <label for="order-search" class="fw-bold fs-5 mb-1">Search all orders</label>
+            <div class="d-flex flex-wrap gap-2">
+                <input type="search" class="form-control bg-white flex-grow-1" style="flex-basis: 260px; width: auto;"
+                       id="order-search" name="q" value="{{ search_query }}" autocomplete="off"
+                       placeholder="Name, phone, email, bike tag, notes, order ID…" aria-describedby="search-help">
+                <button type="submit" class="btn btn-dark px-4">Search</button>
+                {% if filters_active %}
+                <a class="btn btn-outline-secondary" href="{{ url_for(request.endpoint) }}">Clear all</a>
+                {% endif %}
+            </div>
+            <div id="search-help" class="text-muted small mt-1">
+                Search every status and all order details. Combine words to narrow results, or use #123 for an exact order ID.
+            </div>
+            <fieldset class="mt-3">
+                <legend class="fs-6 fw-bold mb-2">Order type</legend>
+                <div class="d-flex flex-wrap gap-2">
+                    {% for key, label in order_type_options %}
+                    <input class="btn-check" type="radio" name="order_type" id="type-{{ key }}" value="{{ key }}"
+                           {% if selected_order_type == key %}checked{% endif %} onchange="this.form.requestSubmit()">
+                    <label class="btn btn-outline-dark rounded-pill px-3" for="type-{{ key }}">
+                        {{ label }} <span class="badge rounded-pill bg-light text-dark ms-1">{{ type_counts[key] }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+            </fieldset>
+        </form>
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 border-top mt-3 pt-2">
+            <p class="mb-0" role="status">
+                <strong>{{ result_count }}</strong> of {{ total_count }} bike requests
+                {% if search_query %}matching <strong>“{{ search_query }}”</strong>{% endif %}
+                {% if selected_order_type != 'all' %}in <strong>{{ dict(order_type_options)[selected_order_type] }}</strong>{% endif %}.
+                <span class="text-muted small">Type counts cover every status.</span>
+            </p>
+            {% if request.endpoint == 'index' %}
+            <a href="{{ url_for('explorer', q=search_query, order_type=selected_order_type) }}">Explore these results →</a>
+            {% else %}
+            <a href="{{ url_for('index', q=search_query, order_type=selected_order_type, status='all') }}">View on My Desk →</a>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% if result_count == 0 %}
+<div class="alert alert-light border text-center py-4" role="status">
+    <strong>No matching orders.</strong> Try fewer words, choose All, or
+    <a href="{{ url_for(request.endpoint) }}">clear the filters</a>.
+</div>
+{% endif %}
