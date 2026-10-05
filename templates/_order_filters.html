@@ -1,6 +1,8 @@
 <section class="card border-dark shadow-sm mb-4" aria-label="Search and filter orders">
     <div class="card-body bg-white rounded">
-        <form method="get" action="{{ url_for(request.endpoint) }}" role="search" id="order-search-form">
+        <details class="order-search-panel" {% if filters_active %}open{% endif %}>
+        <summary class="fw-bold fs-5">Search &amp; filter orders{% if filters_active %} <span class="badge bg-dark">Filters active</span>{% endif %}</summary>
+        <form class="mt-3" method="get" action="{{ url_for(request.endpoint) }}" role="search" id="order-search-form">
             <label for="order-search" class="fw-bold fs-5 mb-1">Search all orders</label>
             <div class="d-flex flex-wrap gap-2">
                 <input type="search" class="form-control bg-white flex-grow-1" style="flex-basis: 260px; width: auto;"
@@ -27,12 +29,13 @@
                 </div>
             </fieldset>
         </form>
+        </details>
         <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 border-top mt-3 pt-2">
             <p class="mb-0" role="status">
                 <strong>{{ result_count }}</strong> of {{ total_count }} bike requests
                 {% if search_query %}matching <strong>“{{ search_query }}”</strong>{% endif %}
                 {% if selected_order_type != 'all' %}in <strong>{{ dict(order_type_options)[selected_order_type] }}</strong>{% endif %}.
-                <span class="text-muted small">Type counts cover every status.</span>
+                <span class="text-muted small">Order type counts include Open, Contacted, Completed, and Cancelled requests{% if search_query %} matching your search{% endif %}.</span>
             </p>
             {% if request.endpoint == 'index' %}
             <a href="{{ url_for('explorer', q=search_query, order_type=selected_order_type) }}">Explore these results →</a>

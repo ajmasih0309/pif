@@ -21,3 +21,68 @@ body { background: #fafaf7; color: #202521; }
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { transition: none !important; scroll-behavior: auto !important; }
 }
+
+/* Full-height whiteboard with room for large desktop datasets. */
+body { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; }
+.portal-shell { width: 100%; max-width: 1800px; padding-inline: clamp(1rem, 3vw, 3rem); }
+.portal-content { flex: 1 0 auto; min-width: 0; }
+.portal-footer { margin-top: 3rem; padding: 1.25rem 1rem; background: transparent; }
+.footer-version { color: inherit; text-decoration: underline dotted; text-underline-offset: .2em; }
+.portal-nav { background: #fff; border-bottom: 2px dashed #343b34; }
+.portal-nav .navbar-brand { display: flex; align-items: center; gap: .5rem; font-size: 1.85rem; letter-spacing: .04em; margin-right: 1rem; }
+.portal-nav .nav-link { color: #202521; font-weight: bold; font-size: 1.2rem; padding: .5rem .75rem !important; border: 1px solid transparent; border-radius: .4rem .65rem .35rem .5rem; }
+.portal-nav .nav-link:hover, .portal-nav .nav-link.active { background: #f2eddd; border-color: #343b34; text-decoration: none; }
+.portal-nav .new-order-link { background: #e2eef3; border-color: #343b34; }
+.portal-nav .navbar-collapse { flex-grow: 0; }
+.portal-welcome { margin-left: auto; margin-right: 1rem; font-size: 1.35rem; text-align: left; overflow-wrap: anywhere; max-width: 22%; }
+.order-search-panel summary { cursor: pointer; padding: .35rem 0; }
+.order-search-panel summary::marker { color: #343b34; }
+.dashboard-chart { height: clamp(300px, 32vw, 520px); }
+.row > *, .card, .card-body { min-width: 0; }
+.table-responsive { max-width: 100%; }
+#orderTabs { gap: .25rem; flex-wrap: wrap; }
+@media (max-width: 1199.98px) {
+    .portal-nav .navbar-collapse { padding-block: .75rem; }
+    .portal-nav .staff-nav { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: .5rem .75rem; }
+    .staff-nav .portal-welcome { grid-column: 2; grid-row: 1; margin: 0; max-width: none; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .staff-nav .navbar-brand { grid-column: 1; grid-row: 1; margin-right: 0; }
+    .staff-nav .navbar-toggler { grid-column: 3; grid-row: 1; }
+    .staff-nav .navbar-collapse { grid-column: 1 / -1; grid-row: 2; }
+    .portal-nav .navbar-nav { align-items: stretch; }
+}
+@media (max-width: 767.98px) {
+    .portal-nav .navbar-brand { font-size: 1.5rem; margin-right: .25rem; }
+    .portal-nav .navbar-brand img { width: 36px; height: 36px; }
+    .portal-nav .staff-nav { padding-inline: .75rem; column-gap: .5rem; }
+    .staff-nav .navbar-brand { font-size: clamp(1.1rem, 4vw, 1.5rem); letter-spacing: 0; gap: .25rem; }
+    .staff-nav .navbar-brand img { width: 28px; height: 28px; }
+    .staff-nav .portal-welcome { font-size: clamp(1rem, 3.5vw, 1.25rem); }
+    .staff-nav .navbar-toggler { padding: .35rem; }
+    .portal-content .card-body { padding: 1rem; }
+    .portal-footer { font-size: .95rem; }
+    .portal-content p, .portal-content dd { overflow-wrap: anywhere; }
+    .display-3 { font-size: 2.75rem; }
+    .mobile-cards > thead { display: none; }
+    .mobile-cards, .mobile-cards > tbody, .mobile-cards > tbody > tr { display: block; width: 100%; white-space: normal !important; }
+    .mobile-cards > tbody > tr { margin-bottom: .85rem; border: 1px solid #606860; border-radius: .4rem; background: #fff; }
+    .mobile-cards > tbody > tr > td[data-label] { display: grid !important; grid-template-columns: minmax(100px, 35%) minmax(0, 1fr); gap: .75rem; border: 0; border-bottom: 1px dashed #d5d9d1; padding: .6rem; text-align: left !important; white-space: normal !important; width: auto !important; min-width: 0 !important; max-width: none !important; overflow-wrap: anywhere; }
+    .mobile-cards > tbody > tr > td[data-label]::before { content: attr(data-label); font-weight: bold; }
+    .mobile-cards > tbody > tr > td[colspan] { display: block; width: 100%; }
+    .mobile-cards td > * { min-width: 0; max-width: 100%; }
+    .mobile-cards td form, .mobile-cards td > .d-flex { flex-wrap: wrap; }
+    .child-table-wrapper { padding: .5rem; }
+    .explorer-table-controls .pagination { gap: .25rem; }
+    .order-search-panel .btn { min-height: 44px; }
+}
+
+/* One title treatment for every portal page, independent of Bootstrap utilities. */
+.page-heading {
+    font-size: clamp(2rem, 4vw, 2.5rem);
+    font-weight: 700;
+    line-height: 1.2;
+    text-align: center;
+    margin: 1.5rem 0;
+    padding-bottom: .625rem;
+    border-bottom: 2px dashed #202521;
+    overflow-wrap: anywhere;
+}

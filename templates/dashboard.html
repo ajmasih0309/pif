@@ -6,11 +6,7 @@
 <!-- Chart.js CDN -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<div class="row mt-4">
-    <div class="col-12">
-        <h1 class="chalk-header fw-bold text-center mb-4">Analytics Dashboard</h1>
-    </div>
-</div>
+<h1 class="page-heading">Analytics Dashboard</h1>
 
 <div class="row">
     <!-- FILTERS SIDEBAR -->
@@ -95,7 +91,7 @@
 
         <!-- Chart Row -->
         <div class="card shadow-sm border-dark">
-            <div class="card-body bg-white">
+            <div class="card-body bg-white dashboard-chart">
                 <canvas id="monthlyBikeChart" height="120"></canvas>
             </div>
         </div>
@@ -133,6 +129,7 @@
             },
             options: {
                 responsive: true,
+                maintainAspectRatio: false,
                 plugins: {
                     legend: {
                         position: 'top',

@@ -117,66 +117,28 @@
 </head>
 <body>
     
-    <!-- NAVIGATION BAR -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom border-dark mb-4 shadow-sm">
-        <div class="container">
+    <nav class="navbar navbar-expand-xl portal-nav mb-4" aria-label="Main navigation">
+        <div class="container portal-shell {{ 'staff-nav' if session.get('username') and not requester_mode else '' }}">
             <a class="navbar-brand fw-bold text-dark" href="{{ '#' if requester_mode else url_for('index') }}">
-                <img src="{{ url_for('static', filename='imgs/pif-logo.png') }}" alt="PIF Logo" width="45" height="45" class="me-2">
-                PIF Portal
+                <img src="{{ url_for('static', filename='imgs/pif-logo.png') }}" alt="" width="45" height="45"> PIF Portal
             </a>
-            
             {% if session.get('username') and not requester_mode %}
-            <button class="navbar-toggler border-dark" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            {% endif %}
-            
+            <span class="portal-welcome" title="Welcome, {{ session.username }}">Welcome, <strong>{{ session.username }}</strong></span>
+            <button class="navbar-toggler border-dark" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto fs-4 align-items-center"> 
-                    {% if session.get('username') and not requester_mode %}
-                        <!-- Welcome Message -->
-                        <li class="nav-item me-4">
-                            <span class="navbar-text text-dark fs-5">
-                                👤 Welcome, <strong style="color: #f0ad4e;">{{ session.username }}</strong>!
-                            </span>
-                        </li>
-                        
-                        <!-- My Desk -->
-                        <li class="nav-item me-3">
-                            <a class="nav-link text-dark fw-bold" href="/">My Desk</a>
-                        </li>
-                        
-                        <!-- NEW: "More" Dropdown Menu -->
-                        <li class="nav-item dropdown me-3">
-                            <a class="nav-link dropdown-toggle text-dark fw-bold" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                More
-                            </a>
-                            <ul class="dropdown-menu border-dark shadow-sm" aria-labelledby="navbarDropdown" style="background-color: #f8f9fa;">
-                                <li><a class="dropdown-item fw-bold text-dark fs-5" href="/dashboard">Dashboard</a></li>
-                                <li><a class="dropdown-item fw-bold text-dark fs-5" href="/explorer">Data Explorer</a></li>
-                                <li><a class="dropdown-item fw-bold text-dark fs-5" href="{{ url_for('requester_links.manage') }}">Requester Links</a></li>
-                            </ul>
-                        </li>
-                
-                        <!-- New Order Button -->
-                        <li class="nav-item me-3">
-                            <a class="nav-link fw-bold px-3 rounded" href="/add" style="background-color: #9cd4f0; color: #000; border: 1px solid #000;">
-                                ➕ New Order
-                            </a>
-                        </li>
-                        
-                        <!-- Logout -->
-                        <li class="nav-item">
-                            <a class="nav-link text-danger fw-bold" href="/logout">Logout</a>
-                        </li>
-                    {% endif %}
+                <ul class="navbar-nav ms-auto gap-2">
+                    {% for endpoint, label in [('index', 'My Desk'), ('dashboard', 'Dashboard'), ('explorer', 'Data Explorer'), ('requester_links.manage', 'Requester Links'), ('add', '＋ New Order')] %}
+                    <li class="nav-item"><a class="nav-link {{ 'active' if request.endpoint == endpoint }} {{ 'new-order-link' if endpoint == 'add' }}" href="{{ url_for(endpoint) }}" {% if request.endpoint == endpoint %}aria-current="page"{% endif %}>{{ label }}</a></li>
+                    {% endfor %}
+                    <li class="nav-item"><a class="nav-link text-danger" href="{{ url_for('logout') }}">Logout</a></li>
                 </ul>
             </div>
+            {% endif %}
         </div>
     </nav>
 
     <!-- MAIN CONTENT AREA -->
-    <div class="container pb-5">
+    <main class="container portal-shell portal-content pb-4" id="main-content">
         
         <!-- Global Flash Message Handler -->
         <!-- Placed here so ANY page can flash alerts without repeating code -->
@@ -191,17 +153,14 @@
         <!-- Child Templates Inject Content Here -->
         {% block content %}{% endblock %}
         
-    </div>
+    </main>
 
-    <footer style="text-align: center; padding: 25px 10px; font-size: 0.85rem; color: #6c757d; border-top: 1px solid #e9ecef; margin-top: 40px; background-color: transparent;">
-        <p style="margin: 2px 0;">
-            <strong>PIF Portal</strong> {{ app_version }} &bull; Made with ❤️ and Python
-        </p>
-        <p style="font-style: italic; font-size: 0.78rem; color: #8c959f; margin: 2px 0;">
-        </p>
+    <footer class="portal-footer">
+        <p><strong>PIF Portal</strong> <a class="footer-version" href="https://github.com/ajmasih0309/pif" target="_blank" rel="noopener noreferrer" aria-label="PIF Portal source on GitHub, {{ app_version }}">{{ app_version }}</a> <span aria-hidden="true">·</span> Built with love ❤️. Powered by Python.</p>
     </footer>
-    
+
     <!-- Bootstrap JS Payload -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{{ url_for('static', filename='js/responsive_tables.js') }}" defer></script>
 </body>
 </html>
