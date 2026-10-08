@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% from '_workshop_forms.html' import pages with context %}
+{% block title %}Finished Bikes - PIF Portal{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between gap-2 align-items-center mb-3"><h1 class="chalk-header mb-0">Finished Bikes</h1><a class="btn btn-dark" href="{{ url_for('workshop.new_bike') }}">＋ Finished bike</a></div>
+<p>Look up a finished bike by its unique tag. These records are optional references for orders and do not indicate whether a bike is still available.</p>
+<p><a href="{{ url_for('workshop.volunteer_links') }}">Volunteer forms / QR links</a></p>
+<form method="get" class="marker-panel row g-2 align-items-end">
+    <div class="col-md-7"><label class="form-label" for="q">Search bikes</label><input id="q" class="form-control" name="q" value="{{ q }}" placeholder="Tag, make, model or colour"></div>
+    <div class="col-md-3"><label class="form-label" for="shop">Shop</label><select class="form-select" name="shop" id="shop"><option value="">All shops</option>{% for s in shops %}<option value="{{ s.shop_name }}" {% if shop==s.shop_name %}selected{% endif %}>{{ s.shop_location }}</option>{% endfor %}</select></div>
+    <div class="col-md-2"><button class="btn btn-dark w-100">Search</button></div>
+</form>
+{{ pages(pagination, {'q':q,'shop':shop}) }}
+<div class="table-responsive"><table class="table table-bordered bg-white"><thead><tr><th>Bike tag</th><th>Shop</th><th>Make / model</th><th>Colour</th><th>Wheel size</th><th>Type</th><th>Finished</th><th>Contributions</th></tr></thead><tbody>
+{% for bike in rows %}<tr><td><a href="{{ url_for('workshop.bike',inventory_id=bike.inventory_id) }}">{{ bike.bike_tag }}</a></td><td>{{ bike.shop_location }}</td><td>{{ bike.make or '—' }} {{ bike.model or '' }}</td><td>{{ bike.colour or '—' }}</td><td>{{ bike.wheel_size or '—' }}</td><td>{{ bike.bike_type or '—' }}</td><td>{{ (bike.recorded_at or '')|replace('T',' ') }}</td><td>{{ bike.contributions }}</td></tr>
+{% else %}<tr><td colspan="8">No finished bikes found.</td></tr>{% endfor %}
+</tbody></table></div>
+{% endblock %}

@@ -2,6 +2,7 @@
 {% block title %}{{ 'Request a Bike' if requester_mode else 'New Order' }} - PIF Portal{% endblock %}
 {% block content %}
 {% macro error_for(key) %}{% if errors.get(key) %}<div id="{{ key }}-error" class="invalid-feedback d-block">{{ errors[key] }}</div>{% endif %}{% endmacro %}
+{% macro field_status(required=false) %}<span class="field-status">({{ 'required' if required else 'optional' }})</span>{% endmacro %}
 {% macro recipient_card(row, index) %}
 <fieldset class="recipient-card marker-panel mb-3" data-recipient>
     <legend class="float-none w-auto px-2 fs-4">Recipient <span data-number>{{ index + 1 if index is number else '' }}</span></legend>
@@ -13,23 +14,26 @@
     <div class="row g-3">
         {% for field, label in [('recipient_name','Name'), ('bike_style_preference','Style preference'), ('age','Age'), ('height','Height'), ('bike_type_first_choice','First bike choice'), ('bike_type_second_choice','Second bike choice'), ('notes','Notes')] %}
         {% set key = 'recipient-' ~ index ~ '-' ~ field %}
-        <div class="{{ 'col-12' if field == 'notes' else 'col-md-6 col-xl-4' }}">
-            <label class="form-label fw-bold" for="{{ key }}">{{ label }}{% if field == 'recipient_name' %} <span class="text-muted small">(required)</span>{% endif %}</label>
+        {% set help = {'recipient_name': 'The name of the person receiving this bike.', 'bike_style_preference': 'Choose a frame style preference, or leave it blank if unsure.', 'age': 'Age in years, from 1 to 80. Leave blank if unknown.', 'height': 'Select the closest height to help us find the right size.', 'bike_type_first_choice': 'Preferred bike: choose A–F from the list, or choose from photos.', 'bike_type_second_choice': 'Backup preference if the first choice is unavailable. Choose from the list or photos.', 'notes': 'Add sizing needs, preferences or instructions for this recipient (up to 2,000 characters).'}[field] %}
+        <div class="{{ 'col-12' if field == 'notes' else 'col-md-6' }}">
+            <label class="form-label fw-bold" for="{{ key }}">{{ label }} {{ field_status(field == 'recipient_name') }}</label>
             {% if field in ['bike_style_preference','height','bike_type_first_choice','bike_type_second_choice'] %}
                 <div class="d-flex gap-2">
-                <select id="{{ key }}" name="{{ field }}[]" class="form-select {{ 'is-invalid' if errors.get(key) }}" {% if errors.get(key) %}aria-invalid="true" aria-describedby="{{ key }}-error"{% endif %}>
-                    <option value="">Choose (optional)</option>
+                <select id="{{ key }}" name="{{ field }}[]" class="form-select {{ 'is-invalid' if errors.get(key) }}" {% if errors.get(key) %}aria-invalid="true"{% endif %} aria-describedby="{{ key }}-help{% if field == 'age' %} {{ key }}-live-error{% endif %}{% if errors.get(key) %} {{ key }}-error{% endif %}">
+                    <option value="">Not specified</option>
                     {% set options = ['Male','Female','No Preference'] if field == 'bike_style_preference' else (heights if field == 'height' else ['A','B','C','D','E','F']) %}
                     {% if row.get(field) and row[field] not in options %}<option value="{{ row[field] }}" selected>{{ row[field] }} — choose a valid option</option>{% endif %}
                     {% for option in options %}<option value="{{ option }}" {% if row.get(field) == option %}selected{% endif %}>{{ option }}</option>{% endfor %}
                 </select>
-                {% if field.startswith('bike_type_') %}<button type="button" class="btn btn-outline-dark text-nowrap" data-style-guide="{{ key }}" aria-label="View bike pictures for {{ label|lower }}">Pictures</button>{% endif %}
+                {% if field.startswith('bike_type_') %}<button type="button" class="btn btn-outline-dark text-nowrap" data-style-guide="{{ key }}" aria-label="Choose {{ label|lower }} from photos" aria-haspopup="dialog">Choose from photos</button>{% endif %}
                 </div>
             {% elif field == 'notes' %}
-                <textarea id="{{ key }}" name="notes[]" rows="2" maxlength="2000" class="form-control {{ 'is-invalid' if errors.get(key) }}" {% if errors.get(key) %}aria-invalid="true" aria-describedby="{{ key }}-error"{% endif %}>{{ row.get(field, '') }}</textarea>
+                <textarea id="{{ key }}" name="notes[]" rows="2" maxlength="2000" class="form-control {{ 'is-invalid' if errors.get(key) }}" {% if errors.get(key) %}aria-invalid="true"{% endif %} aria-describedby="{{ key }}-help{% if field == 'age' %} {{ key }}-live-error{% endif %}{% if errors.get(key) %} {{ key }}-error{% endif %}">{{ row.get(field, '') }}</textarea>
             {% else %}
-                <input id="{{ key }}" name="{{ field }}[]" value="{{ row.get(field, '') }}" type="{{ 'number' if field == 'age' else 'text' }}" class="form-control {{ 'is-invalid' if errors.get(key) }}" {% if field == 'age' %}min="0" max="120" step="1" inputmode="numeric"{% else %}required maxlength="150" autocomplete="off"{% endif %} {% if errors.get(key) %}aria-invalid="true" aria-describedby="{{ key }}-error"{% endif %}>
+                <input id="{{ key }}" name="{{ field }}[]" value="{{ row.get(field, '') }}" type="{{ 'number' if field == 'age' else 'text' }}" class="form-control {{ 'is-invalid' if errors.get(key) }}" {% if field == 'age' %}min="1" max="80" step="1" inputmode="numeric"{% else %}required maxlength="150" autocomplete="off"{% endif %} {% if errors.get(key) %}aria-invalid="true"{% endif %} aria-describedby="{{ key }}-help{% if field == 'age' %} {{ key }}-live-error{% endif %}{% if errors.get(key) %} {{ key }}-error{% endif %}">
             {% endif %}
+            <div id="{{ key }}-help" class="form-text">{{ help }}</div>
+            {% if field == 'age' %}<div id="{{ key }}-live-error" class="invalid-feedback" aria-live="polite" hidden></div>{% endif %}
             {{ error_for(key) }}
         </div>
         {% endfor %}
@@ -38,17 +42,19 @@
 {% endmacro %}
 <div class="intake-page mx-auto">
     <h1 class="chalk-header fw-bold">{{ 'Request a Bike' if requester_mode else 'New Order' }}</h1>
-    <p class="text-muted">{{ 'Tell us who needs a bike. This link accepts one completed request, which can include several recipients.' if requester_mode else 'Contact details first, then one section for each person who needs a bike.' }} Required fields are marked.</p>
+    <p class="text-muted">{{ 'Tell us who needs a bike. This link accepts one completed request, which can include several recipients.' if requester_mode else 'Contact details first, then one section for each person who needs a bike.' }} Fields marked (required) must be filled. You can leave optional fields blank.</p>
     {% if errors %}<div class="alert alert-danger border-dark" role="alert" tabindex="-1" id="form-errors"><strong>Please check the marked fields.</strong> Your entries are still here.{{ error_for('recipients') }}</div>{% endif %}
     <form method="post" id="intake-form" data-staff="{{ 'false' if requester_mode else 'true' }}">
         <input type="hidden" name="form_token" value="{{ form_token }}">
         <fieldset class="marker-panel mb-4">
             <legend class="float-none w-auto px-2 fs-4">Contact details</legend>
+            <p class="form-text mt-0">Who should we contact about this order? This can be the recipient, a parent or a referring person.</p>
             <div class="row g-3">
                 {% for field, label, kind, hint, complete in [('contact_name','Contact name','text','First and last name','name'), ('contact_phone_number','Phone','tel','(479) 555-0123','tel'), ('contact_email','Email','email','name@example.com','email')] %}
                 <div class="col-md-{{ 12 if field == 'contact_name' else 6 }}">
-                    <label for="{{ field }}" class="form-label fw-bold">{{ label }} <span class="text-muted small">(required)</span></label>
-                    <input id="{{ field }}" name="{{ field }}" type="{{ kind }}" value="{{ values.get(field, '') }}" placeholder="{{ hint }}" autocomplete="{{ complete }}" maxlength="{{ 254 if field == 'contact_email' else (40 if field == 'contact_phone_number' else 150) }}" required class="form-control {{ 'is-invalid' if errors.get(field) }}" {% if not requester_mode and field == 'contact_name' %}list="contact-list"{% endif %} {% if errors.get(field) %}aria-invalid="true" aria-describedby="{{ field }}-error"{% endif %}>
+                    <label for="{{ field }}" class="form-label fw-bold">{{ label }} {{ field_status(field == 'contact_name') }}</label>
+                    <input id="{{ field }}" name="{{ field }}" type="{{ kind }}" value="{{ values.get(field, '') }}" placeholder="{{ hint }}" autocomplete="{{ complete }}" maxlength="{{ 254 if field == 'contact_email' else (40 if field == 'contact_phone_number' else 150) }}" {% if field == 'contact_name' %}required{% endif %} class="form-control {{ 'is-invalid' if errors.get(field) }}" {% if not requester_mode and field == 'contact_name' %}list="contact-list"{% endif %} {% if field == 'contact_phone_number' %}inputmode="tel"{% endif %} {% if errors.get(field) %}aria-invalid="true"{% endif %} aria-describedby="{{ field }}-help{% if errors.get(field) %} {{ field }}-error{% endif %}">
+                    <div id="{{ field }}-help" class="form-text">{{ {'contact_name': 'Enter the contact person’s first and last name.', 'contact_phone_number': 'Enter 10 digits. Don’t include +1 or 1 for the country code. Formatting is added as you type.', 'contact_email': 'An email address for order updates, if available.'}[field] }}</div>
                     {{ error_for(field) }}
                 </div>
                 {% endfor %}
@@ -59,10 +65,10 @@
         <fieldset class="marker-panel mb-4">
             <legend class="float-none w-auto px-2 fs-4">Order details</legend>
             <div class="row g-3">
-                <div class="col-md-6"><label for="order_date" class="form-label fw-bold">Order date (required)</label><input id="order_date" type="date" name="order_date" value="{{ values.order_date }}" required class="form-control {{ 'is-invalid' if errors.get('order_date') }}">{{ error_for('order_date') }}</div>
-                <div class="col-md-6"><label for="shop_name" class="form-label fw-bold">Bike shop (required)</label><select id="shop_name" name="shop_name" required class="form-select {{ 'is-invalid' if errors.get('shop_name') }}"><option value="">Choose a shop</option>{% for shop in shops %}<option value="{{ shop.shop_name }}" {% if values.shop_name == shop.shop_name %}selected{% endif %}>{{ shop.shop_location or shop.shop_name }}</option>{% endfor %}</select>{{ error_for('shop_name') }}</div>
-                <div class="col-md-6"><label for="order_type" class="form-label fw-bold">Order type (required)</label><select id="order_type" name="order_type" required class="form-select {{ 'is-invalid' if errors.get('order_type') }}">{% for kind in order_types %}<option {% if values.order_type == kind %}selected{% endif %}>{{ kind }}</option>{% endfor %}</select>{{ error_for('order_type') }}</div>
-                <div class="col-md-6"><label for="pedal_partner_name" class="form-label fw-bold">Pedal Partner <span class="small text-muted">(required for partner orders)</span></label><input id="pedal_partner_name" name="pedal_partner_name" value="{{ values.pedal_partner_name }}" list="partner-list" maxlength="150" class="form-control {{ 'is-invalid' if errors.get('pedal_partner_name') }}"><datalist id="partner-list"></datalist>{{ error_for('pedal_partner_name') }}</div>
+                <div class="col-md-6"><label for="order_date" class="form-label fw-bold">Order date {{ field_status(true) }}</label><input id="order_date" type="date" name="order_date" value="{{ values.order_date }}" required class="form-control {{ 'is-invalid' if errors.get('order_date') }}"><div class="form-text">The date this order was received, not the pickup date.</div>{{ error_for('order_date') }}</div>
+                <div class="col-md-6"><label for="shop_name" class="form-label fw-bold">Bike shop {{ field_status(true) }}</label><select id="shop_name" name="shop_name" required class="form-select {{ 'is-invalid' if errors.get('shop_name') }}"><option value="">Choose a shop</option>{% for shop in shops %}<option value="{{ shop.shop_name }}" {% if values.shop_name == shop.shop_name %}selected{% endif %}>{{ shop.shop_location or shop.shop_name }}</option>{% endfor %}</select><div class="form-text">The shop responsible for preparing this order.</div>{{ error_for('shop_name') }}</div>
+                <div class="col-md-6"><label for="order_type" class="form-label fw-bold">Order type {{ field_status(true) }}</label><select id="order_type" name="order_type" required class="form-select {{ 'is-invalid' if errors.get('order_type') }}">{% for kind in order_types %}<option {% if values.order_type == kind %}selected{% endif %}>{{ kind }}</option>{% endfor %}</select>{{ error_for('order_type') }}</div>
+                <div class="col-md-6"><label for="pedal_partner_name" class="form-label fw-bold">Pedal Partner <span class="field-status">(required for partner orders)</span></label><input id="pedal_partner_name" name="pedal_partner_name" value="{{ values.pedal_partner_name }}" list="partner-list" maxlength="150" class="form-control {{ 'is-invalid' if errors.get('pedal_partner_name') }}"><datalist id="partner-list"></datalist><div class="form-text">For Pedal Partner orders, select or type the referring organization’s name.</div>{{ error_for('pedal_partner_name') }}</div>
             </div>
         </fieldset>
         {% else %}
@@ -70,7 +76,8 @@
         {% if errors.get('shop_name') %}<p class="text-danger">This shop is unavailable. Please contact PIF for a new link.</p>{% endif %}
         {% endif %}
         <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2"><h2 class="fs-3 mb-0">Who needs a bike?</h2><span class="badge bg-light text-dark border border-dark fs-6"><span id="bikeCounter">{{ recipients|length }}</span> recipient(s)</span></div>
-        <p class="small text-muted">Age, height, and bike choices help us find a suitable bike. Leave them blank if you are unsure.</p>
+        <p class="small text-muted">An order can include one or more bikes. Add one recipient for each bike.
+            Age, height and bike choices help us find a suitable bike. Choices are preferences and depend on availability. Leave them blank if you are unsure.</p>
         <div id="recipient-list">{% for row in recipients %}{{ recipient_card(row, loop.index0) }}{% endfor %}</div>
         <button type="button" class="btn btn-outline-dark" id="add-recipient">+ Add recipient</button>
         <p id="intake-feedback" class="mt-3" role="status" aria-live="polite" hidden></p>
@@ -81,11 +88,11 @@
     </form>
     <template id="recipient-template">{{ recipient_card({}, '__INDEX__') }}</template>
 </div>
-<div class="modal fade" id="bikeStyleModal" tabindex="-1" aria-labelledby="bike-style-title" aria-hidden="true">
+<div class="modal fade" id="bikeStyleModal" tabindex="-1" aria-labelledby="bike-style-title" aria-describedby="bike-style-help" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered"><div class="modal-content border-dark">
-        <div class="modal-header"><h2 class="modal-title fs-3" id="bike-style-title">Choose a bike style</h2><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
-        <div class="modal-body"><div class="row g-3">{% for letter in ['A','B','C','D','E','F'] %}
-            <div class="col-6 col-md-4"><button type="button" class="bike-card w-100 bg-white p-2" data-bike-style="{{ letter }}"><strong class="fs-3 text-dark">{{ letter }}</strong><img src="{{ url_for('static', filename='imgs/Bike' ~ letter ~ '.png') }}" alt="Bike style {{ letter }}" class="img-fluid d-block"></button></div>
+        <div class="modal-header"><h2 class="modal-title fs-3" id="bike-style-title">Choose a bike</h2><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
+        <div class="modal-body"><p id="bike-style-help">Select a photo to fill this bike choice. You can change it later.</p><div class="row g-3">{% for letter in ['A','B','C','D','E','F'] %}
+            <div class="col-6 col-md-4"><button type="button" class="bike-card w-100 bg-white p-2" data-bike-style="{{ letter }}" aria-label="Select bike {{ letter }}"><strong class="fs-3 text-dark">{{ letter }}</strong><img src="{{ url_for('static', filename='imgs/Bike' ~ letter ~ '.png') }}" alt="Bike style {{ letter }}" class="img-fluid d-block"></button></div>
         {% endfor %}</div></div>
     </div></div>
 </div>

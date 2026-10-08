@@ -1,0 +1,34 @@
+{% macro error(field, errors) %}{% if errors.get(field) %}<div class="text-danger small" role="alert">{{ errors[field] }}</div>{% endif %}{% endmacro %}
+
+{% macro volunteer_picker(volunteers, selected_ids, errors) %}
+<fieldset class="marker-panel my-3">
+    <legend class="float-none w-auto px-2 fs-4">Volunteers who worked on this bike</legend>
+    <p class="small text-muted">Choose everyone who helped. Contributions do not create time entries.</p>
+    <label for="volunteer-search" class="form-label">Find a volunteer</label>
+    <input id="volunteer-search" type="search" class="form-control mb-2" placeholder="Name or volunteer ID" data-volunteer-search>
+    <div class="volunteer-choices border rounded p-2" style="max-height: 230px; overflow-y: auto;">
+        {% for person in volunteers %}
+        <label class="d-block p-1" data-volunteer-choice>
+            <input type="checkbox" class="form-check-input me-2" name="volunteer_ids" value="{{ person.volunteer_id }}" {% if person.volunteer_id|string in selected_ids %}checked{% endif %}>
+            {{ person.volunteer_name }} <span class="small text-muted">#{{ person.volunteer_id }}</span>
+        </label>
+        {% else %}<p>No volunteers have been added yet.</p>{% endfor %}
+    </div>
+    <p class="small mt-2 mb-0" data-volunteer-count aria-live="polite"></p>
+    {{ error('volunteer_ids', errors) }}
+    <p class="small mt-2 mb-0"><a href="{{ url_for('workshop.volunteers') }}" target="_blank" rel="noopener">Add a volunteer in a new tab</a>.
+        <button type="button" class="btn btn-link btn-sm p-0" data-refresh-volunteers>Refresh volunteer list</button></p>
+</fieldset>
+{% endmacro %}
+
+{% macro pages(pagination, params={}) %}
+<nav class="d-flex flex-wrap justify-content-between align-items-center gap-2 py-3" aria-label="Results pages">
+    <span>{{ pagination.total }} entries · Page {{ pagination.page }} of {{ pagination.pages }}</span>
+    <div class="d-flex gap-2">
+        {% if pagination.page > 1 %}<a class="btn btn-outline-dark btn-sm" href="{{ url_for(request.endpoint, page=pagination.page-1, **params) }}">← Previous</a>{% endif %}
+        {% if pagination.page < pagination.pages %}<a class="btn btn-outline-dark btn-sm" href="{{ url_for(request.endpoint, page=pagination.page+1, **params) }}">Next →</a>{% endif %}
+    </div>
+</nav>
+{% endmacro %}
+
+{% macro duration(minutes) %}{{ minutes // 60 }}h {{ '%02d'|format(minutes % 60) }}m{% endmacro %}

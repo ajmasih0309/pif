@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% from '_workshop_forms.html' import error with context %}
+{% block title %}Log your time · Pedal It Forward{% endblock %}
+{% block content %}
+<div class="volunteer-entry mx-auto" style="max-width: 600px;">
+    <h1 class="chalk-header">Log your time</h1>
+    <p class="fs-5">Thanks for lending a hand today.</p>
+    {% if errors %}<div class="alert alert-warning" role="alert">Your time has not been saved yet. Check the highlighted fields below.</div>{% endif %}
+    {% if person %}
+    <div class="marker-panel mb-3 d-flex flex-wrap align-items-center justify-content-between gap-2">
+        <div>Logging time as <strong>{{ person.volunteer_name }}</strong><span class="small text-muted d-block">Volunteer #{{ person.volunteer_id }}</span></div>
+        <form method="post" action="{{ url_for('volunteer_entry.forget') }}"><input type="hidden" name="form_token" value="{{ forget_token }}"><input type="hidden" name="shop" value="{{ values.shop_name }}"><button class="btn btn-outline-dark" type="submit">Not you?</button></form>
+    </div>
+    {% else %}
+    <section class="marker-panel mb-3" aria-labelledby="find-name-heading">
+        <h2 class="fs-4" id="find-name-heading">Find your name</h2>
+        <form method="get" data-name-search action="{{ url_for('volunteer_entry.log_hours') }}">
+            <input type="hidden" name="shop" value="{{ values.shop_name }}">
+            <label for="name-query" class="form-label">Your name</label>
+            <div class="d-flex gap-2"><input id="name-query" class="form-control" name="q" value="{{ query }}" type="search" minlength="2" maxlength="100" placeholder="Start typing your name" autocomplete="off" aria-describedby="name-help" data-names-url="{{ url_for('volunteer_entry.names') }}"><button class="btn btn-outline-dark" type="submit">Find</button></div>
+        </form>
+        <p id="name-help" class="small mt-2 mb-0">Can't find your name? Ask staff to add you. If names match, staff can confirm your volunteer number.</p>
+    </section>
+    {% endif %}
+    <form method="post" id="volunteer-time" data-workshop-form>
+        <input type="hidden" name="form_token" value="{{ form_token }}">
+        {% if person %}<input type="hidden" name="volunteer_id" value="{{ person.volunteer_id }}">
+        {% else %}
+        <fieldset class="mb-3" id="name-results"><legend class="fs-5">Select your name</legend>
+            <div data-name-options>{% for match in matches %}<label class="marker-panel d-block mb-2"><input class="form-check-input me-2" type="radio" name="volunteer_id" value="{{ match.volunteer_id }}" required> {{ match.volunteer_name }} <span class="small text-muted">#{{ match.volunteer_id }}</span></label>{% endfor %}</div>
+            <p class="small" role="status" data-name-status>{% if matches %}Select your name above. Showing up to 10 matches; type more to narrow it down.{% elif query|length >= 2 %}No matching names. Check the spelling or ask staff to add you.{% else %}Type at least two letters to find your name.{% endif %}</p>
+        </fieldset>
+        {% endif %}
+        {{ error('volunteer_id', errors) }}
+        <label class="d-flex gap-2 align-items-start mb-4"><input class="form-check-input mt-1" type="checkbox" name="remember" value="yes" {% if remember %}checked{% endif %}><span>Remember me on this phone<span class="small text-muted d-block">For 6 months. Leave unchecked on a shared device.</span></span></label>
+        <div data-volunteer-impact data-impact-url="{{ url_for('volunteer_entry.impact') }}" data-impact-token="{{ impact_token }}" aria-live="polite" aria-atomic="true" {% if not person %}hidden{% endif %}>
+            {% if impact %}{% include '_volunteer_impact.html' %}{% endif %}
+        </div>
+        <div class="marker-panel mb-3">
+            <h2 class="fs-4 mb-3">How long did you volunteer?</h2>
+            <div class="row g-3">
+                <div class="col-6"><label class="form-label" for="hours">Hours</label><input id="hours" name="hours" class="form-control form-control-lg" type="number" inputmode="numeric" min="0" max="24" step="1" placeholder="0" value="{{ values.hours }}" aria-describedby="duration-help"></div>
+                <div class="col-6"><label class="form-label" for="minutes">Minutes</label><input id="minutes" name="minutes" class="form-control form-control-lg" type="number" inputmode="numeric" min="0" max="59" step="1" placeholder="0" value="{{ values.minutes }}" aria-describedby="duration-help"></div>
+            </div>
+            <p id="duration-help" class="small mt-2 mb-0">Every minute counts. For 2 hours 17 minutes, enter 2 and 17.</p>
+            {{ error('duration', errors) }}
+        </div>
+        <div class="row g-3 mb-4">
+            <div class="col-sm-6"><label class="form-label" for="work_date">Date</label><input class="form-control" id="work_date" name="work_date" type="date" required max="{{ today }}" value="{{ values.work_date }}">{{ error('work_date', errors) }}</div>
+            <div class="col-sm-6"><label class="form-label" for="shop_name">Shop</label><select class="form-select" id="shop_name" name="shop_name" required><option value="">Choose your shop</option>{% for shop in shops %}<option value="{{ shop.shop_name }}" {% if values.shop_name==shop.shop_name %}selected{% endif %}>{{ shop.shop_location }}</option>{% endfor %}</select>{{ error('shop_name', errors) }}</div>
+        </div>
+        <details class="mb-4" {% if errors.activity or errors.notes or values.activity or values.notes %}open{% endif %}>
+            <summary class="py-2">Add details (optional)</summary>
+            <label class="form-label mt-2" for="activity">What did you work on?</label><input id="activity" name="activity" class="form-control" maxlength="200" value="{{ values.activity }}" placeholder="Repairs, sorting donations, event support…">{{ error('activity', errors) }}
+            <label class="form-label mt-3" for="notes">Anything else?</label><textarea id="notes" name="notes" class="form-control" rows="3" maxlength="2000">{{ values.notes }}</textarea>{{ error('notes', errors) }}
+        </details>
+        <button type="submit" class="btn btn-dark btn-lg w-100">Save my time</button><p class="mt-2" data-save-feedback role="status"></p>
+    </form>
+</div>
+<script src="{{ url_for('static', filename='js/volunteer_entry.js') }}" defer></script>
+<script src="{{ url_for('static', filename='js/workshop.js') }}" defer></script>
+{% endblock %}

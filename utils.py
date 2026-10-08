@@ -1,5 +1,5 @@
 """
-Uilities for formatting data in frontend (utils.py)
+Presentation, order queries and guarded email delivery (utils.py)
 -------------------------------------
 Handles frontend data presentation. 
 """
@@ -51,55 +51,12 @@ def format_phone(phone):
     return phone_str
 
 
-def unformat_phone(phone):
-    """
-    Convert:
-        (123) 456-7890 -> 1234567890
-        123-456-7890  -> 1234567890
-        1234567890    -> 1234567890
-    """
-    if not phone:
-        return ""
-
-    digits = re.sub(r"\D", "", str(phone))
-
-    if len(digits) == 10:
-        return digits
-    return phone
-
 def clean_int(val):
     if val in [None, '', 'nan', 'NaN']: return ""
     try:
         return str(int(float(val)))
     except:
         return str(val)
-
-def group_order_data(items):
-    """
-    Groups individual bike records into families/orders based on email and date.
-    Why: The DB stores one row per bike, but the frontend needs to render one card per order.
-    """
-    groups = {}
-    for item in items:
-        key = f"{item['contact_email']}_{item['order_date']}"
-        if key not in groups:
-            groups[key] = {
-                'contact_name': item['contact_name'],
-                'contact_phone': format_phone(item['contact_phone_number']),
-                'contact_email': item['contact_email'],
-                'pedal_partner': item['pedal_partner_name'],
-                'order_date': format_date(item['order_date']),
-                'order_type': item.get('order_type', 'Standard'),
-                'shop_name': item['shop_name'],
-                'total_bikes': 0,
-                'recipients': []
-            }
-        groups[key]['total_bikes'] += 1
-        item['age'] = clean_int(item['age'])
-        item['bike_tag'] = clean_int(item['bike_tag'])
-        item['date_picked_up'] = format_date(item['date_picked_up'])
-        groups[key]['recipients'].append(item)
-    return list(groups.values())
 
 @dataclass(frozen=True)
 class EmailResult:
@@ -131,6 +88,8 @@ def _single_email(value):
 
 def send_email(to_email, subject, template_name, **kwargs):
     """Preview locally by default. Delivery requires an explicit test/live mode."""
+    if to_email is None or (isinstance(to_email, str) and not to_email.strip()):
+        return EmailResult('skipped')
     try:
         mode = current_app.config.get('EMAIL_MODE', 'preview')
         if mode == 'disabled':

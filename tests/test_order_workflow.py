@@ -228,7 +228,28 @@ class OrderWorkflowTests(DatabaseTestCase):
         self.assertEqual(self.snapshot(), before)
         self.mail.assert_not_called()
 
+    def test_full_order_flow_with_empty_workshop_and_no_contact_channels(self):
+        # Workshop initialization/data must never become an order prerequisite.
+        from admin_tools import initialize
+        self.conn.execute('CREATE TABLE users(username TEXT)')
+        self.conn.execute("INSERT INTO users VALUES ('tester')")
+        self.conn.commit()
+        initialize(self.path, 'tester', 'Rehearse orders with empty workshop')
+        self.form.update(contact_email='', contact_phone_number='')
+        order_id = self.create_order()
+        self.assertEqual(self.conn.execute('SELECT order_status FROM orders WHERE order_id=?', (order_id,)).fetchone()[0], 'Open')
+        self.assertIn(b'Second recipient', self.client.get(f'/?status=open&q=%23{order_id}').data)
+        for status in ('Cancelled','Open','Contacted','Cancelled','Open','Contacted'):
+            self.assertEqual(self.client.post(f'/update_status/{order_id}', data={'new_status':status}).status_code,302)
+            self.assertEqual(self.conn.execute('SELECT order_status FROM orders WHERE order_id=?',(order_id,)).fetchone()[0],status)
+        self.assertEqual(self.client.post(f'/fulfill/{order_id}',data={
+            'date_picked_up':'2026-10-08','bike_tag':'987654'}).status_code,302)
+        self.assertEqual(self.conn.execute('SELECT order_status,bike_tag FROM orders WHERE order_id=?',(order_id,)).fetchone(),('Completed',987654))
+        for table in ('bike_inventory','volunteers','bike_contributions','volunteer_hours'):
+            self.assertEqual(self.conn.execute(f'SELECT COUNT(*) FROM {table}').fetchone()[0],0)
+
     def test_cancel_restore_and_complete_pipeline(self):
+        self.assertFalse(self.conn.execute("SELECT 1 FROM sqlite_master WHERE name='bike_inventory'").fetchone())
         order_id = self.create_order()
         for status in ['Contacted', 'Cancelled', 'Open', 'Contacted']:
             self.assertEqual(self.client.post(f'/update_status/{order_id}', data={'new_status': status}).status_code, 302)

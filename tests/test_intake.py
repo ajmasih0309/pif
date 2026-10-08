@@ -80,6 +80,72 @@ class IntakeTests(DatabaseTestCase):
         self.assertEqual(self.conn.execute('SELECT COUNT(*) FROM orders').fetchone()[0], 1)
         self.mail.assert_not_called()
 
+    def test_staff_phone_and_email_are_independently_optional(self):
+        for email, phone in [('', ''), ('', '4795550123'), ('test@example.invalid', '')]:
+            with self.subTest(email=email, phone=phone):
+                key = token(self.staff.get('/add'))
+                response = self.staff.post('/add', data=dict(self.form, form_token=key,
+                    contact_email=email, contact_phone_number=phone))
+                self.assertEqual(response.status_code, 302)
+        self.assertEqual(self.conn.execute('SELECT COUNT(*) FROM orders').fetchone()[0], 7)
+        self.assertEqual(self.mail.call_count, 2)  # Only the request with an email.
+
+    def test_age_boundaries_for_staff_and_requester(self):
+        link, _ = self.invite()
+        client, requester_fields = self.requester(link)
+        for browser, url, fields in [(self.staff, '/add', dict(self.form,
+                form_token=token(self.staff.get('/add')))), (client, link, requester_fields)]:
+            for age in ['0', '81', '-1', '1.5']:
+                with self.subTest(url=url, age=age):
+                    response = browser.post(url, data={**fields, 'age[]': [age, '']})
+                    self.assertEqual(response.status_code, 400)
+                    self.assertIn(b'whole-number age from 1 to 80', response.data)
+            self.assertEqual(self.conn.execute('SELECT COUNT(*) FROM orders').fetchone()[0],
+                             1 if url == '/add' else 3)
+            response = browser.post(url, data={**fields, 'age[]': ['1', '80']})
+            self.assertIn(response.status_code, (302, 303))
+        self.assertEqual(self.conn.execute(
+            'SELECT age FROM recipients WHERE recipient_name IN (?, ?) ORDER BY recipient_id',
+            ('First', 'Second')).fetchall(), [(1,), (80,), (1,), (80,)])
+
+    def test_formatted_phone_saves_only_digits_and_age_can_be_blank(self):
+        for phone in ['(479) 555-0123', '+1 (479) 555-0123']:
+            with self.subTest(phone=phone):
+                response = self.staff.post('/add', data={**self.form,
+                    'form_token': token(self.staff.get('/add')),
+                    'contact_phone_number': phone, 'age[]': ['', '']})
+                self.assertEqual(response.status_code, 302)
+        stored = self.conn.execute(
+            'SELECT contact_phone_number FROM contacts WHERE contact_name=?',
+            ('Test Contact',)).fetchall()
+        self.assertEqual(len(stored), 1)
+        self.assertEqual(stored[0][0], 4795550123)
+        self.assertEqual(self.conn.execute(
+            "SELECT COUNT(*) FROM recipients WHERE recipient_name IN ('First', 'Second') AND age IS NULL"
+        ).fetchone()[0], 4)
+
+    def test_same_name_without_contact_channels_does_not_merge_people(self):
+        for _ in range(2):
+            self.staff.post('/add', data=dict(self.form, form_token=token(self.staff.get('/add')),
+                                             contact_email='', contact_phone_number=''))
+        ids = self.conn.execute('SELECT DISTINCT contact_id FROM orders WHERE order_id>1').fetchall()
+        self.assertEqual(len(ids), 2)
+
+    def test_requester_form_accepts_missing_phone_and_email(self):
+        link, _ = self.invite()
+        client, fields = self.requester(link)
+        response = client.post(link, data=dict(fields, contact_email='', contact_phone_number=''))
+        self.assertEqual(response.status_code, 303)
+        self.assertEqual(client.get(response.headers['Location']).status_code, 200)
+        self.assertEqual(self.conn.execute('SELECT COUNT(*) FROM orders').fetchone()[0], 3)
+        self.mail.assert_not_called()
+
+    def test_optional_channels_have_no_html_required_attribute(self):
+        page = self.staff.get('/add').data
+        for field in ['contact_email', 'contact_phone_number']:
+            element = re.search(rb'<input id="' + field.encode() + rb'"[^>]*>', page).group()
+            self.assertNotIn(b'required', element)
+
     def test_staff_tokens_reject_missing_tampered_and_other_browser(self):
         key = token(self.staff.get('/add'))
         self.assertEqual(self.staff.post('/add', data=self.form).status_code, 400)
@@ -181,7 +247,7 @@ class IntakeTests(DatabaseTestCase):
 
     def test_title_and_form_labels_render_cleanly(self):
         response = self.staff.get('/')
-        self.assertIn(b'<title>My Desk - PIF Portal</title>', response.data)
+        self.assertIn(b'<title>Order Desk - PIF Portal</title>', response.data)
         self.assertEqual(response.data.count(b'src="/static/js/order_actions.js"'), 1)
         response = self.staff.get('/add')
         self.assertIn(b'for="recipient-0-recipient_name"', response.data)

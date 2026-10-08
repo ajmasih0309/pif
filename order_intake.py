@@ -63,14 +63,14 @@ def validate(form, shop_codes):
     errors = {}
     for field, label, limit in [('contact_name', 'Contact name', 150), ('contact_email', 'Email', 254),
                                 ('contact_phone_number', 'Phone number', 40)]:
-        if not values[field] or len(values[field]) > limit:
+        if (field == 'contact_name' and not values[field]) or len(values[field]) > limit:
             errors[field] = f'Enter a {label.lower()} (up to {limit} characters).'
-    if not re.fullmatch(r'[^\s@]+@[^\s@]+\.[^\s@]+', values['contact_email']):
+    if values['contact_email'] and not re.fullmatch(r'[^\s@]+@[^\s@]+\.[^\s@]+', values['contact_email']):
         errors['contact_email'] = 'Enter an email address such as name@example.com.'
     phone = re.sub(r'\D', '', values['contact_phone_number'])
     if len(phone) == 11 and phone.startswith('1'):
         phone = phone[1:]
-    if len(phone) != 10 or re.search(r'[^0-9+().\s-]', values['contact_phone_number']):
+    if values['contact_phone_number'] and (len(phone) != 10 or re.search(r'[^0-9+().\s-]', values['contact_phone_number'])):
         errors['contact_phone_number'] = 'Enter a 10-digit phone number.'
     if values['shop_name'] not in shop_codes:
         errors['shop_name'] = 'Choose a bike shop.'
@@ -97,8 +97,8 @@ def validate(form, shop_codes):
         prefix = f'recipient-{i}-'
         if not row['recipient_name'] or len(row['recipient_name']) > 150:
             errors[prefix + 'recipient_name'] = 'Enter a recipient name (up to 150 characters).'
-        if row['age'] and (len(row['age']) > 3 or not row['age'].isascii() or not row['age'].isdigit() or not 0 <= int(row['age']) <= 120):
-            errors[prefix + 'age'] = 'Enter a whole-number age from 0 to 120.'
+        if row['age'] and (len(row['age']) > 3 or not row['age'].isascii() or not row['age'].isdigit() or not 1 <= int(row['age']) <= 80):
+            errors[prefix + 'age'] = 'Enter a whole-number age from 1 to 80.'
         if row['height'] and row['height'] not in HEIGHTS:
             errors[prefix + 'height'] = 'Choose a height from the list.'
         if row['bike_style_preference'] not in ('', 'Male', 'Female', 'No Preference'):
@@ -123,7 +123,7 @@ def save_order(conn, values, rows, phone, actor, key):
         return previous, False
     contact = conn.execute('''SELECT contact_id FROM contacts WHERE contact_name=?
         AND contact_email=? AND contact_phone_number=? ORDER BY contact_id LIMIT 1''',
-        (values['contact_name'], values['contact_email'], phone)).fetchone()
+        (values['contact_name'], values['contact_email'], phone)).fetchone() if values['contact_email'] or phone else None
     contact_id = contact['contact_id'] if contact else conn.execute('''INSERT INTO contacts
         (contact_name, contact_phone_number, contact_email) VALUES (?, ?, ?)''',
         (values['contact_name'], phone, values['contact_email'])).lastrowid

@@ -1,6 +1,59 @@
 (() => {
     const form = document.getElementById('intake-form');
     if (!form) return;
+    const phone = document.getElementById('contact_phone_number');
+    const formatPhone = () => {
+        // Keep invalid or overlong input visible rather than silently losing digits.
+        if (/[^0-9+().\s-]/.test(phone.value)) return;
+        let digits = phone.value.replace(/\D/g, '');
+        const hasCountryCode = digits.length === 11 && digits.startsWith('1');
+        if (hasCountryCode) digits = digits.slice(1);
+        if (digits.length > 10) return;
+        const caret = phone.selectionStart;
+        const digitOffset = phone.value.slice(0, caret).replace(/\D/g, '').length - (hasCountryCode ? 1 : 0);
+        phone.value = digits ? `(${digits.slice(0, 3)}` : '';
+        if (digits.length > 3) phone.value += `) ${digits.slice(3, 6)}`;
+        if (digits.length > 6) phone.value += `-${digits.slice(6)}`;
+        if (document.activeElement === phone && caret !== null) {
+            let position = 0, seen = 0;
+            while (position < phone.value.length && seen < digitOffset) {
+                if (/\d/.test(phone.value[position])) seen++;
+                position++;
+            }
+            phone.setSelectionRange(position, position);
+        }
+    };
+    phone.addEventListener('beforeinput', event => {
+        // Backspace/Delete across a separator should remove a digit, not get stuck.
+        const start = phone.selectionStart, end = phone.selectionEnd;
+        if (start !== end || start === null) return;
+        const backwards = event.inputType === 'deleteContentBackward';
+        if (!backwards && event.inputType !== 'deleteContentForward') return;
+        const adjacent = backwards ? start - 1 : start;
+        if (adjacent < 0 || adjacent >= phone.value.length || /\d/.test(phone.value[adjacent])) return;
+        let digit = adjacent;
+        while (digit >= 0 && digit < phone.value.length && !/\d/.test(phone.value[digit])) digit += backwards ? -1 : 1;
+        if (digit < 0 || digit >= phone.value.length) return;
+        event.preventDefault();
+        phone.setRangeText('', backwards ? digit : start, backwards ? start : digit + 1, 'end');
+        formatPhone();
+    });
+    phone.addEventListener('input', formatPhone);
+    phone.addEventListener('blur', formatPhone);
+    formatPhone();
+    form.addEventListener('input', event => {
+        const input = event.target;
+        if (input.name !== 'age[]') return;
+        const invalid = input.validity.badInput || (input.value !== '' &&
+            (!/^[0-9]+$/.test(input.value) || Number(input.value) < 1 || Number(input.value) > 80));
+        const message = invalid ? 'Enter a whole-number age from 1 to 80, or leave blank if unknown.' : '';
+        input.setCustomValidity(message);
+        input.classList.toggle('is-invalid', invalid);
+        input.setAttribute('aria-invalid', String(invalid));
+        const error = document.getElementById(`${input.id}-live-error`);
+        error.textContent = message;
+        error.hidden = !invalid;
+    });
     const list = document.getElementById('recipient-list');
     const feedback = document.getElementById('intake-feedback');
     const submit = document.getElementById('submit-order');
@@ -42,12 +95,18 @@
             const card = copy.closest('[data-recipient]');
             const previous = card.previousElementSibling;
             if (previous) card.querySelectorAll('input, select, textarea').forEach(input => {
-                if (input.name && input.name !== 'recipient_name[]') input.value = previous.querySelector(`[name="${input.name}"]`).value;
+                if (input.name && input.name !== 'recipient_name[]') {
+                    input.value = previous.querySelector(`[name="${input.name}"]`).value;
+                    input.dispatchEvent(new Event('input', { bubbles: true }));
+                }
             });
         }
         const guide = event.target.closest('[data-style-guide]');
         if (guide) {
             styleTarget = document.getElementById(guide.dataset.styleGuide);
+            const choice = styleTarget.name === 'bike_type_first_choice[]' ? 'first' : 'second';
+            const recipient = guide.closest('[data-recipient]').querySelector('[data-number]').textContent;
+            document.getElementById('bike-style-title').textContent = `Recipient ${recipient}: ${choice} bike choice`;
             bootstrap.Modal.getOrCreateInstance(document.getElementById('bikeStyleModal')).show();
         }
     });

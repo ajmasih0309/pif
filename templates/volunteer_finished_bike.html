@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% from '_workshop_forms.html' import error with context %}
+{% block title %}Finished bike · Pedal It Forward{% endblock %}
+{% block content %}
+<div class="volunteer-entry mx-auto" style="max-width:600px;">
+<h1 class="chalk-header">One more bike ready!</h1>
+<p class="fs-5">Record the bike and your contribution.</p>
+{% if errors %}<div class="alert alert-warning" role="alert">Nothing saved yet. Check the highlighted fields below.</div>{% endif %}
+{% if person %}
+<div class="marker-panel mb-3 d-flex flex-wrap align-items-center justify-content-between gap-2">
+    <div>Recording as <strong>{{ person.volunteer_name }}</strong><span class="small text-muted d-block">Volunteer #{{ person.volunteer_id }}</span></div>
+    <form method="post" action="{{ url_for('volunteer_entry.forget') }}"><input type="hidden" name="form_token" value="{{ forget_token }}"><input type="hidden" name="return_to" value="bikes"><input type="hidden" name="shop" value="{{ values.shop_name }}"><button class="btn btn-outline-dark">Not you?</button></form>
+</div>
+{% else %}
+<section class="marker-panel mb-3" aria-labelledby="find-name-heading">
+    <h2 class="fs-4" id="find-name-heading">Find your name</h2>
+    <form method="get" data-name-search>
+        <input type="hidden" name="shop" value="{{ values.shop_name }}">
+        <label for="name-query" class="form-label">Your name</label>
+        <div class="d-flex gap-2"><input id="name-query" class="form-control" name="q" value="{{ query }}" type="search" minlength="2" maxlength="100" placeholder="Start typing your name" autocomplete="off" data-names-url="{{ url_for('volunteer_entry.names') }}"><button class="btn btn-outline-dark">Find</button></div>
+    </form>
+    <p class="small mt-2 mb-0">Can't find your name? Ask staff to add you. Staff can confirm your number if names match.</p>
+</section>
+{% endif %}
+<form method="post" id="volunteer-bike" data-workshop-form>
+    <input type="hidden" name="form_token" value="{{ form_token }}">
+    {% if person %}<input type="hidden" name="volunteer_id" value="{{ person.volunteer_id }}">
+    {% else %}
+    <fieldset class="mb-3"><legend class="fs-5">Select your name</legend>
+        <div data-name-options>{% for match in matches %}<label class="marker-panel d-block mb-2"><input class="form-check-input me-2" type="radio" name="volunteer_id" value="{{ match.volunteer_id }}" required> {{ match.volunteer_name }} #{{ match.volunteer_id }}</label>{% endfor %}</div>
+        <p class="small" role="status" data-name-status>{% if matches %}Select your name above.{% elif query|length >= 2 %}No matching names. Check the spelling or ask staff to add you.{% else %}Type at least two letters to find your name.{% endif %}</p>
+    </fieldset>{% endif %}
+    {{ error('volunteer_id',errors) }}
+    <label class="d-flex gap-2 align-items-start mb-4"><input class="form-check-input mt-1" type="checkbox" name="remember" value="yes" {% if remember %}checked{% endif %}><span>Remember me on this phone<span class="small text-muted d-block">Also works for hours. Leave unchecked on a shared device.</span></span></label>
+    <section class="marker-panel mb-3" aria-labelledby="bike-details-heading">
+        <h2 class="fs-4" id="bike-details-heading">Bike tag &amp; details</h2>
+        <label class="form-label" for="bike_tag">Bike tag (required)</label>
+        <div class="d-flex gap-2"><input class="form-control form-control-lg" id="bike_tag" name="bike_tag" value="{{ values.bike_tag }}" maxlength="50" required placeholder="Tag number" autocapitalize="off" spellcheck="false"><button class="btn btn-outline-dark text-nowrap flex-shrink-0" type="submit" name="action" value="check_tag" formnovalidate>Check tag</button></div>
+        {{ error('bike_tag',errors) }}
+        <p class="small mt-2">Enter the new tag with the bike's details below. Already recorded? Check the tag to add your contribution. Leading zeros identify the same bike.</p>
+        {% if checked_tag and not existing and not errors.bike_tag %}<p class="text-success" role="status">This tag is ready for a new bike record.</p>{% endif %}
+        {% if existing %}
+        <h3 class="fs-4" id="existing-bike-heading">Tag {{ existing.bike_tag }} is already recorded</h3>
+        <dl class="row mb-2">{% for label,value in [('Shop',existing_shop),('Make / model',(existing.make or '') ~ ' ' ~ (existing.model or '')),('Colour',existing.colour),('Wheel size',existing.wheel_size),('Bike type',existing.bike_type)] %}<dt class="col-5">{{ label }}</dt><dd class="col-7">{{ value|trim if value and value|trim else 'Not recorded' }}</dd>{% endfor %}</dl>
+        <p class="small">If this is the bike you worked on, add your contribution below. Its original shop, time and bike details will be kept; any new bike details you entered will not replace them. Ask staff if a detail needs correcting.</p>
+        <input type="hidden" name="existing_token" value="{{ existing_token }}">
+        <input type="hidden" name="shop_name" value="{{ existing.shop_name }}">
+        <label class="d-flex gap-2"><input class="form-check-input mt-1" type="checkbox" name="confirm_existing" value="yes">This is the same bike. Add my contribution.</label>
+        {{ error('confirm_existing',errors) }}
+        {% else %}
+        <div class="row g-3">
+            <div class="col-12"><label class="form-label" for="shop_name">Shop (required)</label><select class="form-select" id="shop_name" name="shop_name" required><option value="">Choose your shop</option>{% for shop in shops %}<option value="{{ shop.shop_name }}" {% if values.shop_name==shop.shop_name %}selected{% endif %}>{{ shop.shop_location }}</option>{% endfor %}</select>{{ error('shop_name',errors) }}</div>
+            {% for field,label in [('make','Make'),('model','Model')] %}
+            <div class="col-sm-6"><label class="form-label" for="{{ field }}">{{ label }} (optional)</label><input class="form-control" id="{{ field }}" name="{{ field }}" value="{{ values[field] }}" maxlength="200" list="{{ field }}-options"><datalist id="{{ field }}-options">{% for option in suggestions[field] %}<option value="{{ option }}"></option>{% endfor %}</datalist>{{ error(field,errors) }}</div>
+            {% endfor %}
+            {% for field,label,options in [('wheel_size','Wheel size',wheel_sizes),('bike_type','Bike type',bike_types)] %}
+            <div class="col-sm-6"><label class="form-label" for="{{ field }}">{{ label }} (optional)</label><select class="form-select" id="{{ field }}" name="{{ field }}">
+                <option value="">Choose if known</option>
+                {% if values[field] and values[field] not in options %}<option value="{{ values[field] }}" selected>{{ values[field] }} — choose a listed option</option>{% endif %}
+                {% for option in options %}<option value="{{ option }}" {% if values[field]==option %}selected{% endif %}>{{ option }}</option>{% endfor %}
+            </select>{{ error(field,errors) }}</div>
+            {% endfor %}
+            <div class="col-12">
+                <details class="bike-colour-picker" data-colour-picker>
+                    <summary class="form-select" id="colour-heading">Colour (optional): <span data-colour-selection>{% for name,swatch in bike_colours %}{% if values.colour==name %}<span class="bike-colour-swatch" style="background:{{ swatch }}" aria-hidden="true"></span> {{ name }}{% endif %}{% endfor %}{% if not values.colour %}Choose if known{% endif %}{% if errors.colour %}Choose a listed option{% endif %}</span></summary>
+                    <fieldset class="bike-colour-options"><legend class="visually-hidden">Colour (optional)</legend>
+                        <label><input class="form-check-input" type="radio" name="colour" value="" {% if not values.colour %}checked{% endif %}><span data-colour-label>Not sure / leave blank</span></label>
+                        {% for name,swatch in bike_colours %}<label><input class="form-check-input" type="radio" name="colour" value="{{ name }}" {% if values.colour==name %}checked{% endif %}><span data-colour-label><span class="bike-colour-swatch" style="background:{{ swatch }}" aria-hidden="true"></span> {{ name }}</span></label>{% endfor %}
+                    </fieldset>
+                </details>{{ error('colour',errors) }}
+            </div>
+            <div class="col-12"><details><summary>View A–F bike pictures</summary><div class="row g-2 mt-1">{% for letter in bike_types %}<div class="col-6 col-sm-4"><figure class="bike-card border p-2 mb-0"><figcaption class="text-center fs-4">{{ letter }}</figcaption><img src="{{ url_for('static', filename='imgs/Bike' ~ letter ~ '.png') }}" alt="Bike style {{ letter }} — same guide as New Order" class="img-fluid d-block" loading="lazy"></figure></div>{% endfor %}</div></details></div>
+        </div>
+        <p class="small mt-3 mb-0">If a size or colour isn't listed, choose Other and describe it in your note. The finished time is recorded when you save.</p>
+        {% endif %}
+    </section>
+    <div class="my-3">
+        <label class="form-label" for="contribution_notes">Your contribution / note (optional)</label>
+        <textarea class="form-control" id="contribution_notes" name="contribution_notes" rows="3" maxlength="2000" placeholder="Adjusted brakes, replaced cables…">{{ values.contribution_notes }}</textarea>
+        {{ error('contribution_notes',errors) }}
+        <p class="small mt-2">Each volunteer records their own contribution using the same bike tag.</p>
+    </div>
+    <p class="small">This records your bike contribution. Hours are logged separately.</p>
+    <button type="submit" class="btn btn-dark btn-lg w-100" name="action" value="save">{{ 'Save my contribution' if existing else 'Save finished bike' }}</button><p data-save-feedback role="status" class="mt-2"></p>
+</form>
+<p class="mt-3"><a class="btn btn-outline-dark w-100" data-hours-link href="{{ url_for('volunteer_entry.log_hours',shop=existing.shop_name if existing else values.shop_name) }}">Log my volunteer hours</a><span class="small d-block mt-2">Save your bike entry before leaving this page.</span></p>
+</div>
+<script src="{{ url_for('static',filename='js/volunteer_entry.js') }}" defer></script>
+<script src="{{ url_for('static',filename='js/workshop.js') }}" defer></script>
+{% endblock %}

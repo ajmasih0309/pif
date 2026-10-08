@@ -28,7 +28,7 @@ from database import get_db_connection
 from order_search import search_orders
 from order_intake import (ensure_schema, form_token, check_token, form_values, validate,
                           save_order, existing_submission, shops, HEIGHTS, TYPES)
-from utils import send_email, email_feedback, unformat_phone, fetch_all_orders
+from utils import send_email, email_feedback, fetch_all_orders
 
 
 # =============================================================================
@@ -44,6 +44,10 @@ for setting in ('MAIL_USERNAME', 'MAIL_PASSWORD', 'MAIL_SERVER', 'MAIL_PORT',
 
 from requester_links import requester_links
 app.register_blueprint(requester_links)
+from workshop import workshop
+app.register_blueprint(workshop)
+from volunteer_entry import volunteer_entry
+app.register_blueprint(volunteer_entry)
 
 scheduler = APScheduler()
 scheduler.init_app(app)
@@ -199,11 +203,11 @@ def add():
                 return redirect(url_for('index'))
             values, recipients, phone, errors = validate(request.form, {s['shop_name'] for s in available_shops})
             if not errors:
-                ids, created = save_order(conn, values, recipients, phone, session['username'], key)
+                ids, _ = save_order(conn, values, recipients, phone, session['username'], key)
     if request.method == 'POST' and not errors:
         # Confirmation email is sent only after the entire submission commits.
         notifications = []
-        for recipient in recipients:
+        for recipient in (recipients if values['contact_email'] else []):
             sent = send_email(to_email=values['contact_email'], subject="We received your bike request!",
                               template_name='order_received', recipient_name=recipient['recipient_name'],
                               shop_name=values['shop_name'])
@@ -250,7 +254,7 @@ def update_status(order_id):
             'Cancelled': {'Open'},
         }
         if new_status not in allowed_transitions.get(order['order_status'], set()):
-            abort(409, 'This order has changed. Reload My Desk before taking another action.')
+            abort(409, 'This order has changed. Reload Order Desk before taking another action.')
         conn.execute('''
         UPDATE orders 
         SET order_status = ?, last_status = order_status, last_updated_by = ?, last_updated_date = ?
@@ -297,7 +301,7 @@ def fulfill(order_id):
             # A double click or retry must not overwrite the original audit trail.
             return redirect_to_desk()
         if order['order_status'] != 'Contacted':
-            abort(409, 'Only Contacted orders can be picked up. Reload My Desk to see this order’s current status.')
+            abort(409, 'Only Contacted orders can be picked up. Reload Order Desk to see this order’s current status.')
         conn.execute('''
         UPDATE orders 
         SET pickup_date = ?, bike_tag = ?, last_status = order_status,
@@ -350,75 +354,69 @@ def search_partners():
 @app.route('/dashboard')
 @login_required
 def dashboard():
-    conn = get_db_connection()
-    
-    # Determine if this is a form submission or initial load
+    current_year = datetime.now().year
+    selected_year = request.args.get('year', str(current_year))
+    if (len(selected_year) != 4 or not selected_year.isascii()
+            or not selected_year.isdigit() or int(selected_year) < 1):
+        selected_year = str(current_year)
+        flash('Invalid year. Showing the current year instead.', 'warning')
+
     if not request.args:
-        selected_year = '2026'
         selected_shops = ['B', 'R', 'S']
-        selected_months = [str(i).zfill(2) for i in range(1, 13)] # '01' to '12'
+        selected_months = list(range(1, 13))
     else:
-        selected_year = request.args.get('year', '2026')
-        selected_shops = request.args.getlist('shop')
-        # Pad month numbers with leading zeros for SQLite strftime compatibility
-        selected_months = [m.zfill(2) for m in request.args.getlist('month')]
+        selected_shops = sorted(set(request.args.getlist('shop')) & {'B', 'R', 'S'})
+        month_values = request.args.getlist('month')
+        valid_months = {str(m): m for m in range(1, 13)}
+        valid_months.update({f'{m:02d}': m for m in range(1, 13)})
+        selected_months = sorted({valid_months[m] for m in month_values if m in valid_months})
+        if any(m not in valid_months for m in month_values):
+            flash('Invalid month filters were ignored.', 'warning')
 
-    # Fallback if filters are completely cleared (prevent SQL errors)
-    if not selected_shops or not selected_months:
-        monthly_counts = [0] * 12
-        this_year_total = 0
-        last_year_total = 0
-    else:
-        shop_placeholders = ','.join(['?'] * len(selected_shops))
-        month_placeholders = ','.join(['?'] * len(selected_months))
-        
-        # 1. Monthly Chart Data (Groups by month)
-        chart_query = f'''
-            SELECT strftime('%m', o.order_date) as month, COUNT(r.recipient_id) as total_bikes
-            FROM orders o
-            JOIN recipients r ON o.recipient_id = r.recipient_id
-            WHERE strftime('%Y', o.order_date) = ? 
-              AND o.shop_name IN ({shop_placeholders})
-              AND strftime('%m', o.order_date) IN ({month_placeholders})
-            GROUP BY month
-            ORDER BY month
-        '''
-        params = [selected_year] + selected_shops + selected_months
-        chart_data_raw = conn.execute(chart_query, params).fetchall()
-        
-        monthly_counts = [0] * 12
-        for row in chart_data_raw:
-            if row['month']:
-                monthly_counts[int(row['month']) - 1] = row['total_bikes']
-
-        # 2. Totals Query (Reusable for This Year and Last Year)
-        totals_query = f'''
-            SELECT COUNT(r.recipient_id) as total
-            FROM orders o
-            JOIN recipients r ON o.recipient_id = r.recipient_id
-            WHERE strftime('%Y', o.order_date) = ? 
-              AND o.shop_name IN ({shop_placeholders})
-              AND strftime('%m', o.order_date) IN ({month_placeholders})
-        '''
-        
-        # This Year
-        this_year_total = conn.execute(totals_query, params).fetchone()['total'] or 0
-        
-        # Last Year
-        last_year = str(int(selected_year) - 1)
-        last_year_params = [last_year] + selected_shops + selected_months
-        last_year_total = conn.execute(totals_query, last_year_params).fetchone()['total'] or 0
-        
-    conn.close()
+    monthly_counts = [0] * 12
+    last_year_total = 0
+    last_year = f'{int(selected_year) - 1:04d}'
+    with closing(get_db_connection()) as conn:
+        year_rows = conn.execute('''
+            SELECT DISTINCT strftime('%Y', pickup_date) AS year
+            FROM orders WHERE order_status = 'Completed'
+        ''').fetchall()
+        available_years = sorted(
+            {str(current_year - offset) for offset in range(3)} | {selected_year}
+            | {row['year'] for row in year_rows if row['year'] and row['year'] != '0000'},
+            reverse=True,
+        )
+        if selected_shops and selected_months:
+            shop_placeholders = ','.join('?' for _ in selected_shops)
+            month_placeholders = ','.join('?' for _ in selected_months)
+            # One order line represents one bike. Joining recipients can multiply
+            # legacy rows or hide completed orders whose recipient link is missing.
+            rows = conn.execute(f'''
+                SELECT strftime('%Y', pickup_date) AS year,
+                       strftime('%m', pickup_date) AS month, COUNT(*) AS total
+                FROM orders
+                WHERE order_status = 'Completed'
+                  AND strftime('%Y', pickup_date) IN (?, ?)
+                  AND shop_name IN ({shop_placeholders})
+                  AND strftime('%m', pickup_date) IN ({month_placeholders})
+                GROUP BY year, month
+            ''', [selected_year, last_year] + selected_shops
+                + [f'{m:02d}' for m in selected_months]).fetchall()
+            for row in rows:
+                if row['year'] == selected_year:
+                    monthly_counts[int(row['month']) - 1] = row['total']
+                else:
+                    last_year_total += row['total']
 
     return render_template(
         'dashboard.html',
         monthly_counts=monthly_counts,
-        this_year_total=this_year_total,
+        this_year_total=sum(monthly_counts),
         last_year_total=last_year_total,
         selected_year=selected_year,
         selected_shops=selected_shops,
-        selected_months=[int(m) for m in selected_months] # Converted to int for easier Jinja template checking
+        selected_months=selected_months,
+        available_years=available_years,
     )
 
 @app.route('/explorer')
@@ -485,5 +483,4 @@ def inject_global_vars():
 # EXECUTION
 # =============================================================================
 if __name__ == '__main__':
-    # DB upgrade removed here — assume you run `python manage_db.py` on deployments
     app.run(debug=True, port=5003)

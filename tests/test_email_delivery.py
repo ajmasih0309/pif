@@ -40,6 +40,15 @@ class EmailDeliveryTests(unittest.TestCase):
         self.assertNotIn('https://', page)
         self.assertEqual(Path(result.preview_path).stat().st_mode & 0o777, 0o600)
 
+    def test_missing_optional_email_skips_all_delivery_modes(self):
+        for mode in ['preview', 'test', 'live']:
+            self.app.config.update(EMAIL_MODE=mode, EMAIL_LIVE_ENABLED=True)
+            for recipient in [None, '', '   ']:
+                result = send_email(recipient, 'No recipient', 'order_received')
+                self.assertEqual(result.status, 'skipped')
+        self.smtp.assert_not_called()
+        self.assertEqual(list(Path(self.temp.name).iterdir()), [])
+
     def test_preview_metadata_and_name_are_escaped(self):
         result = send_email('<script>bad</script>', '<script>subject</script>', 'order_received', recipient_name='<script>name</script>')
         page = Path(result.preview_path).read_text()

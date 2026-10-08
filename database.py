@@ -7,10 +7,6 @@ Handles Database connection when app routes database related operations.
 import sqlite3
 from flask import current_app
 
-# Change the below table name when ready to switch
-TABLE_ORDERS = 'orders_50'
-TABLE_USERS = 'users'
-
 def get_db_connection():
     """
     Creates a fresh database connection for a request.

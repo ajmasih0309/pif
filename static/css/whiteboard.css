@@ -1,13 +1,17 @@
-/* Whiteboard surfaces, marker outlines, and readable entered data. */
+/* Whiteboard surfaces and consistent handwritten typography. */
 body { background: #fafaf7; color: #202521; }
 .form-control, .form-select { background-color: #fff; border-color: #606860; border-radius: .35rem; }
-.form-control, .form-select, .data-value { font-family: system-ui, sans-serif !important; font-size: 1rem; font-variant-numeric: tabular-nums; }
+.form-control, .form-select, .data-value { font-family: 'Patrick Hand', cursive !important; font-size: 1rem; font-variant-numeric: tabular-nums; }
 .marker-panel { padding: 1.25rem; border: 1.5px solid #343b34; border-radius: .4rem .7rem .35rem .6rem; background: #fff; }
+.form-control::placeholder, input::-webkit-datetime-edit { font-family: inherit; }
 .intake-page { max-width: 1000px; }
+.intake-page .field-status { color: #545c54; font-size: .875em; font-weight: 400; }
+.intake-page .form-text { color: #545c54; font-family: 'Patrick Hand', cursive; font-size: .875rem; }
+.intake-page select { min-width: 0; }
 :focus-visible { outline: 3px solid #15659b !important; outline-offset: 3px; }
 .form-control:focus, .form-select:focus { border-color: #15659b; box-shadow: 0 0 0 .15rem #15659b26; }
 .form-control[readonly] { background: #f1f3ee; }
-.invalid-feedback { font-family: system-ui, sans-serif; font-size: .875rem; }
+.invalid-feedback { font-family: 'Patrick Hand', cursive; font-size: .875rem; }
 .bike-card { border-color: #646b64; border-radius: .4rem; }
 .bike-card:hover { border-color: #15659b; transform: none; box-shadow: 0 2px 6px #0002; }
 .nav-link:hover { transform: none; }
@@ -32,7 +36,6 @@ body { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: col
 .portal-nav .navbar-brand { display: flex; align-items: center; gap: .5rem; font-size: 1.85rem; letter-spacing: .04em; margin-right: 1rem; }
 .portal-nav .nav-link { color: #202521; font-weight: bold; font-size: 1.2rem; padding: .5rem .75rem !important; border: 1px solid transparent; border-radius: .4rem .65rem .35rem .5rem; }
 .portal-nav .nav-link:hover, .portal-nav .nav-link.active { background: #f2eddd; border-color: #343b34; text-decoration: none; }
-.portal-nav .new-order-link { background: #e2eef3; border-color: #343b34; }
 .portal-nav .navbar-collapse { flex-grow: 0; }
 .portal-welcome { margin-left: auto; margin-right: 1rem; font-size: 1.35rem; text-align: left; overflow-wrap: anywhere; max-width: 22%; }
 .order-search-panel summary { cursor: pointer; padding: .35rem 0; }
@@ -41,7 +44,7 @@ body { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: col
 .row > *, .card, .card-body { min-width: 0; }
 .table-responsive { max-width: 100%; }
 #orderTabs { gap: .25rem; flex-wrap: wrap; }
-@media (max-width: 1199.98px) {
+@media (max-width: 1399.98px) {
     .portal-nav .navbar-collapse { padding-block: .75rem; }
     .portal-nav .staff-nav { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: .5rem .75rem; }
     .staff-nav .portal-welcome { grid-column: 2; grid-row: 1; margin: 0; max-width: none; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -86,3 +89,23 @@ body { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: col
     border-bottom: 2px dashed #202521;
     overflow-wrap: anywhere;
 }
+
+/* Native details/radios keep colour choices usable with keyboard and without JS. */
+.bike-colour-picker > summary { cursor: pointer; font-size: .95rem; }
+.bike-colour-swatch { display: inline-block; width: 1rem; height: 1rem; border: 1px solid #555; border-radius: .15rem; vertical-align: -.15rem; margin-right: .2rem; }
+.bike-colour-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .25rem; padding: .5rem; border: 1px solid #606860; border-radius: .35rem; max-height: 18rem; overflow-y: auto; font-family: 'Patrick Hand', cursive; font-size: .95rem; }
+.bike-colour-options label { display: flex; align-items: center; gap: .5rem; min-height: 2.75rem; padding: .35rem; cursor: pointer; border-radius: .25rem; }
+.bike-colour-options label:has(input:checked) { background: #e2eef3; }
+.bike-colour-options label:first-of-type { grid-column: 1 / -1; }
+
+/* Compact yearly summary; caller must authorize access to the volunteer. */
+.volunteer-impact { background: #f3f7f1; }
+.volunteer-impact dd { font-family: 'Patrick Hand', cursive; font-variant-numeric: tabular-nums; }
+.impact-weeks { display: grid; grid-template-columns: repeat(27, minmax(0, 1fr)); gap: 3px; }
+.impact-week { height: 9px; border-radius: 2px; background: #d9e1d5; border: 1px solid #c4cfbf; }
+.impact-week-active, .impact-key { background: #36704a; border: 1px solid #285839; }
+.impact-week-future { background: transparent; border-style: dotted; }
+.impact-key { display: inline-block; width: 9px; height: 9px; border-radius: 2px; }
+
+.portal-nav .dropdown-item { padding: .55rem 1rem; }
+.portal-nav .dropdown-item.active { background: #f2eddd; color: #202521; font-weight: bold; }

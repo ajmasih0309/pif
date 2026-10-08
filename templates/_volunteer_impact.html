@@ -1,0 +1,14 @@
+{% from '_workshop_forms.html' import duration %}
+<section class="volunteer-impact marker-panel mb-3" aria-labelledby="impact-title">
+    <h2 class="fs-5 mb-2" id="impact-title">Your year so far · {{ impact.year }}</h2>
+    <dl class="d-flex gap-4 mb-2">
+        <div><dt class="small fw-normal">Time volunteered</dt><dd class="fs-3 mb-0">{{ duration(impact.minutes) }}</dd></div>
+        <div><dt class="small fw-normal">Bikes worked on</dt><dd class="fs-3 mb-0">{{ impact.bikes }}</dd></div>
+    </dl>
+    <p class="small mb-2">{% if impact.active_weeks %}Thanks for showing up in {{ impact.active_weeks }} week{{ 's' if impact.active_weeks != 1 }} this year.{% else %}Every bit helps. Your first entry will start your year here.{% endif %}</p>
+    <div class="impact-weeks" role="img" aria-label="{{ impact.active_weeks }} active weeks in {{ impact.year }}. Each square is one week, January to December; filled squares show logged hours or bike contributions.">
+        {% for week in impact.weeks %}<span class="impact-week impact-week-{{ week.state }}" title="{{ week.label }}" aria-hidden="true"></span>{% endfor %}
+    </div>
+    <div class="d-flex justify-content-between small text-muted mt-1"><span>Jan → Dec · one square per week</span><span><span class="impact-key" aria-hidden="true"></span> Active</span></div>
+    <p class="small text-muted mt-2 mb-0">Logged activity across all shops. Each bike counts once; earlier work may not be linked yet.</p>
+</section>
