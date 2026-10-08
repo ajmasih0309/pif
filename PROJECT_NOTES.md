@@ -2,6 +2,25 @@
 
 Updated 2026-10-08. This file records decisions for future work on PIF Portal.
 
+- User prefers the compact Order Desk cards on desktop too. Supersedes the
+  mobile-only layout below: one column below 768px, two columns above. Shared
+  `_order_cards.html` and `order_cards.js` replace the duplicate desktop tables
+  and mobile-only template/script. Order Explorer keeps its table. Search results
+  stay collapsed until opened, with exact Order ID links retained. No workflow,
+  business-rule, database or email-setting changes.
+
+- Mobile Order Desk refinement: below 768px, compact order cards replace stacked
+  table cells. Explicit View bikes/Hide bikes and recipient View details & actions
+  controls; one expanded order and one bike per order. Native details controls
+  with JS accordion fallback, separate contact details, compact nonempty bike
+  facts, full notes and labelled pickup date/tag/Save pickup. Desktop unchanged.
+  Actions reuse existing endpoints, confirmation, pending feedback and return
+  filters/page. No new business rules or database changes. Mobile form regression
+  tests cover contact, both cancellation paths, restore and completion on a
+  disposable database; browser checked 390px multi-bike expansion and pickup.
+  All 143 Python tests and 3 Node order-action tests pass. Changes are uncommitted
+  after the user's dca6fec commit; no push or merge performed in this pass.
+
 - Git handoff prepared 2026-10-08: application changes stay on
   `codex/database-cleanup`, separate from `codex/spreadsheet-cleanup`. User will
   commit/push/merge and sync locally using `design/git-handoff.md`. Remote main

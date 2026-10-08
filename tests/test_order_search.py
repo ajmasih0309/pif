@@ -140,10 +140,12 @@ class OrderSearchTests(DatabaseTestCase):
         })
         self.assertEqual(parse_qs(urlsplit(response.location).query), {'status': ['open'], 'page': ['2']})
 
-    def test_matching_group_expands_and_links_to_exact_record(self):
+    def test_matching_group_has_cards_and_links_to_exact_record(self):
         response, context = self.page(q='#2')
         self.assertEqual(context['active_tab'], 'all')
-        self.assertIn(b'class="collapse show" id="collapseAll1"', response.data)
+        self.assertIn(b'class="desk-order-list" data-order-cards', response.data)
+        self.assertIn(b'View bikes', response.data)
+        self.assertNotIn(b'class="table-responsive', response.data)
         self.assertIn(b'Cargo basket requested', response.data)
         self.assertIn(b'/explorer?q=%232', response.data)
         response, _ = self.page('/explorer', q='#2')
