@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% from '_workshop_forms.html' import volunteer_picker with context %}
+{% block title %}Bike {{ bike.bike_tag }} - PIF Portal{% endblock %}
+{% block content %}
+<h1 class="chalk-header">Bike {{ bike.bike_tag }}</h1>
+<div class="d-flex flex-wrap gap-2 mb-3"><a class="btn btn-outline-dark" href="{{ url_for('workshop.inventory') }}">All finished bikes</a><a class="btn btn-dark" href="{{ url_for('workshop.new_bike') }}">＋ Next bike</a><a class="btn btn-outline-dark" href="{{ url_for('workshop.hours_form') }}">Log volunteer hours</a></div>
+<dl class="marker-panel row g-2">
+{% for field,label in [('shop_name','Shop'),('recorded_at','Finished'),('make','Make'),('model','Model'),('colour','Colour'),('wheel_size','Wheel size'),('bike_type','Bike type')] %}
+<dt class="col-sm-3">{{ label }}</dt><dd class="col-sm-9">{{ bike[field] or '—' }}</dd>
+{% endfor %}
+</dl>
+<h2 class="fs-3">Volunteer contributions</h2>
+<p class="small text-muted">A volunteer can contribute more than once. Historical names stay separate until matched to a volunteer profile.</p>
+<div class="table-responsive"><table class="table table-bordered bg-white"><thead><tr><th>Volunteer</th><th>Recorded name</th><th>Recorded at</th><th>Note</th></tr></thead><tbody>
+{% for c in bike.contributions %}<tr><td>{% if c.volunteer_id %}<a href="{{ url_for('workshop.hours',volunteer_id=c.volunteer_id) }}">{{ c.volunteer_name }} #{{ c.volunteer_id }}</a>{% else %}Not linked{% endif %}</td><td>{{ c.recorded_name or '—' }}</td><td>{{ c.recorded_at or '—' }}</td><td style="white-space:pre-wrap">{{ c.notes or '—' }}</td></tr>{% else %}<tr><td colspan="4">No contributions recorded yet.</td></tr>{% endfor %}
+</tbody></table></div>
+<details {% if errors %}open{% endif %}><summary class="fs-4">Add another contribution</summary>
+<form method="post" data-workshop-form><input type="hidden" name="form_token" value="{{ form_token }}">{{ volunteer_picker(volunteers,selected_ids,errors) }}<button class="btn btn-dark">Save contributions</button><span data-save-feedback class="ms-2" role="status"></span></form>
+</details>
+<script src="{{ url_for('static',filename='js/workshop.js') }}" defer></script>
+{% endblock %}

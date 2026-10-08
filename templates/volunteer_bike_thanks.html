@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block title %}Bike contribution saved · Pedal It Forward{% endblock %}
+{% block content %}
+<div class="marker-panel mx-auto" style="max-width:600px;">
+    <h1 class="chalk-header">Thanks, {{ receipt.volunteer_name }}!</h1>
+    <p class="fs-4" role="status">{{ 'Your contribution saved for' if receipt.existing else 'Finished bike saved:' }} tag {{ receipt.bike_tag }}.</p>
+    <p>Your contribution is recorded. Bike shop: {{ receipt.shop_location }}.</p>
+    {% if receipt.existing %}<p>The original bike details are unchanged.</p>{% endif %}
+    <div class="d-flex flex-wrap gap-2"><a class="btn btn-dark" href="{{ url_for('volunteer_entry.finished_bike',shop=receipt.shop_name) }}">Record another bike</a><a class="btn btn-outline-dark" href="{{ url_for('volunteer_entry.log_hours',shop=receipt.shop_name) }}">Log my hours</a></div>
+    <p class="small mt-3">Made a mistake? Ask staff to help. No hours were added by this form.</p>
+    <form method="post" action="{{ url_for('volunteer_entry.forget') }}"><input type="hidden" name="form_token" value="{{ forget_token }}"><input type="hidden" name="return_to" value="bikes"><input type="hidden" name="shop" value="{{ receipt.shop_name }}"><button class="btn btn-link text-dark p-0">Forget my name on this phone</button></form>
+</div>
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% from '_workshop_forms.html' import error with context %}
+{% block title %}{{ 'Correct' if row else 'Log' }} Volunteer Hours - PIF Portal{% endblock %}
+{% block content %}
+<div class="intake-page mx-auto" style="max-width: 900px;">
+<h1 class="chalk-header">{{ 'Correct' if row else 'Log' }} Volunteer Hours</h1>
+<p>Choose a volunteer, work date and hours worked. Shop, activity and notes are optional.</p>
+<form method="post" class="marker-panel row g-3" data-workshop-form>
+    <input type="hidden" name="form_token" value="{{ form_token }}">
+    {% if row %}<input type="hidden" name="version" value="{{ row.version }}">{% endif %}
+    <div class="col-12"><label for="volunteer_id" class="form-label">Volunteer (required)</label><select id="volunteer_id" name="volunteer_id" class="form-select" required data-volunteer-select><option value="">Choose a volunteer</option>{% for p in volunteers %}<option value="{{ p.volunteer_id }}" {% if values.volunteer_id==p.volunteer_id|string %}selected{% endif %}>{{ p.volunteer_name }} #{{ p.volunteer_id }}</option>{% endfor %}</select>{{ error('volunteer_id',errors) }}
+        <p class="small mb-0"><a href="{{ url_for('workshop.volunteers') }}" target="_blank" rel="noopener">Add a volunteer in a new tab</a>. <button type="button" class="btn btn-link btn-sm p-0" data-refresh-volunteers>Refresh volunteer list</button><span data-volunteer-count role="status"></span></p>
+    </div>
+    <div class="col-md-4"><label for="work_date" class="form-label">Work date</label><input class="form-control" id="work_date" name="work_date" type="date" value="{{ values.work_date }}" required>{{ error('work_date',errors) }}</div>
+    <div class="col-md-4"><label for="hours" class="form-label">Hours worked</label><input class="form-control" id="hours" name="hours" type="number" min="0.0166666667" max="24" step="any" value="{{ values.hours }}" required inputmode="decimal" aria-describedby="hours-help"><span id="hours-help" class="small text-muted">Example: 1.5 = 1 hour 30 minutes.</span>{{ error('hours',errors) }}</div>
+    <div class="col-md-4"><label for="shop_name" class="form-label">Shop</label><select class="form-select" id="shop_name" name="shop_name"><option value="">Unassigned / other activity</option>{% for s in shops %}<option value="{{ s.shop_name }}" {% if values.shop_name==s.shop_name %}selected{% endif %}>{{ s.shop_location }}</option>{% endfor %}</select>{{ error('shop_name',errors) }}</div>
+    <div class="col-12"><label class="form-label" for="activity">Activity (optional)</label><input id="activity" name="activity" class="form-control" value="{{ values.activity }}" maxlength="200" placeholder="Bike repairs, sorting donations, event support…">{{ error('activity',errors) }}</div>
+    <div class="col-12"><label class="form-label" for="notes">Notes (optional)</label><textarea id="notes" name="notes" class="form-control" rows="3" maxlength="2000">{{ values.notes }}</textarea>{{ error('notes',errors) }}</div>
+    {% if row %}<div class="col-12"><label for="reason" class="form-label">Reason for correction (required)</label><input id="reason" name="reason" class="form-control" required maxlength="500" value="{{ values.reason }}">{{ error('reason',errors) }}</div>{% endif %}
+    <div class="col-12"><button type="submit" class="btn btn-dark btn-lg">{{ 'Save correction' if row else 'Save hours' }}</button><a class="btn btn-outline-dark ms-2" href="{{ url_for('workshop.hours') }}">Back to hours</a><span data-save-feedback class="ms-2" role="status"></span></div>
+</form>
+{% if row %}<details class="marker-panel mt-4"><summary class="text-danger">Void this entry</summary><p>Use this for an entry that should not count. The original record and correction history are retained.</p><form method="post" action="{{ url_for('workshop.void_hours',time_log_id=row.time_log_id) }}" data-workshop-form data-confirm="Void this time entry and remove it from totals?"><input type="hidden" name="form_token" value="{{ void_token }}"><input type="hidden" name="version" value="{{ row.version }}"><label for="void-reason" class="form-label">Reason</label><input class="form-control mb-2" id="void-reason" name="reason" required maxlength="500"><button class="btn btn-outline-danger">Void entry</button><span data-save-feedback class="ms-2" role="status"></span></form></details>{% endif %}
+</div>
+<script src="{{ url_for('static',filename='js/workshop.js') }}" defer></script>
+{% endblock %}

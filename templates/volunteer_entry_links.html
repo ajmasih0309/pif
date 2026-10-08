@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block title %}Volunteer Form Links - PIF Portal{% endblock %}
+{% block content %}
+<div class="intake-page mx-auto"><h1 class="chalk-header">Volunteer Form Links</h1>
+<p>Use a reusable QR code for each form at each shop. These links prefill the shop; volunteers do not need a staff login.</p>
+<p>Add volunteers in <a href="{{ url_for('workshop.volunteers') }}">Volunteers</a> first. Volunteers can find their name and choose to remember it on their own phone.</p>
+<div class="alert alert-info">Before creating or printing QR codes, open this page using the address volunteers will use on their phones. A localhost address works only on this computer.</div>
+{% for shop in shops %}<div class="marker-panel mb-3"><h2 class="fs-4">{{ shop.shop_location }}</h2>{% for endpoint,label in [('volunteer_entry.log_hours','Volunteer hours'),('volunteer_entry.finished_bike','Finished bike')] %}<p class="mb-2"><strong>{{ label }}</strong><br><a style="overflow-wrap:anywhere;" href="{{ url_for(endpoint,shop=shop.shop_name) }}" target="_blank" rel="noopener">{{ url_for(endpoint,shop=shop.shop_name,_external=True) }}</a></p>{% endfor %}</div>{% endfor %}
+<p class="small">These forms submit self-reported time or bike contributions. Volunteer contact details, saved time logs and corrections remain staff-only.</p>
+<a class="btn btn-outline-dark" href="{{ url_for('workshop.hours') }}">Back to hours</a></div>
+{% endblock %}

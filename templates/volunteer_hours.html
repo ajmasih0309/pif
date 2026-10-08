@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% from '_workshop_forms.html' import pages, duration with context %}
+{% block title %}Volunteer Hours - PIF Portal{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3"><h1 class="chalk-header mb-0">Volunteer Hours</h1><a class="btn btn-dark" href="{{ url_for('workshop.hours_form') }}">＋ Log hours</a></div>
+<p>Record time independently of bikes and orders. <a href="{{ url_for('workshop.volunteers') }}">Manage volunteers</a> · <a href="{{ url_for('workshop.volunteer_links') }}">Volunteer Form Links</a>.</p>
+<form method="get" class="marker-panel row g-2 align-items-end">
+    <div class="col-md-4"><label for="volunteer_id" class="form-label">Volunteer</label><select name="volunteer_id" id="volunteer_id" class="form-select"><option value="">All volunteers</option>{% for p in volunteers %}<option value="{{ p.volunteer_id }}" {% if filters.volunteer_id==p.volunteer_id|string %}selected{% endif %}>{{ p.volunteer_name }} #{{ p.volunteer_id }}</option>{% endfor %}</select></div>
+    <div class="col-md-2"><label for="shop" class="form-label">Shop</label><select name="shop" id="shop" class="form-select"><option value="">All shops / unassigned</option>{% for s in shops %}<option value="{{ s.shop_name }}" {% if filters.shop==s.shop_name %}selected{% endif %}>{{ s.shop_location }}</option>{% endfor %}</select></div>
+    {% for field,label in [('from_date','From'),('to_date','Through')] %}<div class="col-md-2"><label for="{{ field }}" class="form-label">{{ label }}</label><input type="date" id="{{ field }}" name="{{ field }}" value="{{ filters[field] }}" class="form-control"></div>{% endfor %}
+    <div class="col-md-2"><button class="btn btn-dark w-100">Apply filters</button></div>
+    <div class="col-12"><a href="{{ url_for('workshop.hours') }}">Reset filters</a></div>
+</form>
+<p class="fs-4 mt-3 mb-0"><strong>{{ duration(total_minutes) }}</strong> across {{ pagination.total }} time entries matching these filters.</p>
+{{ pages(pagination,filters) }}
+<div class="table-responsive"><table class="table table-bordered bg-white"><thead><tr><th>Date</th><th>Volunteer</th><th>Time</th><th>Shop</th><th>Activity</th><th>Notes</th><th>Action</th></tr></thead><tbody>
+{% for log in rows %}<tr><td>{{ log.work_date }}</td><td>{{ log.volunteer_name }} <span class="small text-muted">#{{ log.volunteer_id }}</span></td><td class="text-nowrap">{{ duration(log.minutes) }}</td><td>{{ log.shop_location or 'Unassigned' }}</td><td>{{ log.activity or '—' }}</td><td style="min-width: 180px; white-space: pre-wrap;">{{ log.notes or '—' }}</td><td><a href="{{ url_for('workshop.hours_form',time_log_id=log.time_log_id) }}">Correct</a></td></tr>{% else %}<tr><td colspan="7">No time entries match these filters.</td></tr>{% endfor %}
+</tbody></table></div>
+{% endblock %}

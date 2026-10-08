@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% from '_workshop_forms.html' import error, pages with context %}
+{% block title %}Volunteers - PIF Portal{% endblock %}
+{% block content %}
+<h1 class="chalk-header">Volunteers</h1>
+<p>One profile per person, shared by finished bikes and volunteer hours. Use the volunteer ID to distinguish people with the same name.</p>
+<div class="d-flex flex-wrap gap-2 mb-3"><a class="btn btn-outline-dark" href="{{ url_for('workshop.inventory') }}">Finished Bikes</a><a class="btn btn-outline-dark" href="{{ url_for('workshop.hours') }}">Volunteer Hours</a></div>
+<details class="marker-panel mb-3" {% if errors %}open{% endif %}>
+    <summary class="fw-bold fs-4">Add a volunteer</summary>
+    <form method="post" class="row g-3 mt-1" data-workshop-form>
+        <input type="hidden" name="form_token" value="{{ form_token }}">
+        {% for field,label in [('volunteer_name','Name'),('volunteer_email','Email (optional)'),('volunteer_phone_number','Phone (optional)')] %}
+        <div class="col-md-4"><label for="{{ field }}" class="form-label">{{ label }}</label><input id="{{ field }}" name="{{ field }}" class="form-control" value="{{ values[field] }}" maxlength="200" type="{{ 'email' if field == 'volunteer_email' else 'tel' if field == 'volunteer_phone_number' else 'text' }}" {% if field == 'volunteer_name' %}required{% endif %}>{{ error(field,errors) }}</div>
+        {% endfor %}
+        <div class="col-md-6"><label class="form-label" for="joined_on">Joined on (optional)</label><input class="form-control" type="date" id="joined_on" name="joined_on" max="{{ today }}" value="{{ values.joined_on }}"><p class="small mb-0">Leave blank if unknown.</p>{{ error('joined_on',errors) }}</div>
+        <div class="col-md-6"><label class="form-label" for="is_active">Status</label><select class="form-select" id="is_active" name="is_active"><option value="1" {% if values.is_active=='1' %}selected{% endif %}>Active</option><option value="0" {% if values.is_active=='0' %}selected{% endif %}>Inactive</option></select>{{ error('is_active',errors) }}</div>
+        <div class="col-12"><label><input class="form-check-input me-2" type="checkbox" name="different_person" value="yes"> This is a different person from an existing volunteer with the same name.</label></div>
+        <div class="col-12"><button class="btn btn-dark" type="submit">Save volunteer</button><span data-save-feedback class="ms-2" role="status"></span></div>
+    </form>
+</details>
+<p class="small">Inactive volunteers keep their history but are not offered in volunteer-facing name searches. Staff can still record or correct historical work.</p>
+<form method="get" class="d-flex gap-2"><label for="q" class="visually-hidden">Search volunteers</label><input class="form-control" type="search" name="q" id="q" value="{{ q }}" placeholder="Search name, email or exact ID"><button class="btn btn-dark">Search</button></form>
+{{ pages(pagination, {'q':q}) }}
+<div class="table-responsive"><table class="table table-bordered bg-white"><thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Phone</th><th>Joined on</th><th>Status</th><th>Manage</th><th>Time logs</th></tr></thead><tbody>
+{% for person in rows %}<tr><td>#{{ person.volunteer_id }}</td><td>{{ person.volunteer_name }}</td><td>{{ person.volunteer_email or '—' }}</td><td>{{ person.volunteer_phone_number or '—' }}</td><td>{{ person.joined_on or 'Unknown' }}</td><td><span class="badge {{ 'bg-success' if person.is_active else 'bg-secondary' }}">{{ 'Active' if person.is_active else 'Inactive' }}</span></td><td><a href="{{ url_for('workshop.edit_volunteer',volunteer_id=person.volunteer_id) }}">Edit date / status</a></td><td><a href="{{ url_for('workshop.hours',volunteer_id=person.volunteer_id) }}">View hours</a></td></tr>
+{% else %}<tr><td colspan="8">No volunteers found. Add a profile above to get started.</td></tr>{% endfor %}
+</tbody></table></div>
+<script src="{{ url_for('static',filename='js/workshop.js') }}" defer></script>
+{% endblock %}

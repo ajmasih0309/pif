@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Data Explorer - PIF Portal{% endblock %}
+{% block title %}Order Explorer - PIF Portal{% endblock %}
 
 {% block content %}
 <!-- DataTables CSS for Bootstrap 5 -->
@@ -31,7 +31,7 @@
 
 <div class="row mt-4 mb-3">
     <div class="col-12">
-        <h1 class="chalk-header fw-bold text-center">Data Explorer</h1>
+        <h1 class="chalk-header fw-bold text-center">Order Explorer</h1>
     </div>
 </div>
 
@@ -64,7 +64,7 @@
             <tbody>
                 {% for item in items %}
                 <tr>
-                    <td><a href="{{ url_for('index', q='#' ~ item.order_id, status=item.order_status|lower) }}" aria-label="Open order {{ item.order_id }} on My Desk">#{{ item.order_id }}</a></td>
+                    <td><a href="{{ url_for('index', q='#' ~ item.order_id, status=item.order_status|lower) }}" aria-label="Open order {{ item.order_id }} on Order Desk">#{{ item.order_id }}</a></td>
                     <td data-sort="{{ item.order_date_iso }}">{{ item.order_date }}</td>
                     <td>
                         {% if item.order_status == 'Completed' %}
@@ -124,7 +124,9 @@
             order: [[1, 'desc']], // Sort ISO order dates, across years.
             columnDefs: [{ targets: -1, orderable: false }],
             language: {
-                lengthMenu: "Show _MENU_ records per page",
+                lengthMenu: "Show _MENU_ orders per page",
+                info: "Showing _START_–_END_ of _TOTAL_ orders",
+                infoEmpty: "Showing 0 orders",
                 emptyTable: "No orders match these filters."
             }
         });

@@ -6,5 +6,3 @@ __pycache__/
 data/
 docs/
 scripts/users.py
-.env
-``

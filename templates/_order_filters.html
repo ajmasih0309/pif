@@ -32,15 +32,15 @@
         </details>
         <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 border-top mt-3 pt-2">
             <p class="mb-0" role="status">
-                <strong>{{ result_count }}</strong> of {{ total_count }} bike requests
+                <strong>{{ result_count }}</strong> of {{ total_count }} orders
                 {% if search_query %}matching <strong>“{{ search_query }}”</strong>{% endif %}
                 {% if selected_order_type != 'all' %}in <strong>{{ dict(order_type_options)[selected_order_type] }}</strong>{% endif %}.
-                <span class="text-muted small">Order type counts include Open, Contacted, Completed, and Cancelled requests{% if search_query %} matching your search{% endif %}.</span>
+                <span class="text-muted small">Order counts include Open, Contacted, Completed, and Cancelled orders{% if search_query %} matching your search{% endif %}.</span>
             </p>
             {% if request.endpoint == 'index' %}
             <a href="{{ url_for('explorer', q=search_query, order_type=selected_order_type) }}">Explore these results →</a>
             {% else %}
-            <a href="{{ url_for('index', q=search_query, order_type=selected_order_type, status='all') }}">View on My Desk →</a>
+            <a href="{{ url_for('index', q=search_query, order_type=selected_order_type, status='all') }}">View on Order Desk →</a>
             {% endif %}
         </div>
     </div>

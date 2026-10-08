@@ -1,12 +1,17 @@
 {% extends 'base.html' %}
 
-{% block title %}Dashboard Analytics - PIF Portal{% endblock %}
+{% block title %}Reporting - PIF Portal{% endblock %}
 
 {% block content %}
+{% set month_labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] %}
 <!-- Chart.js CDN -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<h1 class="page-heading">Analytics Dashboard</h1>
+<h1 class="page-heading">Reporting</h1>
+<h2 class="fs-3">Bike Distribution</h2>
+<p>Completed bikes by pickup date. Each completed recipient bike counts separately,
+    including multiple bikes in one order. Both years use the selected shops and months.
+    Bikes without a usable pickup date are excluded.</p>
 
 <div class="row">
     <!-- FILTERS SIDEBAR -->
@@ -20,11 +25,11 @@
                     
                     <!-- Year Filter -->
                     <div class="mb-4">
-                        <label class="fw-bold fs-5 mb-2 border-bottom border-dark w-100">Year</label>
-                        <select name="year" class="form-select border-dark shadow-sm">
-                            <option value="2026" {% if selected_year == '2026' %}selected{% endif %}>2026</option>
-                            <option value="2025" {% if selected_year == '2025' %}selected{% endif %}>2025</option>
-                            <option value="2024" {% if selected_year == '2024' %}selected{% endif %}>2024</option>
+                        <label for="dashboard-year" class="fw-bold fs-5 mb-2 border-bottom border-dark w-100">Year</label>
+                        <select id="dashboard-year" name="year" class="form-select border-dark shadow-sm">
+                            {% for year in available_years %}
+                            <option value="{{ year }}" {% if selected_year == year %}selected{% endif %}>{{ year }}</option>
+                            {% endfor %}
                         </select>
                     </div>
 
@@ -53,7 +58,7 @@
                             <div class="col-6">
                                 <div class="form-check">
                                     <input class="form-check-input border-dark" type="checkbox" name="month" value="{{ i }}" id="month{{ i }}" {% if i in selected_months %}checked{% endif %}>
-                                    <label class="form-check-label" for="month{{ i }}">{{ i }}</label>
+                                    <label class="form-check-label" for="month{{ i }}">{{ month_labels[i - 1] }}</label>
                                 </div>
                             </div>
                             {% endfor %}
@@ -61,6 +66,7 @@
                     </div>
 
                     <button type="submit" class="btn btn-dark w-100 fw-bold fs-5 shadow-sm">Apply Filters</button>
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-outline-dark w-100 mt-2">Reset Filters</a>
                 </form>
             </div>
         </div>
@@ -74,16 +80,16 @@
             <div class="col-md-6 mb-3 mb-md-0">
                 <div class="card shadow-sm border-dark h-100" style="background-color: #e6f7ff;">
                     <div class="card-body text-center d-flex flex-column justify-content-center">
-                        <h2 class="fw-bold text-dark mb-0">This Year ({{ selected_year }})</h2>
-                        <span class="display-3 fw-bold text-primary">{{ this_year_total }} Bikes</span>
+                        <h2 class="fw-bold text-dark mb-0">Selected Year ({{ selected_year }})</h2>
+                        <span class="display-3 fw-bold text-primary">{{ this_year_total }} Bikes Completed</span>
                     </div>
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="card shadow-sm border-dark h-100" style="background-color: #fdf5e6;">
                     <div class="card-body text-center d-flex flex-column justify-content-center">
-                        <h2 class="fw-bold text-dark mb-0">Last Year ({{ selected_year | int - 1 }})</h2>
-                        <span class="display-3 fw-bold text-warning" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.2);">{{ last_year_total }} Bikes</span>
+                        <h2 class="fw-bold text-dark mb-0">Previous Year ({{ selected_year | int - 1 }})</h2>
+                        <span class="display-3 fw-bold text-warning" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.2);">{{ last_year_total }} Bikes Completed</span>
                     </div>
                 </div>
             </div>
@@ -112,9 +118,9 @@
         new Chart(ctx, {
             type: 'line',
             data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                labels: {{ month_labels | tojson }},
                 datasets: [{
-                    label: 'Total Bikes Fulfilled',
+                    label: 'Bikes Completed',
                     data: bikeData,
                     borderColor: '#f0ad4e', // Matching your amber highlight
                     backgroundColor: 'rgba(240, 173, 78, 0.2)',

@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% from '_workshop_forms.html' import error with context %}
+{% block title %}Edit Volunteer - PIF Portal{% endblock %}
+{% block content %}
+<div class="mx-auto" style="max-width:600px">
+<h1 class="chalk-header">Edit Volunteer</h1>
+<p>{{ person.volunteer_name }} · #{{ person.volunteer_id }}</p>
+{% if errors.profile %}<div class="alert alert-warning">{{ errors.profile }} <a href="{{ url_for('workshop.edit_volunteer',volunteer_id=person.volunteer_id) }}">Reload current profile</a></div>{% endif %}
+<form method="post" class="marker-panel" data-workshop-form>
+<input type="hidden" name="form_token" value="{{ form_token }}"><input type="hidden" name="version" value="{{ version }}">
+<label class="form-label" for="joined_on">Joined on (optional)</label><input class="form-control" type="date" id="joined_on" name="joined_on" max="{{ today }}" value="{{ values.joined_on }}">{{ error('joined_on',errors) }}<p class="small">Leave blank if unknown.</p>
+<label class="form-label" for="is_active">Status</label><select class="form-select" id="is_active" name="is_active"><option value="1" {% if values.is_active=='1' %}selected{% endif %}>Active</option><option value="0" {% if values.is_active=='0' %}selected{% endif %}>Inactive</option></select>{{ error('is_active',errors) }}
+<p class="small mt-2">Inactive volunteers keep all hours and bike contributions. They won't appear in volunteer-facing name searches until reactivated.</p>
+{% if not errors.profile %}<button class="btn btn-dark" type="submit">Save changes</button>{% endif %}<span data-save-feedback class="ms-2" role="status"></span>
+<a class="btn btn-outline-dark" href="{{ url_for('workshop.volunteers',q=person.volunteer_id) }}">Back to volunteers</a>
+</form></div><script src="{{ url_for('static',filename='js/workshop.js') }}" defer></script>
+{% endblock %}

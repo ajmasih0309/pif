@@ -117,7 +117,7 @@
 </head>
 <body>
     
-    <nav class="navbar navbar-expand-xl portal-nav mb-4" aria-label="Main navigation">
+    <nav class="navbar navbar-expand-xxl portal-nav mb-4" aria-label="Main navigation">
         <div class="container portal-shell {{ 'staff-nav' if session.get('username') and not requester_mode else '' }}">
             <a class="navbar-brand fw-bold text-dark" href="{{ '#' if requester_mode else url_for('index') }}">
                 <img src="{{ url_for('static', filename='imgs/pif-logo.png') }}" alt="" width="45" height="45"> PIF Portal
@@ -127,9 +127,28 @@
             <button class="navbar-toggler border-dark" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto gap-2">
-                    {% for endpoint, label in [('index', 'My Desk'), ('dashboard', 'Dashboard'), ('explorer', 'Data Explorer'), ('requester_links.manage', 'Requester Links'), ('add', '＋ New Order')] %}
-                    <li class="nav-item"><a class="nav-link {{ 'active' if request.endpoint == endpoint }} {{ 'new-order-link' if endpoint == 'add' }}" href="{{ url_for(endpoint) }}" {% if request.endpoint == endpoint %}aria-current="page"{% endif %}>{{ label }}</a></li>
-                    {% endfor %}
+                    {% set order_pages = ['index', 'explorer', 'add', 'requester_links.manage'] %}
+                    <li class="nav-item dropdown">
+                        <button class="nav-link dropdown-toggle {{ 'active' if request.endpoint in order_pages }}" type="button" data-bs-toggle="dropdown" aria-expanded="false">Orders</button>
+                        <ul class="dropdown-menu">
+                            {% for endpoint,label in [('index','Order Desk'),('explorer','Order Explorer'),('add','New Order'),('requester_links.manage','Request Form Links')] %}
+                            <li><a class="dropdown-item {{ 'active' if request.endpoint == endpoint }}" href="{{ url_for(endpoint) }}" {% if request.endpoint == endpoint %}aria-current="page"{% endif %}>{{ label }}</a></li>
+                            {% endfor %}
+                        </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <button class="nav-link dropdown-toggle {{ 'active' if request.blueprint == 'workshop' or request.endpoint == 'dashboard' }}" type="button" data-bs-toggle="dropdown" aria-expanded="false">Workshop</button>
+                        <ul class="dropdown-menu">
+                            {% for endpoint,label,family in [
+                                ('workshop.inventory','Finished Bikes',['workshop.inventory','workshop.new_bike','workshop.bike']),
+                                ('workshop.hours','Volunteer Hours',['workshop.hours','workshop.hours_form']),
+                                ('workshop.volunteers','Volunteers',['workshop.volunteers','workshop.edit_volunteer','workshop.volunteer_impact_preview']),
+                                ('workshop.volunteer_links','Volunteer Form Links',['workshop.volunteer_links']),
+                                ('dashboard','Reporting',['dashboard'])] %}
+                            <li><a class="dropdown-item {{ 'active' if request.endpoint in family }}" href="{{ url_for(endpoint) }}" {% if request.endpoint in family %}aria-current="{{ 'page' if request.endpoint == endpoint else 'location' }}"{% endif %}>{{ label }}</a></li>
+                            {% endfor %}
+                        </ul>
+                    </li>
                     <li class="nav-item"><a class="nav-link text-danger" href="{{ url_for('logout') }}">Logout</a></li>
                 </ul>
             </div>
