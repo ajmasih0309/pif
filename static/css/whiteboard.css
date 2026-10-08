@@ -15,7 +15,6 @@ body { background: #fafaf7; color: #202521; }
 .bike-card { border-color: #646b64; border-radius: .4rem; }
 .bike-card:hover { border-color: #15659b; transform: none; box-shadow: 0 2px 6px #0002; }
 .nav-link:hover { transform: none; }
-.order-toggle { font: inherit; color: inherit; text-align: left; padding: .25rem; border: 0; background: transparent; }
 @media (max-width: 575.98px) {
     .marker-panel { padding: .85rem; }
     .chalk-header { font-size: 2rem; }
@@ -109,3 +108,43 @@ body { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: col
 
 .portal-nav .dropdown-item { padding: .55rem 1rem; }
 .portal-nav .dropdown-item.active { background: #f2eddd; color: #202521; font-weight: bold; }
+
+/* Order Desk: the same compact cards on phones and desktops. */
+.desk-order-list { display: grid; grid-template-columns: minmax(0, 1fr); gap: .75rem; align-items: start; }
+.desk-order { min-width: 0; border: 1px solid #606860; border-radius: .45rem; background: #fff; }
+.desk-order-summary, .desk-bike > summary { display: block; padding: .75rem; cursor: pointer; list-style: none; }
+.desk-order-summary::-webkit-details-marker, .desk-bike > summary::-webkit-details-marker { display: none; }
+.desk-order-heading, .desk-bike-heading { display: flex; align-items: baseline; justify-content: space-between; gap: .5rem; }
+.desk-order-heading strong, .desk-bike-heading strong { min-width: 0; overflow-wrap: anywhere; font-size: 1.2rem; }
+.desk-bike-count, .desk-bike-status { flex-shrink: 0; font-size: .95rem; }
+.desk-order-meta, .desk-bike-meta { display: block; color: #545c54; font-size: .95rem; overflow-wrap: anywhere; }
+.desk-expand-label { display: flex; align-items: center; justify-content: space-between; gap: .5rem; color: #175a78; font-weight: bold; margin-top: .35rem; }
+.desk-order .when-open { display: none; }
+.desk-order[open] > summary .when-closed, .desk-bike[open] > summary .when-closed { display: none; }
+.desk-order[open] > summary .when-open, .desk-bike[open] > summary .when-open { display: inline; }
+.desk-order[open] > summary, .desk-bike[open] > summary { background: #f3f5ef; border-bottom: 1px dashed #c4c9c1; }
+.desk-order[open] > summary .desk-expand-label > [aria-hidden], .desk-bike[open] > summary .desk-expand-label > [aria-hidden] { transform: rotate(180deg); }
+.desk-order-body { padding: 0 .65rem .65rem; }
+.desk-contact-details { border-bottom: 1px dashed #c4c9c1; padding: .55rem 0; }
+.desk-contact-details > summary { cursor: pointer; min-height: 44px; align-content: center; overflow-wrap: anywhere; }
+.desk-bike-hint { font-size: .95rem; color: #545c54; margin: .5rem 0; }
+.desk-bike { border: 1px solid #d5d9d1; border-radius: .35rem; margin-top: .45rem; }
+.desk-bike > summary { padding: .55rem .65rem; }
+.desk-bike-body { padding: .65rem; }
+.desk-bike-facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .4rem .75rem; margin: .5rem 0; }
+.desk-bike-facts:empty { display: none; }
+.desk-bike-facts dt { font-size: .9rem; color: #545c54; font-weight: normal; }
+.desk-bike-facts dd { margin: 0; overflow-wrap: anywhere; }
+.desk-contact-details .desk-bike-facts { grid-template-columns: 1fr; }
+.desk-bike-notes { margin-block: .65rem; overflow-wrap: anywhere; }
+.desk-bike-notes p { white-space: pre-wrap; margin-bottom: .5rem; }
+.desk-pickup-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .5rem; margin-bottom: .65rem; }
+.desk-pickup-form > button { grid-column: 1 / -1; }
+.desk-pickup-form input { width: 100%; min-width: 0; min-height: 44px; }
+.desk-bike-actions { display: flex; flex-wrap: wrap; gap: .5rem; }
+.desk-bike-actions form { margin: 0; }
+.desk-bike-actions button, .desk-pickup-form button { min-height: 44px; }
+.desk-explorer-link { flex-basis: 100%; padding-block: .5rem; }
+@media (min-width: 768px) {
+    .desk-order-list { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+}

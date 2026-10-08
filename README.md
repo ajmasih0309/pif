@@ -162,6 +162,14 @@ Order actions preserve the selected page and filters, show progress immediately,
 and prevent repeated clicks while saving. Cancel confirmation can be declined
 without disabling the controls.
 
+Order Desk uses compact cards with an explicit **View bikes** control on every
+screen: one column on phones and two columns from 768px upward.
+Open an order to see its recipient list, then **View details & actions** for one
+bike. Only one order and one bike within it expand at a time. Contact details are
+available separately; empty bike fields are omitted. Pickup has labelled date/tag
+inputs and a **Save pickup** button. Order Explorer retains its table for detailed
+data browsing; Order Desk uses a single shared set of cards and action forms.
+
 New Order uses responsive recipient cards, a keyboard-accessible bike-picture
 picker, and server validation that keeps entries when a field needs correction.
 All website text, including field values and help text, uses the Sharpie-style

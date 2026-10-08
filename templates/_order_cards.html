@@ -1,0 +1,74 @@
+{% macro order_cards(orders, status) %}
+<div class="desk-order-list" data-order-cards>
+    {% for order in orders %}
+    {% set group_key = status ~ '-group-' ~ loop.index %}
+    <details class="desk-order" name="desk-orders-{{ status }}">
+        <summary class="desk-order-summary">
+            <span class="desk-order-heading"><strong>{{ order.contact_name or 'Unnamed contact' }}</strong><span class="desk-bike-count">{{ order.total_bikes }} {{ 'matching ' if filters_active else '' }}{{ 'bike' if order.total_bikes == 1 else 'bikes' }}</span></span>
+            <span class="desk-order-meta">{{ order.order_date or 'Date unknown' }} · Shop {{ order.shop_name or '—' }} · {{ order.order_type }}</span>
+            <span class="desk-expand-label"><span class="when-closed">View bikes</span><span class="when-open">Hide bikes</span><span aria-hidden="true">⌄</span></span>
+        </summary>
+        <div class="desk-order-body">
+            <details class="desk-contact-details">
+                <summary>Contact details{{ ' · ' ~ order.pedal_partner if order.pedal_partner else '' }}</summary>
+                <dl class="desk-bike-facts">
+                    <div><dt>Phone</dt><dd>{{ order.contact_phone or 'Not provided' }}</dd></div>
+                    <div><dt>Email</dt><dd>{{ order.contact_email or 'Not provided' }}</dd></div>
+                    {% if order.pedal_partner %}<div><dt>Pedal Partner</dt><dd>{{ order.pedal_partner }}</dd></div>{% endif %}
+                </dl>
+            </details>
+            <p class="desk-bike-hint">Select a recipient to see bike details{{ ' and actions' if status in ['open', 'contacted', 'cancelled'] else '' }}.</p>
+            {% for recipient in order.recipients %}
+            {% set bike_key = 'desk-' ~ status ~ '-' ~ recipient.order_id %}
+            <details class="desk-bike" name="bikes-{{ group_key }}">
+                <summary>
+                    <span class="desk-bike-heading"><strong>{{ recipient.recipient_name or 'Unnamed recipient' }}</strong><span class="desk-bike-status">{{ recipient.order_status }}</span></span>
+                    <span class="desk-bike-meta">Order #{{ recipient.order_id }}{% if recipient.notes %} · Has notes{% endif %}</span>
+                    <span class="desk-expand-label"><span class="when-closed">View details{{ ' & actions' if status in ['open', 'contacted', 'cancelled'] else '' }}</span><span class="when-open">Hide details</span><span aria-hidden="true">⌄</span></span>
+                </summary>
+                <div class="desk-bike-body">
+                    <dl class="desk-bike-facts">
+                        {% for label, value in [('Age', recipient.age), ('Height', recipient.height), ('Style', recipient.bike_style_preference), ('First choice', recipient.bike_type_first_choice), ('Second choice', recipient.bike_type_second_choice), ('Bike tag', recipient.bike_tag), ('Picked up', recipient.date_picked_up)] %}
+                        {% if value %}<div><dt>{{ label }}</dt><dd>{{ value }}</dd></div>{% endif %}
+                        {% endfor %}
+                    </dl>
+                    {% if recipient.notes %}<div class="desk-bike-notes"><strong>Notes</strong><p>{{ recipient.notes }}</p></div>{% endif %}
+                    {% if status == 'contacted' %}
+                    <form action="{{ url_for('fulfill', order_id=recipient.order_id) }}" method="post" class="desk-pickup-form">
+                        {{ desk_return_fields() }}
+                        <div><label for="{{ bike_key }}-date">Pickup date</label><input id="{{ bike_key }}-date" type="date" name="date_picked_up" value="{{ today }}" required class="form-control"></div>
+                        <div><label for="{{ bike_key }}-tag">Bike tag</label><input id="{{ bike_key }}-tag" type="number" name="bike_tag" min="1" step="1" inputmode="numeric" required class="form-control" placeholder="Tag #"></div>
+                        <button type="submit" class="btn btn-success border-dark">Save pickup</button>
+                    </form>
+                    {% if not order.pedal_partner %}<p class="small mb-2">1 week pickup limit</p>{% endif %}
+                    {% endif %}
+                    <div class="desk-bike-actions">
+                        {% if status == 'open' %}
+                        <form action="{{ url_for('update_status', order_id=recipient.order_id) }}" method="post">
+                            {{ desk_return_fields() }}<input type="hidden" name="new_status" value="Contacted">
+                            <button type="submit" class="btn btn-info border-dark">Mark contacted</button>
+                        </form>
+                        {% endif %}
+                        {% if status in ['open', 'contacted'] %}
+                        <form action="{{ url_for('update_status', order_id=recipient.order_id) }}" method="post">
+                            {{ desk_return_fields() }}<input type="hidden" name="new_status" value="Cancelled">
+                            <button type="submit" class="btn btn-outline-danger" data-confirm="Cancel this order?" data-pending-label="Cancelling…">Cancel order</button>
+                        </form>
+                        {% elif status == 'cancelled' %}
+                        <form action="{{ url_for('update_status', order_id=recipient.order_id) }}" method="post">
+                            {{ desk_return_fields() }}<input type="hidden" name="new_status" value="Open">
+                            <button type="submit" class="btn btn-warning border-dark">Restore to Open</button>
+                        </form>
+                        {% endif %}
+                        <a class="desk-explorer-link" href="{{ url_for('explorer', q='#' ~ recipient.order_id) }}" aria-label="View order {{ recipient.order_id }}">Open #{{ recipient.order_id }} in Explorer</a>
+                    </div>
+                </div>
+            </details>
+            {% endfor %}
+        </div>
+    </details>
+    {% else %}
+    <p class="text-muted py-4">No {{ 'matching ' if filters_active else '' }}orders in this status. Check All or adjust your filters.</p>
+    {% endfor %}
+</div>
+{% endmacro %}
