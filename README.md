@@ -137,8 +137,28 @@ SMTP needs `MAIL_SERVER`, `MAIL_PORT` (STARTTLS, default 587), `MAIL_USERNAME`,
 
 Real requester delivery requires both `EMAIL_MODE=live` and
 `EMAIL_LIVE_ENABLED=true`. Only enable these after the sending mailbox and message
-content are approved. Daily pickup reminders have an independent
+content are approved. Pickup reminders have an independent
 `EMAIL_REMINDERS_ENABLED` switch and stay off while using historical/test data.
+Contacting an order starts a 7-day Public or 28-day Pedal Partner pickup window,
+measured at the same local time in America/Chicago. Speciality has no fixed
+deadline or deadline reminder. Order Desk shows the remaining days/hours for each
+contacted bike, or an overdue label; expiry does not automatically cancel or block
+pickup. The pickup-ready email uses the same deadline.
+
+When explicitly enabled in live/test mode, the scheduler checks every 15 minutes
+for deadlines within the next 24 hours. Successful reminders are recorded per
+contact cycle and delivery mode; failed delivery can retry before expiry. Missing
+emails, missing/invalid contact dates and completed/cancelled orders are skipped.
+No reminder is sent after expiry. The app must be running for scheduled delivery;
+the next check after downtime can catch up within the final 24-hour window.
+Preview/disabled modes do not run scheduled reminders. Order actions commit before
+email delivery, and mail errors do not undo the action.
+
+New contact transitions store a dedicated timestamp independently of later edits.
+Older Contacted orders fall back to `last_updated_date`, the legacy contact-time
+proxy; inaccurate historical timestamps still need review. No contact date is
+invented when that field is missing. Cancelling/restoring/recontacting starts a
+new pickup window; repeated Contact clicks on an already Contacted order do not.
 Unknown modes, missing configuration, and delivery failures block sending without
 undoing saved orders. Preview files are never queued for later delivery. Changing
 email settings requires an app restart. No account credentials are included in the

@@ -1,6 +1,6 @@
 # PIF Portal database
 
-Updated **2026-10-06**. This describes the implementation in
+Updated **2026-10-08**. This describes the implementation in
 `codex/database-cleanup`, verified against the active development database and
 disposable design preview using read-only schema inspection. It is documentation,
 not a migration script.
@@ -207,6 +207,32 @@ current staff defaults use server local date. Corrections require a reason and
 the displayed version; stale edits fail. Voiding retains the row and audit but
 excludes it from totals. Filtered totals cover all matching active rows, independent
 of pagination. Public users cannot list, correct or void existing logs.
+
+### Pickup contact tracking and reminder receipts
+
+`order_pickup_tracking` stores `order_id INTEGER PRIMARY KEY` and
+`contacted_at TEXT NOT NULL` (an offset-aware UTC ISO timestamp). A genuine
+transition into Contacted writes it in the same transaction as the status.
+Recontacting replaces that timestamp; ordinary edits cannot reset the deadline.
+Reads tolerate the table being absent and use the legacy `last_updated_date`
+for historical Contacted rows. Missing/invalid dates remain unknown.
+
+`pickup_reminder_delivery` uses the composite primary key `(order_id,
+contacted_at, deadline, mode)` and nullable `claimed_at`/`sent_at` ISO timestamps.
+All key columns are required; `order_id` is INTEGER and the others TEXT. Claims
+prevent concurrent workers from sending the same reminder; stale claims can retry
+after 30 minutes. Acknowledged live/test delivery is recorded in separate modes.
+These additive tables have no declared FK and are independent of workshop setup.
+They are created on the first Contacted transition or enabled reminder check;
+ordinary page reads do not create or change them. Historical orders are not
+rewritten. A due legacy reminder records its contact-time proxy before sending.
+
+Pickup windows are 7 local calendar days for Public and 28 for Pedal Partner;
+Speciality has no deadline. The final 24 hours are checked every 15 minutes,
+using UTC comparisons across DST changes. Missing-email and expired orders are
+skipped; failed delivery can retry and never changes the order status. As with
+SMTP generally, a crash after the server accepts mail but before the receipt is
+saved can lead to a retry; this is not an exactly-once transport guarantee.
 
 ### Requester links and submission receipts
 

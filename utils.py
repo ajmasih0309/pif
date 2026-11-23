@@ -16,6 +16,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from flask import render_template, current_app, flash
 from database import get_db_connection
+from pickup_policy import contact_times, pickup_window, now_utc
 from order_search import canonical_order_type, normalize_text
 
 def format_date(d_str):
@@ -165,6 +166,8 @@ def fetch_all_orders():
     LEFT JOIN pedal_partners p ON o.pedal_partner_id = p.pedal_partner_id;
     '''
     raw_items = conn.execute(query).fetchall()
+    tracked_contacts = contact_times(conn)
+    display_time = now_utc()
     conn.close()
 
     items = []
@@ -195,6 +198,9 @@ def fetch_all_orders():
             display_values.append('Specialty')
         row_dict['_search_text'] = normalize_text(' '.join(raw_values + display_values))
         
+        if row_dict['order_status'] == 'Contacted':
+            row_dict['pickup_window'] = pickup_window(row_dict['order_type'],
+                tracked_contacts.get(row_dict['order_id'], row_dict.get('last_updated_date')), display_time)
         items.append(row_dict)
         
     return items

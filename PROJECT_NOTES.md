@@ -2,6 +2,19 @@
 
 Updated 2026-10-08. This file records decisions for future work on PIF Portal.
 
+- Pickup policy corrected: Public 7 days, Pedal Partner 28 days, Speciality no
+  deadline. Starts when marked Contacted (America/Chicago calendar days); card
+  countdown and pickup-ready email share the policy. Deadline does not auto-cancel
+  or block pickup. New `order_pickup_tracking` preserves contact time independently
+  of later edits; old Contacted rows use last_updated_date if valid, otherwise
+  show unknown deadline. No historical data rewrite or inventory dependency.
+- Enabled live/test reminder jobs check every 15 minutes in the final 24 hours.
+  `pickup_reminder_delivery` claims/receipts prevent normal repeats per contact
+  cycle/mode, allow failed-send retries before expiry and skip missing email,
+  invalid dates, Speciality, completed/cancelled and overdue orders. Both tables
+  are additive, created on first contact/enabled check; page reads tolerate absence.
+  Current review preview retains EMAIL_MODE=disabled and reminders off.
+
 - User prefers the compact Order Desk cards on desktop too. Supersedes the
   mobile-only layout below: one column below 768px, two columns above. Shared
   `_order_cards.html` and `order_cards.js` replace the duplicate desktop tables

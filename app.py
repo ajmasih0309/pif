@@ -7,7 +7,7 @@ Database logic, utilities, and configurations are imported from external modules
 
 import os
 from contextlib import closing
-from datetime import datetime, timedelta
+from datetime import datetime
 from functools import wraps
 import subprocess
 
@@ -29,6 +29,7 @@ from order_search import search_orders
 from order_intake import (ensure_schema, form_token, check_token, form_values, validate,
                           save_order, existing_submission, shops, HEIGHTS, TYPES)
 from utils import send_email, email_feedback, fetch_all_orders
+from pickup_policy import now_utc, record_contact, pickup_window, send_due_reminders
 
 
 # =============================================================================
@@ -233,12 +234,13 @@ def update_status(order_id):
     if new_status not in {'Open', 'Contacted', 'Cancelled'}:
         abort(400, 'Invalid status. Use the pickup form to complete an order.')
     current_user = session.get('username', 'Unknown')
+    contact_time = now_utc()
     current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     
     with closing(get_db_connection()) as conn, conn:
         conn.execute('BEGIN IMMEDIATE')
         order = conn.execute('''
-        SELECT o.order_status, c.contact_email, r.recipient_name 
+        SELECT o.order_status, o.order_type, c.contact_email, r.recipient_name
         FROM orders o
         LEFT JOIN contacts c ON o.contact_id = c.contact_id
         LEFT JOIN recipients r ON o.recipient_id = r.recipient_id
@@ -260,15 +262,17 @@ def update_status(order_id):
         SET order_status = ?, last_status = order_status, last_updated_by = ?, last_updated_date = ?
         WHERE order_id = ?
         ''', (new_status, current_user, current_time, order_id))
+        if new_status == 'Contacted':
+            record_contact(conn, order_id, contact_time.isoformat())
 
     if new_status == 'Contacted' and order['order_status'] != 'Contacted':
-        pickup_deadline = (datetime.now() + timedelta(days=7)).strftime('%m/%d/%Y')
+        pickup_deadline = pickup_window(order['order_type'], contact_time.isoformat(), contact_time)['deadline']
         sent = send_email(
             to_email=order['contact_email'],
             subject="Your bike is ready for pickup!",
             template_name="pickup_ready",
             recipient_name=order['recipient_name'],
-            deadline=pickup_deadline
+            deadline=pickup_deadline.strftime('%m/%d/%Y at %I:%M %p %Z') if pickup_deadline else None
         )
         email_feedback([sent], 'Status saved. Pickup email could not be sent.')
 
@@ -429,38 +433,19 @@ def explorer():
 # =============================================================================
 # BACKGROUND TASKS
 # =============================================================================
-@scheduler.task('cron', id='daily_pickup_reminder', hour=9, minute=0)
+@scheduler.task('interval', id='pickup_reminder', minutes=15, max_instances=1, coalesce=True)
 def check_pickup_deadlines():
     with app.app_context():
-        if not app.config.get('EMAIL_REMINDERS_ENABLED', False):
+        mode = app.config.get('EMAIL_MODE', 'preview')
+        if (not app.config.get('EMAIL_REMINDERS_ENABLED', False)
+                or mode not in {'live', 'test'}
+                or (mode == 'live' and app.config.get('EMAIL_LIVE_ENABLED') is not True)):
             return
-        app.logger.info('Running daily pickup reminder check.')
-        conn = get_db_connection()
-        
-        target_date_str = (datetime.now() - timedelta(days=6)).strftime('%Y-%m-%d')
-        
-        orders = conn.execute('''
-            SELECT o.last_updated_date, c.contact_email, r.recipient_name 
-            FROM orders o
-            JOIN contacts c ON o.contact_id = c.contact_id
-            JOIN recipients r ON o.recipient_id = r.recipient_id
-            WHERE o.order_status = 'Contacted' 
-            AND o.last_updated_date LIKE ?
-        ''', (f"{target_date_str}%",)).fetchall()
-        
-        for order in orders:
-            base_date = datetime.strptime(order['last_updated_date'].split()[0], '%Y-%m-%d')
-            deadline = (base_date + timedelta(days=7)).strftime('%m/%d/%Y')
-            
-            send_email(
-                to_email=order['contact_email'],
-                subject="URGENT: Pick up your bike tomorrow!",
-                template_name="pickup_reminder",
-                recipient_name=order['recipient_name'],
-                deadline=deadline
-            )
-            
-        conn.close()
+        try:
+            with closing(get_db_connection()) as conn:
+                send_due_reminders(conn, send_email, mode)
+        except Exception:
+            app.logger.exception('Pickup reminder check failed; order processing is unaffected.')
 
 # =============================================================================
 # VERSION DETAILS

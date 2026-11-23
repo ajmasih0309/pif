@@ -24,6 +24,7 @@
                 <summary>
                     <span class="desk-bike-heading"><strong>{{ recipient.recipient_name or 'Unnamed recipient' }}</strong><span class="desk-bike-status">{{ recipient.order_status }}</span></span>
                     <span class="desk-bike-meta">Order #{{ recipient.order_id }}{% if recipient.notes %} · Has notes{% endif %}</span>
+                    {% if recipient.pickup_window %}<span class="desk-deadline {{ 'text-danger' if recipient.pickup_window.overdue else '' }}">{{ recipient.pickup_window.label }}{% if recipient.pickup_window.deadline %} · Due {{ recipient.pickup_window.deadline.strftime('%b %d, %Y') }}{% endif %}</span>{% endif %}
                     <span class="desk-expand-label"><span class="when-closed">View details{{ ' & actions' if status in ['open', 'contacted', 'cancelled'] else '' }}</span><span class="when-open">Hide details</span><span aria-hidden="true">⌄</span></span>
                 </summary>
                 <div class="desk-bike-body">
@@ -40,7 +41,7 @@
                         <div><label for="{{ bike_key }}-tag">Bike tag</label><input id="{{ bike_key }}-tag" type="number" name="bike_tag" min="1" step="1" inputmode="numeric" required class="form-control" placeholder="Tag #"></div>
                         <button type="submit" class="btn btn-success border-dark">Save pickup</button>
                     </form>
-                    {% if not order.pedal_partner %}<p class="small mb-2">1 week pickup limit</p>{% endif %}
+                    {% if recipient.pickup_window and recipient.pickup_window.deadline %}<p class="small mb-2">Pick up by {{ recipient.pickup_window.deadline.strftime('%m/%d/%Y at %I:%M %p %Z') }}.</p>{% endif %}
                     {% endif %}
                     <div class="desk-bike-actions">
                         {% if status == 'open' %}
