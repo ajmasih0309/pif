@@ -1,17 +1,17 @@
 # PIF Portal database
 
-Updated **2026-10-06**. This describes the implementation in
-`codex/database-cleanup`, verified against the active development database and
-disposable design preview using read-only schema inspection. It is documentation,
-not a migration script.
+Updated **2026-11-23**. This describes the implementation in the audited
+`main` source tree. It is documentation, not a migration script or evidence of
+the active database's current schema or data. Confirm any target database with a
+read-only inspection before maintenance or cutover.
 
 ## Current state
 
 | Area | Status |
 | --- | --- |
 | Storage | SQLite; `DB_PATH` selects the file, default `data/processed/pif.db` |
-| Active database | July-era orders plus recent app edits; existing people, shops, users and requester-link tables |
-| Workshop schema | Maintenance v5 implemented and enabled in the disposable preview; not applied to the active database |
+| Active database | Historical documentation describes July-era orders plus app edits; current schema/data were not inspected in the 2026-11-23 audit |
+| Workshop schema | Maintenance v5 is implemented in source; the target database requires explicit backed-up initialization before workshop pages can operate |
 | Finished bikes | Staff lookup/entry and volunteer self-entry; unique global tags and multiple contributions |
 | Volunteers | Staff create profiles; shared IDs connect contributions and hours |
 | Hours | Staff entry/corrections and volunteer-facing name lookup, exact hours/minutes and remembered-name preference |
@@ -207,6 +207,32 @@ current staff defaults use server local date. Corrections require a reason and
 the displayed version; stale edits fail. Voiding retains the row and audit but
 excludes it from totals. Filtered totals cover all matching active rows, independent
 of pagination. Public users cannot list, correct or void existing logs.
+
+### Pickup contact tracking and reminder receipts
+
+`order_pickup_tracking` stores `order_id INTEGER PRIMARY KEY` and
+`contacted_at TEXT NOT NULL` (an offset-aware UTC ISO timestamp). A genuine
+transition into Contacted writes it in the same transaction as the status.
+Recontacting replaces that timestamp; ordinary edits cannot reset the deadline.
+Reads tolerate the table being absent and use the legacy `last_updated_date`
+for historical Contacted rows. Missing/invalid dates remain unknown.
+
+`pickup_reminder_delivery` uses the composite primary key `(order_id,
+contacted_at, deadline, mode)` and nullable `claimed_at`/`sent_at` ISO timestamps.
+All key columns are required; `order_id` is INTEGER and the others TEXT. Claims
+prevent concurrent workers from sending the same reminder; stale claims can retry
+after 30 minutes. Acknowledged live/test delivery is recorded in separate modes.
+These additive tables have no declared FK and are independent of workshop setup.
+They are created on the first Contacted transition or enabled reminder check;
+ordinary page reads do not create or change them. Historical orders are not
+rewritten. A due legacy reminder records its contact-time proxy before sending.
+
+Pickup windows are 7 local calendar days for Public and 28 for Pedal Partner;
+Speciality has no deadline. The final 24 hours are checked every 15 minutes,
+using UTC comparisons across DST changes. Missing-email and expired orders are
+skipped; failed delivery can retry and never changes the order status. As with
+SMTP generally, a crash after the server accepts mail but before the receipt is
+saved can lead to a retry; this is not an exactly-once transport guarantee.
 
 ### Requester links and submission receipts
 
@@ -428,12 +454,12 @@ Removed prototypes (`csv2table.py`, `db_setup.py`, `migrate.py`, `manage_db.py`,
 `migration_001.sql`, `schema.sql`, `data_exploration_streamlit.py`) are not setup
 authorities. Git retains their history.
 
-Latest verified app suite: 138 Python tests; the previous 3 Node checks also passed. Tests cover individual
-notes and attribution, retry protection, separate contributors to one bike,
-escaped staff note display, migration preservation/backups and rollback. Separate synthetic
-browser databases verified phone-sized hours entry, remembering/forgetting, new
-finished bikes, nonwriting tag checks and confirmed contributions to an existing
-tag. The revised individual contribution form was visually checked at 390px. Active data and historical staging remain unchanged.
+The 2026-11-23 source audit passed 155 Python tests with temporary databases and
+disabled/mocked email. Node was unavailable in that audit shell, so the repository's
+Node check was not rerun. The suite covers individual notes and attribution, retry
+protection, separate contributors to one bike, escaped staff note display,
+migration preservation/backups, and rollback. It does not verify active data,
+production mail, or deployment behavior.
 
 ## Volunteer yearly summary
 

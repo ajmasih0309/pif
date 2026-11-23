@@ -1,8 +1,8 @@
 # Order workflow and existing validation
 
-Reviewed 2026-10-08 against the application worktree and a read-only inspection of
-the current database. These are existing rules, not newly introduced requirements.
-Data migration and historical-data finalization remain separate work.
+Updated **2026-11-23** from the audited application source. These are existing
+rules, not newly introduced requirements. The current audit did not inspect the
+active database; historical data migration and finalization remain separate work.
 
 ## Orders can operate without workshop data
 
@@ -82,15 +82,10 @@ Automated workflow coverage now creates an order with blank phone and email,
 checks that it appears in Open, exercises both cancellation paths and restoration,
 then completes it with a tag absent from inventory. All four workshop tables stay
 empty. Separate coverage exercises the pipeline with no inventory table present.
-Validation: all 139 Python tests and all 3 existing Node order-action tests pass.
+The 2026-11-23 audit passed 155 Python tests with temporary databases and
+disabled/mocked email. The repository's Node order-action test was not rerun
+because Node was unavailable in the audit shell. No active database, mailbox, or
+browser preview was exercised during that audit.
 
-The local review website is http://127.0.0.1:5004/ and uses a separate SQLite copy
-under the primary checkout's ignored `data/previews/order-review-20261008-a770c3/`.
-Its `run.py` starts the development worktree with email and scheduler disabled.
-Only that copy received the existing maintenance schema initialization. The
-active database and source spreadsheets were not changed. Existing staff login
-credentials are retained; no test account or authentication bypass was added.
-
-Start the page-by-page review with New Order, then Order Desk: Open, Contacted,
-Cancelled/Restore and Completed. Discuss any proposed new business validation and
-its assumptions before enforcing it.
+Discuss any proposed business validation and its assumptions before enforcing it.
+See [operations](operations.md) for the safe testing and deployment boundary.

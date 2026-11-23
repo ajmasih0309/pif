@@ -1,8 +1,15 @@
-# Dashboard count review — 2026-10-05
+# Dashboard count review
 
-Read-only review of the current July-era database and the local design preview.
-Their 2025 aggregates agree. No source records, status mappings, shop assignments,
-or migration rules were changed. Data preparation remains paused.
+**Historical data snapshot:** 2026-10-05
+
+**Source audit update:** 2026-11-23
+
+The figures below are a read-only snapshot of the July-era database and local
+design preview at the historical review date. They remain useful for reconciling
+the organization’s report, but they are not a live report and were not rechecked
+against the active database during the 2026-11-23 source audit. No source records,
+status mappings, shop assignments, or migration rules were changed by either
+review.
 
 ## What the dashboard measures
 
@@ -28,8 +35,9 @@ is a display convention, not an authoritative historical order identity.
 
 Monthly totals: Jan 182, Feb 205, Mar 242, Apr 324, May 310, Jun 380, Jul 368,
 Aug 200, Sep 271, Oct 288, Nov 173, Dec 453. The rendered dashboard matches this
-independent tally. All seven dashboard regression tests pass, including multiple
-completed bikes in one order and exclusion of its uncompleted bikes.
+independent tally. The dashboard-specific regression coverage includes multiple
+completed bikes in one order and exclusion of its uncompleted bikes. The current
+source audit passed 155 Python tests overall; it did not inspect live data.
 
 ## Differences to reconcile with the organization's report
 
