@@ -6,6 +6,24 @@ Format: `## [date] — brief description`
 
 ---
 
+## [2026-11-24] — Applied bike inventory migration to active database (TASK-616, TASK-617)
+
+**Type:** Data migration / Production execution / Operational milestone
+**Git state at time of entry:** local `main` at `2d982f8`
+**Author:** Development agent (Antigravity) / Approved by Project Owner
+
+### Summary
+
+With explicit owner approval, successfully executed the historical bike inventory and contributions migration against the active production database `data/processed/pif.db` using `scripts/migrate_bike_inventory.py --apply`.
+- **Pre-execution Backup**: Created `data/processed/backups/pif-before-bike-inventory-20261124T195158Z.db` (5.8 MB).
+- **Bike Inventory**: Loaded 14,995 globally unique canonical bikes into `bike_inventory` spanning August 2021 through October 2026, with normalized wheel sizes and bike types.
+- **Bike Contributions**: Loaded 15,461 contribution rows into `bike_contributions` linked to `bike_inventory(inventory_id)`, accommodating 466 multi-contributions/reused tags with variation details recorded in `notes`.
+- **Volunteer Roster Provisioning**: Provisioned 167 new volunteer profiles active in the 2025–2026 moving window (including top builder `Joe Maneiro` with 418 lifetime bikes), bringing the total registered volunteer roster in `volunteers` to 660 profiles.
+- **Attribution & Moving Window**: 12,461 contributions (80.6%) linked to registered volunteer profiles (via direct matches, automated aliases, and newly provisioned 2025–2026 volunteers). 2,710 pre-2025 entries and 290 2025+ single/org entries remain unlinked with original text preserved in `recorded_name`.
+- **Integrity Verification**: `PRAGMA foreign_key_check` returned zero errors; `PRAGMA integrity_check` returned `ok`. All 156 Python tests pass cleanly (7.90 s).
+
+---
+
 ## [2026-11-24] — Adopted moving 2-year window policy (2025–2026) for volunteer migration and created review register
 
 **Type:** Data migration policy / Tool enhancement / Staff documentation
