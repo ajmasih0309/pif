@@ -87,6 +87,8 @@ These are not code tasks. They block multiple downstream items and require the p
 | TASK-613 | Create reusable migration code for `volunteer_hours` table implementing Option B catch-up backfill on open shop days | ✅ | None | REQ-012 | Implemented in `scripts/migrate_volunteer_clock.py` (backfills >24h entries across Mon/Wed/Sat for B/R, Mon/Wed for S with note 'Catchup hours') |
 | TASK-614 | Rehearse migration on a test database copy, reconcile entries, and execute one-time migration with backup | ✅ | None | REQ-001 | Applied to `data/processed/pif.db` with backup `pif-before-volunteer-clock-20261124T073832Z.db` (493 vols, 5,466 shifts, 0 FK errors, integrity ok) |
 | TASK-615 | Upgrade `shops` table with `address`, `landmark`, and `store_hours` | ✅ | None | REQ-006 | Implemented in `scripts/migrate_volunteer_clock.py` (resolves legacy `bikes` FK mismatch as well) |
+| TASK-616 | Create reusable migration code for `Finished Bike Inventory` from `PIF 2025 .xlsx` into `bike_inventory` and `bike_contributions` | 🟡 | None | REQ-003, REQ-010 | Filter placeholders (TEST/Need/Trailer bike), canonicalize tags into `bike_inventory`, record duplicate tags as multi-contributions in `bike_contributions`, link `volunteer_id` where matched while preserving `recorded_name` |
+| TASK-617 | Rehearse bike inventory migration on test copy, reconcile records, and execute one-time migration with backup | 🔴 | TASK-616 | REQ-001 | Rehearse on test copy, verify zero FK errors and integrity, present reconciliation report, and apply to `data/processed/pif.db` upon owner approval |
 
 ---
 

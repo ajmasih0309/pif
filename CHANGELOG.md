@@ -6,6 +6,25 @@ Format: `## [date] — brief description`
 
 ---
 
+## [2026-11-24] — Planned historical bike inventory migration (TASK-616, TASK-617) and completed raw data audit
+
+**Type:** Data migration planning / Codebase audit
+**Git state at time of entry:** local `main` at `1694517`
+**Author:** Development agent (Antigravity) / Approved by Project Owner
+
+### Summary
+
+1. **Backlog Planning (TASK-616, TASK-617)**:
+   - Added `TASK-616` to develop reusable migration logic for the `Finished Bike Inventory` sheet in `data/raw/PIF 2025 .xlsx`.
+   - Added `TASK-617` to rehearse on a database copy, verify foreign keys/integrity, and execute one-time migration against `data/processed/pif.db` with backup.
+2. **Raw Dataset Audit (15,470 records, 2021-08-17 to 2026-10-03)**:
+   - **Shops**: 8,197 Bentonville (`BV Shop`), 5,677 Rogers (`RAC Shop`), 1,581 Springdale (`Sdale Shop`), 15 composite entries (`RAC Shop, BV Shop`).
+   - **Bike Tags**: 15,016 unique canonical tags; 445 repeated tags (accounting for 898 rows); 1 missing tag; 8 placeholder/test tags (`TEST`, `TEST2`, `TEST3`, `Need`, `Trailer bike`) matching exclusions documented in `design/database.md`.
+   - **Multi-Contribution Mechanics**: 73 repeated tags represent the same bike (multiple shifts/contributors); 372 represent reused physical tags over different years/shops, to be preserved via `bike_contributions` notes while maintaining `bike_inventory.bike_tag` uniqueness.
+   - **Volunteer Name Matching**: 9,835 rows match active volunteer profiles directly; first-name + last-initial heuristic matches an additional 1,418 rows (72.7% total auto-match). Unmatched names retain full original string in `bike_contributions.recorded_name` with nullable `volunteer_id`.
+
+---
+
 ## [2026-11-24] — Added GitHub Actions CI workflow (TASK-105) and archived legacy git handoff (TASK-805)
 
 **Type:** DevOps / Documentation / Maintenance
