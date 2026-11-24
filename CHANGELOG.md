@@ -6,6 +6,27 @@ Format: `## [date] — brief description`
 
 ---
 
+## [2026-11-24] — Adopted moving 2-year window policy (2025–2026) for volunteer migration and created review register
+
+**Type:** Data migration policy / Tool enhancement / Staff documentation
+**Git state at time of entry:** local `main` at `32491d0`
+**Author:** Development agent (Antigravity) / Approved by Project Owner
+
+### Summary
+
+1. **Owner Policy Baseline (Moving 2-Year Window)**:
+   - Owner decided that staff focus and volunteer profile management shall prioritize the moving 2-year window (**2025 through 2026**).
+   - Historical records prior to 2025 that do not match existing profiles are kept unlinked (`volunteer_id = NULL`), preserving the original name string in `recorded_name`.
+   - Obvious name abbreviations (e.g. `David Tovey` $\rightarrow$ `David T`, `Donn Schmidt` $\rightarrow$ `Donn S`, `Ann Neumann` $\rightarrow$ `Ann N`, `Charlie Miller` $\rightarrow$ `Charles Miller`, `Marty H` $\rightarrow$ `Marty Heyne`) are mapped automatically across all years.
+   - Clean, full person names active in 2025–2026 are auto-provisioned into `volunteers` (167 profiles provisioned; `is_active` set based on 180-day cutoff).
+2. **Staff Review Document Created**:
+   - Created `design/volunteer-reconciliation-2025-2026.md` detailing automated alias mappings, provisioned 2025–2026 profiles (including top builder `Joe Maneiro` with 418 lifetime bikes), and a checklist of ambiguous single names (e.g. `Kenny`, `Justin`, `Cory`, `John`) and corporate groups (`Walmart`, `Staff`) for staff review.
+3. **Rehearsal & Quality Verification**:
+   - Rehearsed updated `scripts/migrate_bike_inventory.py --apply` on `/tmp/pif-bike-rehearsal.db`: 14,995 bikes, 15,461 contributions (12,461 linked, 80.6% attribution rate; 2,710 pre-2025 kept null; 290 2025+ single/org kept null).
+   - Zero foreign key errors (`PRAGMA foreign_key_check` clean); integrity `ok`; all 156 unit and integration tests passing (6.61 s).
+
+---
+
 ## [2026-11-24] — Implemented bike inventory migration tool and completed rehearsal (TASK-616, TASK-617)
 
 **Type:** Data migration tool / Rehearsal / Verification

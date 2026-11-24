@@ -13,7 +13,7 @@ This document records what has been verified, by what method, and what remains u
 
 | Run | Date | Environment | Command | Result |
 |---|---|---|---|---|
-| Bike inventory migration rehearsal | 2026-11-24 | Local copy at `/tmp/pif-bike-rehearsal.db` | `.venv/bin/python scripts/migrate_bike_inventory.py --apply --db-path /tmp/pif-bike-rehearsal.db` | **PASS — 14,995 bikes, 15,461 contributions (466 multi-contribs), 0 FK errors, integrity ok, 156 tests pass** |
+| Bike inventory migration rehearsal (2-yr window) | 2026-11-24 | Local copy at `/tmp/pif-bike-rehearsal.db` | `.venv/bin/python scripts/migrate_bike_inventory.py --apply --db-path /tmp/pif-bike-rehearsal.db` | **PASS — 14,995 bikes, 15,461 contributions, 167 new 2025-2026 volunteers, 0 FK errors, integrity ok, 156 tests pass** |
 | Volunteer clock active DB migration | 2026-11-24 | Active DB `data/processed/pif.db` (backup in `backups/`) | `.venv/bin/python scripts/migrate_volunteer_clock.py --apply --db-path data/processed/pif.db` | **PASS — 493 vols, 5,466 shifts, 0 FK errors, integrity ok** |
 | Volunteer clock rehearsal & verification | 2026-11-24 | Local `.venv` Python 3.14.7 / SQLite 3.53.4 / copy at `/tmp/pif-volunteer-rehearsal.db` | `.venv/bin/python scripts/migrate_volunteer_clock.py --apply --db-path /tmp/pif-volunteer-rehearsal.db` | **PASS — 493 vols, 5,466 shifts, 0 FK errors, integrity OK** |
 | TASK-801 verification & regression test | 2026-11-23 | Local `.venv` Python 3.14.7 / SQLite 3.53.4 / temp DB | `PYTHONDONTWRITEBYTECODE=1 EMAIL_MODE=disabled EMAIL_LIVE_ENABLED=false EMAIL_REMINDERS_ENABLED=false DB_PATH=/tmp/pif-test-$$.db .venv/bin/python -m unittest discover -s tests -p 'test_*.py' -v` | **PASS — 156 tests in 10.181 s** |

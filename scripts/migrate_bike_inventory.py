@@ -7,7 +7,10 @@ Imports historical finished bikes and volunteer contributions from
 Enforces:
 - Global canonical tag deduplication into `bike_inventory`.
 - Preserves multi-contributions and reused tags into `bike_contributions`.
-- Links volunteer profiles where matched, retaining full recorded name.
+- 2-Year Moving Window (2025-2026) for volunteer profile provisioning:
+  * Resolves known aliases to existing registered profiles.
+  * Auto-provisions new volunteer profiles for clean full person names active in 2025-2026.
+  * Preserves pre-2025 and single/group names with volunteer_id=NULL and exact recorded_name.
 - Filters out placeholder / test rows per design/database.md specifications.
 - Safe pre-migration backup, integrity verification, and PRAGMA foreign_key_check.
 """
@@ -15,7 +18,7 @@ Enforces:
 from __future__ import annotations
 
 import argparse
-from collections import Counter
+from collections import Counter, defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
 import re
@@ -75,6 +78,41 @@ TAG_KEY_SQL = (
     "CASE WHEN bike_tag <> '' AND bike_tag NOT GLOB '*[^0-9]*' "
     "THEN COALESCE(NULLIF(ltrim(bike_tag, '0'), ''), '0') ELSE bike_tag END"
 )
+
+# Known name aliases linking full names / nicknames to existing volunteer directory entries
+NAME_ALIASES = {
+    "david tovey": "david t",
+    "donn schmidt": "donn s",
+    "ann neumann": "ann n",
+    "rich gonzales": "richard gonzales",
+    "richard gonzales": "richard g",
+    "ben gottschall": "ben g",
+    "tom woodcock": "tom w",
+    "stu g-j": "stu g",
+    "stew g-j": "stu g",
+    "charlie miller": "charles miller",
+    "charlse miller": "charles miller",
+    "marty h": "marty heyne",
+}
+
+ORG_WORDS = {
+    "walmart",
+    "trek",
+    "rotary",
+    "church",
+    "high",
+    "school",
+    "team",
+    "club",
+    "group",
+    "staff",
+    "sams",
+    "sam’s",
+    "supply",
+    "7l",
+    "bomb",
+    "mechanic",
+}
 
 
 def canonical_bike_tag(tag: str | int | float | None) -> str:
@@ -163,19 +201,27 @@ def load_volunteers(conn: sqlite3.Connection) -> tuple[dict[str, int], dict[str,
     return direct_map, initial_map
 
 
-def match_volunteer(
+def match_existing_volunteer(
     name: str | None,
     direct_map: dict[str, int],
     initial_map: dict[str, int],
 ) -> int | None:
-    """Attempt to match volunteer name to volunteer_id."""
+    """Attempt to match volunteer name to existing volunteer_id via direct, alias, or initial lookup."""
     if not name:
         return None
     clean = name.strip()
     low = clean.lower()
+
+    # 1. Direct match
     if low in direct_map:
         return direct_map[low]
 
+    # 2. Alias match
+    alias_target = NAME_ALIASES.get(low)
+    if alias_target and alias_target in direct_map:
+        return direct_map[alias_target]
+
+    # 3. First Name + Last Initial match (unambiguous)
     parts = clean.split()
     if len(parts) >= 2:
         key = f"{parts[0].lower()} {parts[-1][0].lower()}"
@@ -239,12 +285,74 @@ def create_backup(db_path: Path) -> Path:
     return backup_path
 
 
+def identify_2025_new_volunteers(
+    sheet: openpyxl.worksheet.worksheet.Worksheet,
+    direct_map: dict[str, int],
+    initial_map: dict[str, int],
+) -> dict[str, dict[str, any]]:
+    """Scan the sheet and collect new full-person volunteer candidates active in 2025-2026.
+
+    Returns dict mapping canonical_name -> {first_seen, last_seen, count_2025, lifetime_count}.
+    """
+    candidates = defaultdict(
+        lambda: {
+            "first_seen": None,
+            "last_seen": None,
+            "count_2025": 0,
+            "lifetime_count": 0,
+        }
+    )
+
+    for row in sheet.iter_rows(min_row=2, max_col=9, values_only=True):
+        if not any(row):
+            continue
+        ts, _, tag, _, _, _, _, _, vol = row
+        if not tag or str(tag).strip() == "":
+            continue
+        c_tag = canonical_bike_tag(tag)
+        c_tag_low = c_tag.lower()
+        if (
+            c_tag_low in PLACEHOLDER_TAGS
+            or "test" in c_tag_low
+            or c_tag_low == "0"
+        ):
+            continue
+        if not vol:
+            continue
+
+        v_raw = str(vol).strip()
+        if match_existing_volunteer(v_raw, direct_map, initial_map) is not None:
+            continue
+
+        parts = v_raw.split()
+        is_org = any(w in ORG_WORDS for w in [p.lower() for p in parts]) or any(
+            c.isdigit() for c in v_raw
+        )
+        if len(parts) >= 2 and not is_org:
+            canon = " ".join(p.capitalize() for p in parts)
+            dt = ts if isinstance(ts, datetime) else None
+            year = dt.year if dt else 2021
+
+            st = candidates[canon]
+            st["lifetime_count"] += 1
+            if dt:
+                if st["first_seen"] is None or dt < st["first_seen"]:
+                    st["first_seen"] = dt
+                if st["last_seen"] is None or dt > st["last_seen"]:
+                    st["last_seen"] = dt
+            if year >= 2025:
+                st["count_2025"] += 1
+
+    # Keep only those active in the 2025-2026 moving window
+    return {k: v for k, v in candidates.items() if v["count_2025"] > 0}
+
+
 def run_migration(
     db_path: Path,
     excel_path: Path,
     apply: bool = False,
 ) -> dict[str, any]:
-    """Execute the bike inventory migration."""
+    """Execute the bike inventory migration implementing the moving 2-year window policy."""
     if not excel_path.is_file():
         raise FileNotFoundError(f"Workbook not found at {excel_path}")
     if not db_path.is_file():
@@ -268,8 +376,45 @@ def run_migration(
 
         direct_map, initial_map = load_volunteers(conn)
         print(
-            f"Loaded {len(direct_map)} volunteer profiles ({len(initial_map)} unambiguous initial mappings)"
+            f"Loaded {len(direct_map)} existing volunteer profiles ({len(initial_map)} initial mappings)"
         )
+
+        # 1. Identify and provision new volunteers active in the moving 2-year window (2025-2026)
+        new_vols = identify_2025_new_volunteers(sheet, direct_map, initial_map)
+        print(
+            f"Identified {len(new_vols)} new volunteer candidates active in 2025-2026 moving window"
+        )
+
+        # Reference activity cutoff: 180 days before max date in dataset (~2026-10-03 -> ~2026-04-06)
+        active_cutoff = datetime(2026, 4, 6)
+        new_vol_ids: dict[str, int] = {}
+
+        if apply:
+            for name, info in new_vols.items():
+                joined = (
+                    info["first_seen"].strftime("%Y-%m-%d")
+                    if info["first_seen"]
+                    else "2025-01-01"
+                )
+                is_active = (
+                    1
+                    if info["last_seen"] and info["last_seen"] >= active_cutoff
+                    else 0
+                )
+                cursor = conn.execute(
+                    "INSERT INTO volunteers (volunteer_name, joined_on, is_active) VALUES (?, ?, ?)",
+                    (name, joined, is_active),
+                )
+                new_vid = cursor.lastrowid
+                new_vol_ids[name.lower()] = new_vid
+                direct_map[name.lower()] = new_vid
+            print(
+                f"Provisioned {len(new_vol_ids)} new volunteer profiles into `volunteers` table."
+            )
+        else:
+            for idx, name in enumerate(new_vols.keys(), start=1000):
+                new_vol_ids[name.lower()] = idx
+                direct_map[name.lower()] = idx
 
         # Existing inventory tag mapping: canonical_tag -> inventory_id
         existing_tags: dict[str, int] = {}
@@ -285,6 +430,8 @@ def run_migration(
         multi_contributions = 0
         matched_volunteer_count = 0
         unmatched_volunteer_count = 0
+        unmatched_pre_2025 = 0
+        unmatched_2025_single_or_org = 0
 
         for row_idx, row in enumerate(
             sheet.iter_rows(min_row=2, max_col=9, values_only=True), start=2
@@ -317,6 +464,8 @@ def run_migration(
             wheel_norm = normalize_wheel_size(raw_wheel)
             type_norm = normalize_bike_type(raw_type)
             ts_norm = normalize_timestamp(raw_ts) or now_utc
+            dt = raw_ts if isinstance(raw_ts, datetime) else None
+            year = dt.year if dt else 2021
 
             make_clean = str(raw_make).strip() if raw_make is not None else None
             model_clean = str(raw_model).strip() if raw_model is not None else None
@@ -324,11 +473,24 @@ def run_migration(
             vol_clean = str(raw_vol).strip() if raw_vol is not None else None
 
             # Resolve volunteer
-            vol_id = match_volunteer(vol_clean, direct_map, initial_map)
+            vol_id = None
+            if vol_clean:
+                vol_id = match_existing_volunteer(vol_clean, direct_map, initial_map)
+                if vol_id is None:
+                    # Check if matches newly provisioned 2025 volunteer
+                    parts = vol_clean.split()
+                    if len(parts) >= 2:
+                        canon = " ".join(p.capitalize() for p in parts).lower()
+                        vol_id = new_vol_ids.get(canon)
+
             if vol_id is not None:
                 matched_volunteer_count += 1
             else:
                 unmatched_volunteer_count += 1
+                if year >= 2025:
+                    unmatched_2025_single_or_org += 1
+                else:
+                    unmatched_pre_2025 += 1
 
             source_key = f"finished-bike-inventory:{row_idx}"
             source_sheet = SHEET_NAME
@@ -455,11 +617,18 @@ def run_migration(
             "unique_bikes_inserted": inserted_bikes,
             "contributions_inserted": inserted_contributions,
             "multi_contributions": multi_contributions,
+            "new_volunteers_provisioned": len(new_vols),
             "matched_volunteers": matched_volunteer_count,
             "unmatched_volunteers": unmatched_volunteer_count,
+            "unmatched_pre_2025_kept_null": unmatched_pre_2025,
+            "unmatched_2025_plus_single_or_org": unmatched_2025_single_or_org,
+            "attribution_rate_percent": round(
+                (matched_volunteer_count / (total_rows - filtered_placeholder)) * 100,
+                1,
+            ),
         }
 
-        print("\n=== MIGRATION SUMMARY ===")
+        print("\n=== MIGRATION SUMMARY (2-Year Moving Window Policy) ===")
         for k, v in metrics.items():
             print(f"  {k}: {v}")
 

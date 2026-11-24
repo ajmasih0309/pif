@@ -43,7 +43,7 @@ EMAIL_REMINDERS_ENABLED=false DB_PATH=/tmp/pif-baseline-test.db \
 | Email (preview / disabled / test / live gates) | ⚠️ Partial — live delivery unverified | Tests use mocks or disabled mode |
 | Requester links (expiring, one-use, hashed) | ⚠️ Partial — public reachability deployment-dependent | Intake tests pass |
 | Bike Distribution reporting | ✅ Implemented and tested | 7 dashboard regressions |
-| Finished Bike Inventory (staff + public self-attribution) | 🟡 Rehearsed on copy (TASK-616 complete, TASK-617 ready) | 14,995 bikes, 15,461 contributions rehearsed on copy; 0 FK errors; all 156 tests pass |
+| Finished Bike Inventory (staff + public self-attribution) | 🟡 Rehearsed on copy (TASK-616 complete, TASK-617 ready) | 14,995 bikes, 15,461 contributions, 167 new 2025-2026 volunteers provisioned; 0 FK errors; all 156 tests pass |
 | Volunteer profiles (staff create/edit) | ✅ Implemented and populated | Workshop tests; 493 volunteers active in pif.db |
 | Volunteer hours (staff correct/void; public add-only) | ✅ Implemented and populated | Workshop/volunteer/impact tests; 5,466 shifts active in pif.db |
 | Volunteer historical migration (time clock) | ✅ Complete (TASK-611–614) | Successfully applied to `data/processed/pif.db` with backup; 17,099.13h migrated |
