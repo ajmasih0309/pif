@@ -6,48 +6,25 @@ Format: `## [date] — brief description`
 
 ---
 
-## [2026-11-24] — Applied volunteer time clock migration and shop upgrade to active database (TASK-611 to TASK-615)
+## [2026-11-24] — Added GitHub Actions CI workflow (TASK-105) and archived legacy git handoff (TASK-805)
 
-**Type:** Data migration / Schema upgrade / Operational execution
-**Git state at time of entry:** local `main` at `1ad9a48`
+**Type:** DevOps / Documentation / Maintenance
+**Git state at time of entry:** local `main` at `488dafb`
 **Author:** Development agent (Antigravity) / Approved by Project Owner
 
 ### Summary
 
-Successfully executed the one-time migration against the active database `data/processed/pif.db` using `scripts/migrate_volunteer_clock.py --apply`.
-- **Pre-execution Backup**: Created `/Users/abhishekjohnmasih/Documents/01_John/02_Activities/01_Code/04_PythonVenv/pif/data/processed/backups/pif-before-volunteer-clock-20261124T073832Z.db`.
-- **Shops Upgrade (TASK-615)**: Added `shop_id` (1, 2, 3), `address`, `landmark`, and `store_hours` for Bentonville, Rogers, and Springdale. Cleaned rogue NULL shop row.
-- **Volunteers Directory (TASK-611, TASK-612)**: Standardized and inserted 493 unique volunteer profiles with `joined_on` date and 180-day `is_active` flag (192 active, 301 inactive).
-- **Volunteer Hours (TASK-613, TASK-614)**: Inserted 5,466 shift logs (1,025,948 minutes = 17,099.13 hours) across Bentonville (2,284 raw), Rogers (1,347 raw), and Springdale (1,077 raw). Applied Option B catch-up backfill on open shop days for 25 entries > 24 hours (generating 783 3-hour shifts tagged 'Catchup hours').
-- **Integrity Verification**: `PRAGMA foreign_key_check` returned zero errors; `PRAGMA integrity_check` returned `ok`. All 156 Python tests pass cleanly (7.10 s).
-
----
-
-## [2026-11-24] — Planned Option B catch-up shift backfill and shops table upgrade (TASK-611 to TASK-615)
-
-**Type:** Architecture refinement / Planning
-**Git state at time of entry:** local `main` at `9eab145`
-**Author:** Development agent (Antigravity) / Project owner instruction
-
-### Summary
-
-Owner confirmed the resolution of the >24-hour time clock entries (**Option B**): break catch-up entries into standard 3-hour shifts on prior days the shop was open, tagged with note `'Catchup hours'`.
-Additionally, planned **TASK-615** to upgrade the `shops` table with physical addresses, landmarks, and store operating hours for Bentonville, Rogers, and Springdale.
-
----
-
-## [2026-11-24] — Planned volunteer directory and time clock historical migration (TASK-611 to TASK-614)
-
-**Type:** Planning / Data migration roadmap
-**Git state at time of entry:** local `main` at `9eab145`
-**Author:** Development agent (Antigravity) / Project owner request
-
-### Summary
-
-Added tasks TASK-611 through TASK-614 to `TASKS.md` for migrating volunteer profiles and historical hours from `data/raw/PIF Volunteer Reporting time clock.xlsx`. Conducted technical verification against active application codebase (`workshop.py`, `volunteer_entry.py`, `volunteer_impact.py`, `admin_tools.py`) and identified key schema alignment and data quality requirements:
-- Column naming alignment: application expects `is_active` (INTEGER 0/1) and `joined_on` (TEXT ISO date).
-- Hours storage alignment: application tracks integer `minutes` (e.g. 2.5h = 150m) and shop code `shop_name` ('B'/'R'/'S').
-- Raw data audit: 4,708 valid entries, 956 trailing blank rows, 25 entries with >24 hours requiring discussion/reconciliation against single-shift constraints.
+1. **GitHub Actions CI Workflow (TASK-105)**:
+   - Created `.github/workflows/ci.yml` with automated testing on `push` and `pull_request` to `main`.
+   - `python-tests` job: sets up Python 3.12, installs dependencies from `requirements.txt` and `openpyxl`, runs recursive syntax compilation (`python -m compileall -q .`), and executes the complete 156-test Python test suite under non-negotiable safe email overrides (`EMAIL_MODE=disabled`, `EMAIL_LIVE_ENABLED=false`, `EMAIL_REMINDERS_ENABLED=false`) with isolated runner temp database.
+   - `node-tests` job: sets up Node.js 20.x and executes the built-in Node test runner for `tests/test_order_actions.cjs`.
+   - `whitespace-check` job: validates git diff for trailing whitespace and formatting errors.
+2. **Archived Legacy Git Handoff (TASK-805)**:
+   - Added an explicit warning notice and archival banner to `design/git-handoff.md` indicating it describes superseded branch states (`2fd083b` and `00c864b`).
+   - Directed developers to authoritative living documents: `AGENTS.md`, `design/SPECIFICATION.md`, and `design/ARCHITECTURE.md`.
+   - Resolved contradiction `CON-004` and proposed requirement `NFR-011` in `design/TRACEABILITY_MATRIX.md`.
+3. **Cleaned Reference Scripts**:
+   - Removed temporary reference directory `scripts/for_reference/` per owner confirmation.
 
 ---
 

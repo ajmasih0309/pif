@@ -13,7 +13,8 @@
 | Python test suite (156 tests) | **PASS — 156 tests in 10.18 s** (re-verified 2026-11-23 after TASK-801) |
 | Python syntax compilation | **PASS** |
 | `git diff --check` | **PASS** (no whitespace errors) |
-| Node order-action test (`test_order_actions.cjs`) | **NOT RUN** — Node unavailable in current shell |
+| Node order-action test (`test_order_actions.cjs`) | Configured in CI (`.github/workflows/ci.yml`) — runs on Node 20 runner |
+| CI workflow (TASK-105) | **CONFIGURED** — `.github/workflows/ci.yml` (Python 3.12, syntax compilation, safe email overrides, Node test, whitespace check) |
 | Live SMTP | **NOT TESTED** — not in scope |
 | Scheduler production execution | **NOT TESTED** — not in scope |
 | Browser / device / accessibility | **NOT TESTED** — not in scope |
@@ -54,7 +55,8 @@ EMAIL_REMINDERS_ENABLED=false DB_PATH=/tmp/pif-baseline-test.db \
 | Volunteer-hours reporting | ❌ Not implemented | Documented as planned; no route/template found |
 | Workshop-activity reporting | ❌ Not implemented | Documented as planned; no route/template found |
 | QR artwork / production-reachable URLs | ❌ Not implemented | Waiting on stable production address |
-| Production WSGI configuration | ❌ Not implemented | No WSGI entry point, service definition, or CI found |
+| Production WSGI configuration | ❌ Not implemented | No WSGI entry point or service definition (DEC-001/002 pending) |
+| CI Workflow (GitHub Actions) | ✅ Complete (TASK-105) | `.github/workflows/ci.yml` runs Python 3.12 suite, compilation, safe email flags, and Node 20 runner |
 | Operational runbook | ❌ Not implemented | No documented operator procedures |
 
 ---

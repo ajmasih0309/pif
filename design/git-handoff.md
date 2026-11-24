@@ -1,9 +1,24 @@
-# Git workflow and handoff
+# [ARCHIVED] Git Workflow and Historical Handoff Reference
+
+> [!WARNING]
+> **ARCHIVAL NOTICE (2026-11-24 — TASK-805)**:
+> This document is retained for historical traceability only. It describes an obsolete git handoff procedure and references superseded branch states (`2fd083b` and `00c864b`).
+>
+> **Authoritative Current Documentation:**
+> - Development conventions & safety protocol: [AGENTS.md](../AGENTS.md)
+> - Technical architecture & process model: [design/ARCHITECTURE.md](ARCHITECTURE.md)
+> - Product contract & requirements: [design/SPECIFICATION.md](SPECIFICATION.md)
+> - Verified implementation status: [CURRENT_STATUS.md](../CURRENT_STATUS.md)
+> - Active task backlog: [TASKS.md](../TASKS.md)
+
+---
+
+## Historical Content (Superseded)
 
 Updated **2026-11-23**. This document replaces the completed historical handoff
 instructions that referred to an unmerged application branch.
 
-## Current repository baseline
+### Historical repository baseline
 
 - Audited branch: `main`
 - Audited revision: `00c864b389024ec8ed3b28df3d4d93a5c009a9ed`
@@ -15,7 +30,7 @@ The audit observed a staged `.vscode/extensions.json` and an untracked
 `definitions/` directory. They were not created or changed by the audit. Decide
 whether they are intentional project artifacts before staging or committing them.
 
-## Before making a change
+### Before making a change
 
 ```sh
 git status --short
@@ -27,7 +42,7 @@ git log --oneline --decorate -5
 Read `PROJECT_NOTES.md` before implementation. Keep `.env`, SQLite databases,
 workbooks, email previews, backups, and other private data out of Git.
 
-## Feature branch workflow
+### Feature branch workflow
 
 Create a focused branch from current main. Use the `codex/` prefix unless a
 different team convention is agreed.
@@ -54,7 +69,7 @@ The Node order-action test also belongs in validation where Node is available:
 node --test tests/test_order_actions.cjs
 ```
 
-## Commit and merge
+### Commit and merge
 
 Stage only intended files. In particular, do not use `git add -A` until ignored
 private data and unrelated editor artifacts have been reviewed.
@@ -75,7 +90,7 @@ git switch main
 git pull --ff-only origin main
 ```
 
-## Database and configuration boundary
+### Database and configuration boundary
 
 Git does not synchronize `.env`, SQLite databases, workbook inputs, backups, or
 email preview files. A code merge does not authorize a database migration or

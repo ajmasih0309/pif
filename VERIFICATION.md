@@ -26,9 +26,11 @@ No test failures on either run. Warning messages during email-negative tests are
 
 | Check | Date | Result | Notes |
 |---|---|---|---|
-| Python syntax compilation | 2026-11-23 | **PASS** | Primary modules and scripts |
-| `git diff --check` | 2026-11-23 | **PASS** (no output) | Tracked-diff whitespace check only |
-| Node `test_order_actions.cjs` | 2026-11-23 | **NOT RUN** | Node.js unavailable on audit shell |
+| Python syntax compilation | 2026-11-24 | **PASS** | `.venv/bin/python -m compileall -q .` exited with code 0 |
+| `git diff --check` | 2026-11-24 | **PASS** (no output) | Tracked-diff whitespace check clean |
+| CI workflow verification | 2026-11-24 | **PASS** | `.github/workflows/ci.yml` added (Python 3.12, syntax compilation, safe email flags, Node 20 runner, whitespace check) |
+| Node `test_order_actions.cjs` | 2026-11-24 | **CONFIGURED IN CI** | Built-in `node:test` runner wired in GitHub Actions CI (TASK-105); Node not installed on local host |
+| `design/git-handoff.md` archival | 2026-11-24 | **PASS** | Archival banner added pointing to AGENTS.md and SPECIFICATION.md (TASK-805) |
 
 ### 1.3 Git state verification
 

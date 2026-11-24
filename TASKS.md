@@ -98,7 +98,7 @@ These are not code tasks. They block multiple downstream items and require the p
 | TASK-102 | Implement and verify daily offsite backup automation | 🔴 | DEC-015 | NFR-010 | Define destination, encryption, retention, SQLite WAL handling, restore procedure |
 | TASK-103 | Write operational runbook (provisioning, reset, backup/restore drills, incident response) | 🔴 | DEC-004, TASK-101 | TODO-006 | Cannot write until WSGI/process model is chosen |
 | TASK-104 | Add `.env.example` configuration template | ✅ | None | TODO-008 | Completed by owner (template added to project root) |
-| TASK-105 | Add CI workflow; include Node test prerequisite and safe email overrides | 🟡 | None | TODO-007 | Must run Node `test_order_actions.cjs` in CI |
+| TASK-105 | Add CI workflow; include Node test prerequisite and safe email overrides | ✅ | None | TODO-007 | Completed: added `.github/workflows/ci.yml` running Python 3.12 test suite, syntax compilation, safe email flags, and Node 20 runner for `tests/test_order_actions.cjs` |
 | TASK-106 | Pin all CDN dependency versions; evaluate adding integrity metadata or self-hosting | 🔴 | DEC-014 | DEBT-011 | Chart.js currently has no version in template |
 | TASK-107 | Connectivity test at organization shop for staff access and public link reachability | 🔴 | DEC-001 | O-009 | Owner action; test before choosing host |
 | TASK-108 | Configure Tailscale on production host; document device authorization and recovery | 🔴 | TASK-101 | REQ-028 | Do not mark complete until tested |
@@ -133,7 +133,7 @@ These are not code tasks. They block multiple downstream items and require the p
 | TASK-802 | Move order browsing filters/grouping/pagination into SQL | ⏸ | DEBT-008 | Deferred until data volume justifies it; add regression tests first |
 | TASK-803 | Resolve `definitions/` untracked directory ownership and purpose | 🟡 | DEBT-018 | Owner decision: commit, ignore, or remove |
 | TASK-804 | Resolve `.vscode/extensions.json` staged change | 🟡 | DEBT-018 | Owner decision: commit or revert |
-| TASK-805 | Archive or rewrite `design/git-handoff.md` (describes superseded `2fd083b` state) | 🟡 | CON-004 | Cannot delete without owner approval; mark as archived |
+| TASK-805 | Archive or rewrite `design/git-handoff.md` (describes superseded `2fd083b` state) | ✅ | CON-004 | Completed: added archival banner and warning notice pointing developers to `AGENTS.md`, `SPECIFICATION.md`, and `ARCHITECTURE.md` |
 
 ---
 
