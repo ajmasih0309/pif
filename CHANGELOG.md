@@ -6,6 +6,30 @@ Format: `## [date] — brief description`
 
 ---
 
+## [2026-11-24] — Implemented bike inventory migration tool and completed rehearsal (TASK-616, TASK-617)
+
+**Type:** Data migration tool / Rehearsal / Verification
+**Git state at time of entry:** local `main` at `ab6538c`
+**Author:** Development agent (Antigravity) / Approved by Project Owner
+
+### Summary
+
+1. **Migration Tool (`scripts/migrate_bike_inventory.py` — TASK-616)**:
+   - Built reusable CLI script with `--dry-run` and `--apply` options.
+   - Filters out 9 placeholder/test/null tags (`TEST`, `TEST2`, `TEST3`, `Need`, `Trailer bike`, missing tags).
+   - Inserts 14,995 globally canonical unique bike tags into `bike_inventory` with normalized wheel sizes and bike types.
+   - Inserts 15,461 contribution rows into `bike_contributions` linked to `bike_inventory(inventory_id)`.
+   - Accommodates 466 multi-contributions and reused tags by linking to the existing bike ID with historical variations captured in `notes`.
+   - Automatically links 11,249 contributions (72.7%) to active `volunteers(volunteer_id)` via direct and unambiguous first-name/last-initial matching, while retaining full original entered string in `recorded_name`.
+2. **Rehearsal & Quality Verification (TASK-617)**:
+   - Executed full rehearsal on isolated copy at `/tmp/pif-bike-rehearsal.db`.
+   - Verified `PRAGMA foreign_key_check`: clean (0 errors) and `PRAGMA integrity_check`: `ok`.
+   - Verified application domain functions: `admin_tools.lookup_bike` retrieves bikes with contributors and variation notes; `volunteer_impact.yearly_impact` correctly aggregates historical bike contributions (e.g. Tom Woodcock: 40 in 2021, 56 in 2022, 65 in 2023, 55 in 2024, 47 in 2025).
+   - Verified test suite: all 156 unit and integration tests pass cleanly (6.97 s) against the populated rehearsal database.
+   - Awaiting explicit project owner approval before applying migration to active database (`data/processed/pif.db`).
+
+---
+
 ## [2026-11-24] — Planned historical bike inventory migration (TASK-616, TASK-617) and completed raw data audit
 
 **Type:** Data migration planning / Codebase audit
