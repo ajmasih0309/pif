@@ -86,18 +86,14 @@ class OrderSearchTests(DatabaseTestCase):
         for params in ({'q': 'adaptive', 'order_type': 'speciality'}, {'q': '#2'}, {'order_type': 'public'}):
             _, desk = self.page(**params)
             _, explorer = self.page('/explorer', **params)
-            ids = {r['order_id'] for g in desk['all_orders'] for r in g['recipients']}
+            ids = {r['order_id'] for r in desk['all_orders']}
             self.assertEqual(ids, {item['order_id'] for item in explorer['items']})
             self.assertEqual(desk['type_counts'], explorer['type_counts'])
             self.assertEqual(desk['active_tab'], 'all')
 
-    def test_groups_do_not_mix_contacts_shops_or_types_and_dates_sort_across_years(self):
+    def test_cards_do_not_group_and_dates_sort_across_years(self):
         _, context = self.page(status='all')
-        self.assertEqual(len(context['all_orders']), 6)
-        for group in context['all_orders']:
-            self.assertEqual({r['order_type'] for r in group['recipients']}, {group['order_type']})
-            self.assertEqual(len({r['contact_id'] for r in group['recipients']}), 1)
-            self.assertEqual(len({r['shop_name'] for r in group['recipients']}), 1)
+        self.assertEqual(len(context['all_orders']), 7)
         self.assertEqual(context['all_orders'][-1]['order_date_iso'], '2025-12-31')
         _, context = self.page(status='open')
         self.assertEqual(context['open_orders'][0]['order_date_iso'], '2025-12-31')
@@ -110,7 +106,7 @@ class OrderSearchTests(DatabaseTestCase):
         self.assertEqual(response.data.count(b'aria-label="View order '), 1)
         self.assertNotIn(b'Cargo basket requested', response.data)
 
-    def test_pagination_keeps_groups_together_and_search_covers_later_pages(self):
+    def test_pagination_and_search_cover_later_pages(self):
         for i in range(30):
             date = f'2026-03-{i + 1:02d}'
             for _ in range(2):
@@ -120,17 +116,17 @@ class OrderSearchTests(DatabaseTestCase):
         self.conn.commit()
         _, first = self.page(status='open', order_type='public')
         _, second = self.page(status='open', order_type='public', page=2)
-        self.assertEqual(first['pagination']['pages'], 2)
+        self.assertEqual(first['pagination']['pages'], 3)
         self.assertEqual(len(first['open_orders']), 25)
-        ids_first = {r['order_id'] for g in first['open_orders'] for r in g['recipients']}
-        ids_second = {r['order_id'] for g in second['open_orders'] for r in g['recipients']}
+        ids_first = {r['order_id'] for r in first['open_orders']}
+        ids_second = {r['order_id'] for r in second['open_orders']}
         self.assertFalse(ids_first & ids_second)
-        self.assertEqual(len(ids_first | ids_second), 63)
+        self.assertEqual(len(ids_first | ids_second), 50)
         self.assertEqual(first['status_counts']['open'], 63)
         self.assertEqual(second['status_counts']['open'], 63)
         _, matched = self.page(q='findlaterpage', order_type='public')
         self.assertEqual(matched['result_count'], 2)
-        self.assertEqual(len(matched['all_orders']), 1)
+        self.assertEqual(len(matched['all_orders']), 2)
         _, clamped = self.page(status='open', page=9999)
         self.assertEqual(clamped['pagination']['page'], clamped['pagination']['pages'])
 
@@ -144,7 +140,10 @@ class OrderSearchTests(DatabaseTestCase):
         response, context = self.page(q='#2')
         self.assertEqual(context['active_tab'], 'all')
         self.assertIn(b'class="desk-order-list" data-order-cards', response.data)
-        self.assertIn(b'View bikes', response.data)
+        self.assertIn(b'View details &amp; actions', response.data)
+        self.assertNotIn(b'class="table-responsive', response.data)
+        self.assertIn(b'Cargo basket requested', response.data)
+        self.assertIn(b'/explorer?q=%232', response.data)
         self.assertNotIn(b'class="table-responsive', response.data)
         self.assertIn(b'Cargo basket requested', response.data)
         self.assertIn(b'/explorer?q=%232', response.data)

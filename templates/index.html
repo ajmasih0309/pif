@@ -81,8 +81,8 @@
 
 <p id="order-action-feedback" class="alert alert-info my-3" role="status" aria-live="polite" hidden></p>
 {% if pagination.total %}
-<nav class="d-flex flex-wrap justify-content-between align-items-center gap-2 py-3" aria-label="Order group pages">
-    <span>Order groups {{ pagination.first }}–{{ pagination.last }} of {{ pagination.total }} <span class="text-muted small">· {{ status_counts[active_tab] }} orders in this status</span></span>
+<nav class="d-flex flex-wrap justify-content-between align-items-center gap-2 py-3" aria-label="Order pages">
+    <span>Orders {{ pagination.first }}–{{ pagination.last }} of {{ pagination.total }} <span class="text-muted small">· {{ status_counts[active_tab] }} orders in this status</span></span>
     <div class="d-flex align-items-center gap-2">
         {% if pagination.page > 1 %}<a class="btn btn-outline-dark btn-sm" href="{{ url_for('index', q=search_query, order_type=selected_order_type, status=active_tab, page=pagination.page - 1) }}">← Previous</a>{% endif %}
         <span>Page {{ pagination.page }} of {{ pagination.pages }}</span>

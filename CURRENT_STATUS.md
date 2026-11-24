@@ -10,7 +10,7 @@
 
 | Check | Result |
 |---|---|
-| Python test suite (156 tests) | **PASS — 156 tests in 10.18 s** (re-verified 2026-11-23 after TASK-801) |
+| Python test suite (156 tests) | **PASS — 156 tests in 7.06 s** (re-verified 2026-11-24 after TASK-806 Order Desk Redesign) |
 | Python syntax compilation | **PASS** |
 | `git diff --check` | **PASS** (no whitespace errors) |
 | Node order-action test (`test_order_actions.cjs`) | Configured in CI (`.github/workflows/ci.yml`) — runs on Node 20 runner |
@@ -34,7 +34,7 @@ EMAIL_REMINDERS_ENABLED=false DB_PATH=/tmp/pif-baseline-test.db \
 | Area | Status | Evidence |
 |---|---|---|
 | Staff login | ✅ Implemented (source-tested) | Routes covered indirectly; no auth-hardening test suite |
-| Order Desk | ✅ Implemented and tested | Card/search/workflow tests |
+| Order Desk | ✅ Implemented and tested (Redesigned) | Independent order cards, 4-section expanded layout, responsive 2-column, Contact button; 156/156 tests pass |
 | Order Explorer | ✅ Implemented and tested | Covered in search and workflow tests |
 | New Order (multi-recipient) | ✅ Implemented and tested | Intake/workflow tests |
 | Order transitions (Open → Contacted → Completed / Cancelled → Open) | ✅ Implemented and tested | Workflow and policy tests |

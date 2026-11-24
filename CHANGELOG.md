@@ -6,6 +6,43 @@ Format: `## [date] — brief description`
 
 ---
 
+## [2026-11-24] — Implemented owner-approved Order Desk redesign (TASK-806)
+
+**Type:** Feature / Presentation layer redesign / Technical debt resolution
+**Git state at time of entry:** local `main`
+**Author:** Development agent (Antigravity) / Approved by Project Owner
+
+### Summary
+
+Implemented the owner-approved Order Desk presentation redesign across all tabs (Open, Contacted, Cancelled, Completed, All):
+1. **Structure & Grouping Removal**:
+   - Removed contact-person / bulk-order grouping (`group_data()`) from `app.py` index route.
+   - Displayed every recipient/bike request as an independent, self-contained order card.
+   - Preserved individual order lifecycle without adding any order-header database table or bulk lifecycle state.
+   - Deterministic sorting applied across views: Open and Contacted orders sorted oldest first by `(order_date_iso, order_id)`; Completed orders sorted newest pickup first by `(pickup_date_iso, order_id)`; Cancelled and All orders sorted newest first by `(order_date_iso, order_id)`.
+   - Bike-type filtering remains deferred.
+2. **Collapsed Card Layout**:
+   - Summary displays `Contact person name → Recipient name` (`{{ order.contact_name or 'Unnamed contact' }} → {{ order.recipient_name or 'Unnamed recipient' }}`), handling missing names independently without identity substitution.
+   - Summary displays status badge (`Open`, `Contacted`, `Completed`, `Cancelled`), order metadata (`Order #`, date, shop, category, notes indicator, pedal partner), and key requirements pills (`Height`, `1st choice`, `2nd choice`, `Style`, `Tag`, `Picked up`).
+   - For Contacted orders, displays pickup deadline window and overdue status if applicable.
+   - Clear disclosure toggle: `View details & actions` / `Hide details`.
+3. **Expanded Card Layout (4 Sections)**:
+   - **Section A (Contact information)**: Contact person, Recipient, Phone, Email, and Pedal Partner.
+   - **Section B (Recipient & bike requirements)**: Age, Height, Bike style, First choice, Second choice, Bike tag, Picked up date.
+   - Responsive two-column grid (`.desk-sections-row`) displaying Sections A and B side-by-side on desktop (`min-width: 768px`) and stacked on mobile.
+   - Removed separate contact details `<details class="desk-contact-details">` disclosure as its information is now incorporated directly.
+   - **Section C (Notes)**: Visible notes section rendering `order.notes` with safe HTML escaping.
+   - **Section D (Actions)**: Status-appropriate actions.
+4. **Action Updates**:
+   - Renamed button `Mark contacted` to `Contact`. Retained `Cancel order`, `Restore to Open`, and `Save pickup` form.
+   - Maintained all existing email triggers and safeguards (`EMAIL_MODE=disabled`; live email delivery disabled).
+   - Preserved Order Explorer direct links (`Open #<id> in Explorer`).
+5. **Verification**:
+   - All 156 Python unit and integration tests pass cleanly in 7.060 s (`PYTHONDONTWRITEBYTECODE=1 EMAIL_MODE=disabled EMAIL_LIVE_ENABLED=false EMAIL_REMINDERS_ENABLED=false DB_PATH=/tmp/pif-test-$$.db .venv/bin/python -m unittest discover -s tests -p 'test_*.py' -v`).
+   - `git diff --check` passes with zero whitespace errors.
+
+---
+
 ## [2026-11-24] — Applied bike inventory migration to active database (TASK-616, TASK-617)
 
 **Type:** Data migration / Production execution / Operational milestone

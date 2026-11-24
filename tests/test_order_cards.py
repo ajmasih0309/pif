@@ -85,7 +85,7 @@ class OrderCardTests(DatabaseTestCase):
         html, forms = self.card_page('all')
         self.assertEqual(forms, [])
         self.assertIn('&lt;script&gt;private note&lt;/script&gt;', html)
-        self.assertIn('View bikes', html)
+        self.assertIn('View details &amp; actions', html)
         self.assertIn('Has notes', html)
         # Search should not expand every order/bike into a tall page.
         self.assertNotRegex(html, r'<details[^>]*\sopen(?:\s|>)')

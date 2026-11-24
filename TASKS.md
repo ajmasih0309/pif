@@ -40,7 +40,7 @@ These are not code tasks. They block multiple downstream items and require the p
 | DEC-009 | SMTP sender, test-recipient policy, preview retention, approval gate | TASK-701 |
 | DEC-010 | Confirm age 1–80 and phone normalization as approved intake requirements | TASK-003 |
 | DEC-011 | Confirm 7-day / 28-day pickup windows still correct | TASK-003 |
-| DEC-012 | Confirm approved layout: "Desktop unchanged" or unified two-column from 768px | TASK-004 |
+| DEC-012 | Confirm approved layout: "Desktop unchanged" or unified two-column from 768px | ✅ Resolved: Owner approved Order Desk redesign displaying independent order cards with responsive two-column recipient layout stacking on mobile |
 | DEC-013 | Confirm volunteer impact aggregate visibility rules | TASK-302 |
 | DEC-014 | CDN assets: pin with integrity metadata, or self-host | TASK-801 |
 | DEC-015 | Backup retention, RPO/RTO, restore-test cadence | TASK-102 |
@@ -136,6 +136,7 @@ These are not code tasks. They block multiple downstream items and require the p
 | TASK-803 | Resolve `definitions/` untracked directory ownership and purpose | 🟡 | DEBT-018 | Owner decision: commit, ignore, or remove |
 | TASK-804 | Resolve `.vscode/extensions.json` staged change | 🟡 | DEBT-018 | Owner decision: commit or revert |
 | TASK-805 | Archive or rewrite `design/git-handoff.md` (describes superseded `2fd083b` state) | ✅ | CON-004 | Completed: added archival banner and warning notice pointing developers to `AGENTS.md`, `SPECIFICATION.md`, and `ARCHITECTURE.md` |
+| TASK-806 | Implement approved Order Desk redesign without bulk grouping | ✅ | None | Completed: independent order cards per recipient/bike, collapsed card summary (`Contact → Recipient`), expanded 4-section card layout (Contact Info, Recipient & Bike Requirements in responsive 2-column grid, Notes, Actions), `Mark contacted` renamed to `Contact`, consistent across Open, Contacted, Cancelled, Completed, All; 156/156 tests pass |
 
 ---
 

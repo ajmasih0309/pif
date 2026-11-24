@@ -118,63 +118,34 @@ def index():
     if active_tab not in {'open', 'contacted', 'completed', 'cancelled', 'all'}:
         active_tab = 'all' if filters['filters_active'] else 'open'
 
-    # 2. group data for tabbed view
-    def group_data(data_list):
-        groups = {}
-        for item in data_list:
-            # Keep different contacts, shops and order types separate even when
-            # they share a name and date. Missing contacts stay separate too.
-            key = (item['contact_id'] if item.get('contact_id') is not None else ('order', item['order_id']),
-                   item['order_date_iso'], item['shop_name'], item['order_type'])
-            if key not in groups:
-                groups[key] = {
-                    'contact_name': item['contact_name'],
-                    'contact_phone': item['contact_phone_number'],
-                    'contact_email': item['contact_email'],
-                    'pedal_partner': item['pedal_partner_name'],
-                    'order_date': item['order_date'],
-                    'order_date_iso': item['order_date_iso'],
-                    'order_type': item.get('order_type', 'Public'),
-                    #'shop_name': item.get('shop_name', ''),
-                    'shop_name': item.get('shop_location', ''),
-                    'total_bikes': 0,
-                    'recipients': []
-                }
-            groups[key]['total_bikes'] += 1
-            groups[key]['recipients'].append(item)
-        return list(groups.values())
-
     open_items = [i for i in items if i['order_status'] == 'Open']
     contacted_items = [i for i in items if i['order_status'] == 'Contacted']
     completed_items = [i for i in items if i['order_status'] == 'Completed']
     cancelled_items = [i for i in items if i['order_status'] == 'Cancelled']
 
-    open_orders = sorted(group_data(open_items), key=lambda x: x['order_date_iso'])
-    contacted_orders = sorted(group_data(contacted_items), key=lambda x: x['order_date_iso'])
-    cancelled_orders = sorted(group_data(cancelled_items), key=lambda x: x['order_date_iso'], reverse=True)
-    all_orders = sorted(group_data(items), key=lambda x: x['order_date_iso'], reverse=True)
-    
-    def get_max_pickup(group):
-        dates = [r['pickup_date_iso'] for r in group['recipients'] if r['pickup_date_iso']]
-        return max(dates) if dates else ''
-    
-    completed_orders = sorted(group_data(completed_items), key=get_max_pickup, reverse=True)
+    # Open and Contacted orders oldest first with deterministic secondary ordering by order_id
+    open_orders = sorted(open_items, key=lambda x: (x.get('order_date_iso') or '', x.get('order_id') or 0))
+    contacted_orders = sorted(contacted_items, key=lambda x: (x.get('order_date_iso') or '', x.get('order_id') or 0))
+    # Completed orders newest pickup first, deterministic secondary ordering
+    completed_orders = sorted(completed_items, key=lambda x: (x.get('pickup_date_iso') or '', x.get('order_id') or 0), reverse=True)
+    # Cancelled and All orders newest first, deterministic secondary ordering
+    cancelled_orders = sorted(cancelled_items, key=lambda x: (x.get('order_date_iso') or '', x.get('order_id') or 0), reverse=True)
+    all_orders = sorted(items, key=lambda x: (x.get('order_date_iso') or '', x.get('order_id') or 0), reverse=True)
 
     status_groups = {
         'open': open_orders, 'contacted': contacted_orders, 'completed': completed_orders,
         'cancelled': cancelled_orders, 'all': all_orders,
     }
-    status_counts = {status: sum(group['total_bikes'] for group in groups)
-                     for status, groups in status_groups.items()}
-    groups = status_groups[active_tab]
+    status_counts = {status: len(orders) for status, orders in status_groups.items()}
+    active_orders = status_groups[active_tab]
     page_size = 25
-    page_count = max(1, (len(groups) + page_size - 1) // page_size)
+    page_count = max(1, (len(active_orders) + page_size - 1) // page_size)
     page = min(max(1, request.args.get('page', 1, type=int)), page_count)
     start = (page - 1) * page_size
-    pagination = {'page': page, 'pages': page_count, 'total': len(groups),
-                  'first': start + 1 if groups else 0, 'last': min(start + page_size, len(groups))}
-    # Keep families together, but send only the current page of the selected tab.
-    visible_groups = {status + '_orders': (groups[start:start + page_size] if status == active_tab else [])
+    pagination = {'page': page, 'pages': page_count, 'total': len(active_orders),
+                  'first': start + 1 if active_orders else 0, 'last': min(start + page_size, len(active_orders))}
+    # Send only the current page of the selected tab.
+    visible_groups = {status + '_orders': (active_orders[start:start + page_size] if status == active_tab else [])
                       for status in status_groups}
 
     return render_template(
