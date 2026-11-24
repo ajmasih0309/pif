@@ -43,8 +43,10 @@ EMAIL_REMINDERS_ENABLED=false DB_PATH=/tmp/pif-baseline-test.db \
 | Requester links (expiring, one-use, hashed) | ⚠️ Partial — public reachability deployment-dependent | Intake tests pass |
 | Bike Distribution reporting | ✅ Implemented and tested | 7 dashboard regressions |
 | Finished Bike Inventory (staff + public self-attribution) | ✅ Implemented and tested | Workshop/volunteer tests |
-| Volunteer profiles (staff create/edit) | ✅ Implemented and tested | Workshop tests |
-| Volunteer hours (staff correct/void; public add-only) | ✅ Implemented and tested | Workshop/volunteer/impact tests |
+| Volunteer profiles (staff create/edit) | ✅ Implemented and tested | Workshop tests; 493 volunteers verified in migration rehearsal |
+| Volunteer hours (staff correct/void; public add-only) | ✅ Implemented and tested | Workshop/volunteer/impact tests; 5,466 shifts verified in migration rehearsal |
+| Volunteer historical migration (time clock) | 🔵 Rehearsal Complete (TASK-611–614) | Rehearsal verified on `/tmp/pif-volunteer-rehearsal.db` (Option B catch-up backfill on open shop days) |
+| Shop addresses & operating hours upgrade | ✅ Rehearsal Complete (TASK-615) | Addresses, landmarks, and day-of-week operating hours for Bentonville, Rogers, Springdale implemented in migration tool |
 | Volunteer impact (year totals, contributed bikes, weekly strip) | ✅ Implemented and tested | Impact tests |
 | Controlled maintenance CLI | ✅ Implemented and tested | Admin/migration/repair tests |
 | Historical CSV rehearsal | ✅ Implemented and tested | Migration tests (legacy July CSV only) |

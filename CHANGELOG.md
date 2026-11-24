@@ -6,6 +6,88 @@ Format: `## [date] — brief description`
 
 ---
 
+## [2026-11-24] — Planned Option B catch-up shift backfill and shops table upgrade (TASK-611 to TASK-615)
+
+**Type:** Architecture refinement / Planning
+**Git state at time of entry:** local `main` at `9eab145`
+**Author:** Development agent (Antigravity) / Project owner instruction
+
+### Summary
+
+Owner confirmed the resolution of the >24-hour time clock entries (**Option B**): break catch-up entries into standard 3-hour shifts on prior days the shop was open, tagged with note `'Catchup hours'`.
+Additionally, planned **TASK-615** to upgrade the `shops` table with physical addresses, landmarks, and store operating hours for Bentonville, Rogers, and Springdale.
+
+---
+
+## [2026-11-24] — Planned Option B catch-up shift backfill and shops table upgrade (TASK-611 to TASK-615)
+
+**Type:** Architecture refinement / Planning
+**Git state at time of entry:** local `main` at `9eab145`
+**Author:** Development agent (Antigravity) / Project owner instruction
+
+### Summary
+
+Owner confirmed the resolution of the >24-hour time clock entries (**Option B**): break catch-up entries into standard 3-hour shifts on prior days the shop was open, tagged with note `'Catchup hours'`.
+Additionally, planned **TASK-615** to upgrade the `shops` table with physical addresses, landmarks, and store operating hours for Bentonville, Rogers, and Springdale.
+
+---
+
+## [2026-11-24] — Planned volunteer directory and time clock historical migration (TASK-611 to TASK-614)
+
+**Type:** Planning / Data migration roadmap
+**Git state at time of entry:** local `main` at `9eab145`
+**Author:** Development agent (Antigravity) / Project owner request
+
+### Summary
+
+Added tasks TASK-611 through TASK-614 to `TASKS.md` for migrating volunteer profiles and historical hours from `data/raw/PIF Volunteer Reporting time clock.xlsx`. Conducted technical verification against active application codebase (`workshop.py`, `volunteer_entry.py`, `volunteer_impact.py`, `admin_tools.py`) and identified key schema alignment and data quality requirements:
+- Column naming alignment: application expects `is_active` (INTEGER 0/1) and `joined_on` (TEXT ISO date).
+- Hours storage alignment: application tracks integer `minutes` (e.g. 2.5h = 150m) and shop code `shop_name` ('B'/'R'/'S').
+- Raw data audit: 4,708 valid entries, 956 trailing blank rows, 25 entries with >24 hours requiring discussion/reconciliation against single-shift constraints.
+
+---
+
+## [2026-11-24] — Planned Option B catch-up shift backfill and shops table upgrade (TASK-611 to TASK-615)
+
+**Type:** Architecture refinement / Planning
+**Git state at time of entry:** local `main` at `9eab145`
+**Author:** Development agent (Antigravity) / Project owner instruction
+
+### Summary
+
+Owner confirmed the resolution of the >24-hour time clock entries (**Option B**): break catch-up entries into standard 3-hour shifts on prior days the shop was open, tagged with note `'Catchup hours'`.
+Additionally, planned **TASK-615** to upgrade the `shops` table with physical addresses, landmarks, and store operating hours for Bentonville, Rogers, and Springdale.
+
+---
+
+## [2026-11-24] — Planned Option B catch-up shift backfill and shops table upgrade (TASK-611 to TASK-615)
+
+**Type:** Architecture refinement / Planning
+**Git state at time of entry:** local `main` at `9eab145`
+**Author:** Development agent (Antigravity) / Project owner instruction
+
+### Summary
+
+Owner confirmed the resolution of the >24-hour time clock entries (**Option B**): break catch-up entries into standard 3-hour shifts on prior days the shop was open, tagged with note `'Catchup hours'`.
+Additionally, planned **TASK-615** to upgrade the `shops` table with physical addresses, landmarks, and store operating hours for Bentonville, Rogers, and Springdale.
+
+---
+
+## [2026-11-24] — Planned volunteer directory and time clock historical migration (TASK-611 to TASK-614)
+
+**Type:** Planning / Data migration roadmap
+**Git state at time of entry:** local `main` at `9eab145`
+**Author:** Development agent (Antigravity) / Project owner request
+
+### Summary
+
+Added tasks TASK-611 through TASK-614 to `TASKS.md` for migrating volunteer profiles and historical hours from `data/raw/PIF Volunteer Reporting time clock.xlsx`. Conducted technical verification against active application codebase (`workshop.py`, `volunteer_entry.py`, `volunteer_impact.py`, `admin_tools.py`) and identified key schema alignment and data quality requirements:
+- Column naming alignment: application expects `is_active` (INTEGER 0/1) and `joined_on` (TEXT ISO date).
+- Hours storage alignment: application tracks integer `minutes` (e.g. 2.5h = 150m) and shop code `shop_name` ('B'/'R'/'S').
+- Raw data audit: 4,708 valid entries, 956 trailing blank rows, 25 entries with >24 hours requiring discussion/reconciliation against single-shift constraints.
+
+---
+
 ## [2026-11-23] — TASK-801 applied: Fixed bare except handlers in utils.py and added unit tests
 
 **Type:** Code improvement / Technical debt remediation (DEBT-012)

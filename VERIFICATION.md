@@ -13,6 +13,7 @@ This document records what has been verified, by what method, and what remains u
 
 | Run | Date | Environment | Command | Result |
 |---|---|---|---|---|
+| Volunteer clock rehearsal & verification | 2026-11-24 | Local `.venv` Python 3.14.7 / SQLite 3.53.4 / copy at `/tmp/pif-volunteer-rehearsal.db` | `.venv/bin/python scripts/migrate_volunteer_clock.py --apply --db-path /tmp/pif-volunteer-rehearsal.db` | **PASS — 493 vols, 5,466 shifts, 0 FK errors, integrity OK** |
 | TASK-801 verification & regression test | 2026-11-23 | Local `.venv` Python 3.14.7 / SQLite 3.53.4 / temp DB | `PYTHONDONTWRITEBYTECODE=1 EMAIL_MODE=disabled EMAIL_LIVE_ENABLED=false EMAIL_REMINDERS_ENABLED=false DB_PATH=/tmp/pif-test-$$.db .venv/bin/python -m unittest discover -s tests -p 'test_*.py' -v` | **PASS — 156 tests in 10.181 s** |
 | Baseline establishment re-verification | 2026-11-23 | Local `.venv` Python 3.14.7 / SQLite 3.53.4 / temp DB | `PYTHONDONTWRITEBYTECODE=1 EMAIL_MODE=disabled EMAIL_LIVE_ENABLED=false EMAIL_REMINDERS_ENABLED=false DB_PATH=/tmp/pif-baseline-$$-new.db .venv/bin/python -m unittest discover -s tests -p 'test_*.py' -v` | **PASS — 155 tests in 6.748 s** |
 | Baseline re-verification | 2026-11-23 | Local `.venv` Python 3.14.7 / SQLite 3.53.4 / temp DB | `PYTHONDONTWRITEBYTECODE=1 EMAIL_MODE=disabled EMAIL_LIVE_ENABLED=false EMAIL_REMINDERS_ENABLED=false DB_PATH=/tmp/pif-baseline-test.db .venv/bin/python -m unittest discover -s tests -p 'test_*.py' -v` | **PASS — 155 tests in 7.17 s** |

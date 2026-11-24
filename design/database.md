@@ -123,7 +123,13 @@ be staff names or `volunteer-self:<id>` and do not require a matching `users` ro
 | `contacts` | `contact_id INTEGER PK AUTOINCREMENT` | `contact_name TEXT`, `contact_phone_number REAL`, `contact_email TEXT` |
 | `recipients` | `recipient_id INTEGER PK AUTOINCREMENT` | `recipient_name TEXT`, `bike_style_preference TEXT`, `age REAL`, `height TEXT`, `bike_type_first_choice TEXT`, `bike_type_second_choice TEXT` |
 | `pedal_partners` | `pedal_partner_id INTEGER PK AUTOINCREMENT` | `pedal_partner_name TEXT` |
-| `shops` | Unique index on `shop_name TEXT`, not a declared PK | `shop_location TEXT`; B = Bentonville, R = Rogers, S = Springdale |
+| `shops` | Unique index on `shop_name TEXT`, not a declared PK | `shop_location TEXT` (B = Bentonville, R = Rogers, S = Springdale), `address TEXT`, `landmark TEXT`, `store_hours TEXT` |
+
+### Shop addresses and operating hours (confirmed 2026-11-24)
+
+- **Bentonville (`B`)**: 3902 NW Wishing Springs Rd., Bentonville, AR 72712. Store Hours: Monday (5:00 PM – 8:00 PM), Wednesday (9:00 AM – 12:00 PM), Saturday (9:00 AM – 12:00 PM).
+- **Rogers (`R`)**: 315 W. Olive St., Rogers, AR 72756 (behind Rogers Activity Center). Store Hours: Monday (5:00 PM – 8:00 PM), Wednesday (9:00 AM – 12:00 PM), Saturday (9:00 AM – 12:00 PM).
+- **Springdale (`S`)**: 115 Willella Pl., Springdale, AR 72764 (Jones Center campus). Store Hours: Monday (5:00 PM – 8:00 PM), Wednesday (9:00 AM – 12:00 PM). Note: Saturday is closed.
 
 Order status defaults to Open and last editor to System. Phone/email are optional;
 supplied values receive form validation. Recipients have no separate channel

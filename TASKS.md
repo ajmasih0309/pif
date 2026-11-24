@@ -82,6 +82,11 @@ These are not code tasks. They block multiple downstream items and require the p
 | TASK-603 | Implement authorized Excel workbook importer for historical data cutover | 🔴 | DEC-007 | TODO-001 | Needs approved workbook, mapping rules, rehearsal, backup, sign-off. No cutover without all gates. |
 | TASK-604 | Add startup schema-version readiness check | 🔴 | DEC-008 | PART-006 | Fail with clear operator message if schema not at expected version |
 | TASK-605 | Audit and document active database foreign key gaps; add constraints progressively | 🔴 | TASK-602 | DEBT-007 | Do not add constraints that would reject existing records without reconciliation |
+| TASK-611 | Update database schema for `volunteers` (`joined_on`, `is_active`) and ensure `volunteer_hours` table matches app requirements | ✅ | None | REQ-011, REQ-012 | Implemented in `scripts/migrate_volunteer_clock.py` |
+| TASK-612 | Create reusable migration code for `volunteers` from `PIF Volunteer Reporting time clock.xlsx` | ✅ | None | REQ-011 | Implemented in `scripts/migrate_volunteer_clock.py` (Title-Case standardization, 180-day cutoff) |
+| TASK-613 | Create reusable migration code for `volunteer_hours` table implementing Option B catch-up backfill on open shop days | ✅ | None | REQ-012 | Implemented in `scripts/migrate_volunteer_clock.py` (backfills >24h entries across Mon/Wed/Sat for B/R, Mon/Wed for S with note 'Catchup hours') |
+| TASK-614 | Rehearse migration on a test database copy, reconcile entries, and execute one-time migration with backup | 🔵 | TASK-611, TASK-612, TASK-613 | REQ-001 | Rehearsal succeeded on `/tmp/pif-volunteer-rehearsal.db` (493 vols, 5,466 shifts, 0 FK errors); awaiting owner sign-off for active DB `--apply` |
+| TASK-615 | Upgrade `shops` table with `address`, `landmark`, and `store_hours` | ✅ | None | REQ-006 | Implemented in `scripts/migrate_volunteer_clock.py` (resolves legacy `bikes` FK mismatch as well) |
 
 ---
 
