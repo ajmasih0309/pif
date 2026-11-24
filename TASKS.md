@@ -124,7 +124,7 @@ These are not code tasks. They block multiple downstream items and require the p
 
 | ID | Task | Status | DEBT ref | Notes |
 |---|---|---|---|---|
-| TASK-801 | Fix bare `except` suppression in `utils.py` formatting helpers | 🟡 | DEBT-012 | Low-risk; can be done independently |
+| TASK-801 | Fix bare `except` suppression in `utils.py` formatting helpers | ✅ | DEBT-012 | Completed: replaced bare `except:` with explicit `(ValueError, TypeError, IndexError)` in `format_date` and `(ValueError, TypeError)` in `clean_int`; regression unit tests added |
 | TASK-802 | Move order browsing filters/grouping/pagination into SQL | ⏸ | DEBT-008 | Deferred until data volume justifies it; add regression tests first |
 | TASK-803 | Resolve `definitions/` untracked directory ownership and purpose | 🟡 | DEBT-018 | Owner decision: commit, ignore, or remove |
 | TASK-804 | Resolve `.vscode/extensions.json` staged change | 🟡 | DEBT-018 | Owner decision: commit or revert |

@@ -6,10 +6,26 @@ Format: `## [date] — brief description`
 
 ---
 
+## [2026-11-23] — TASK-801 applied: Fixed bare except handlers in utils.py and added unit tests
+
+**Type:** Code improvement / Technical debt remediation (DEBT-012)
+**Git state at time of entry:** local `main` at `9568412`
+**Author:** Development agent (Antigravity)
+
+### Summary
+
+Applied **TASK-801** ([DEBT-012](file:///Users/abhishekjohnmasih/Documents/01_John/02_Activities/01_Code/04_PythonVenv/pif/design/SPECIFICATION.md#L182)). Replaced bare `except:` clauses in [utils.py](file:///Users/abhishekjohnmasih/Documents/01_John/02_Activities/01_Code/04_PythonVenv/pif/utils.py) with explicit, targeted exception tuples:
+- `format_date`: changed `except:` to `except (ValueError, TypeError, IndexError):`.
+- `clean_int`: changed `except:` to `except (ValueError, TypeError):`.
+- Added unit regression test `test_utils_formatting_helpers` in `tests/test_order_cards.py`.
+- Full test suite re-verified: **156 tests passing in 10.18 s** (increased from 155).
+
+---
+
 ## [2026-11-23] — Owner decisions on host, secret key, staff governance, and task prioritization
 
-**Type:** Owner decisions / Task updates  
-**Git state at time of entry:** local `main` at `029a613` | `origin/main` at `00c864b`  
+**Type:** Owner decisions / Task updates
+**Git state at time of entry:** local `main` at `029a613` | `origin/main` at `00c864b`
 **Author:** Project owner / Development agent (Antigravity)
 
 ### Decisions recorded

@@ -1,7 +1,7 @@
 # AGENTS.md — PIF Portal Development Conventions
 
 **Updated:** 2026-11-23 (development baseline established; re-verified 2026-11-23)
-**Authoritative baseline:** `main` at `029a613` (local HEAD) | `origin/main` at `00c864b` | Python: `155 tests / 6.748 s`
+**Authoritative baseline:** `main` at `9568412` | Python: `156 tests / ~7 s`
 
 ---
 
@@ -45,7 +45,7 @@ DB_PATH=/tmp/pif-test-$$.db \
 .venv/bin/python -m unittest discover -s tests -p 'test_*.py' -v
 ```
 
-Expected baseline: **155 tests / ~7 s** (all pass). Never commit if any test fails.
+Expected baseline: **156 tests / ~7 s** (all pass). Never commit if any test fails.
 
 The Node order-action test also exists and must be run when Node is available:
 

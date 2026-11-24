@@ -89,3 +89,23 @@ class OrderCardTests(DatabaseTestCase):
         self.assertIn('Has notes', html)
         # Search should not expand every order/bike into a tall page.
         self.assertNotRegex(html, r'<details[^>]*\sopen(?:\s|>)')
+
+    def test_utils_formatting_helpers(self):
+        from utils import format_date, clean_int, format_phone
+        self.assertEqual(format_date('2026-10-08'), '10/08/2026')
+        self.assertEqual(format_date('2026-10-08T14:30:00'), '10/08/2026')
+        self.assertEqual(format_date(''), '')
+        self.assertEqual(format_date(None), '')
+        self.assertEqual(format_date('not-a-date'), 'not-a-date')
+
+        self.assertEqual(clean_int('123'), '123')
+        self.assertEqual(clean_int('123.0'), '123')
+        self.assertEqual(clean_int(''), '')
+        self.assertEqual(clean_int(None), '')
+        self.assertEqual(clean_int('nan'), '')
+        self.assertEqual(clean_int('not-a-num'), 'not-a-num')
+
+        self.assertEqual(format_phone('1234567890'), '(123) 456-7890')
+        self.assertEqual(format_phone('1234567890.0'), '(123) 456-7890')
+        self.assertEqual(format_phone(''), '')
+        self.assertEqual(format_phone(None), '')

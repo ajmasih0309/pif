@@ -10,7 +10,7 @@
 
 | Check | Result |
 |---|---|
-| Python test suite (155 tests) | **PASS — 155 tests in 6.748 s** (re-verified 2026-11-23) |
+| Python test suite (156 tests) | **PASS — 156 tests in 10.18 s** (re-verified 2026-11-23 after TASK-801) |
 | Python syntax compilation | **PASS** |
 | `git diff --check` | **PASS** (no whitespace errors) |
 | Node order-action test (`test_order_actions.cjs`) | **NOT RUN** — Node unavailable in current shell |

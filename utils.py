@@ -25,7 +25,7 @@ def format_date(d_str):
         clean_date = str(d_str).split()[0].split('T')[0]
         parsed = datetime.strptime(clean_date, '%Y-%m-%d')
         return f'{parsed.month:02d}/{parsed.day:02d}/{parsed.year:04d}'
-    except:
+    except (ValueError, TypeError, IndexError):
         return d_str 
 
 def format_phone(phone):
@@ -56,7 +56,7 @@ def clean_int(val):
     if val in [None, '', 'nan', 'NaN']: return ""
     try:
         return str(int(float(val)))
-    except:
+    except (ValueError, TypeError):
         return str(val)
 
 @dataclass(frozen=True)
