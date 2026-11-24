@@ -85,7 +85,7 @@ These are not code tasks. They block multiple downstream items and require the p
 | TASK-611 | Update database schema for `volunteers` (`joined_on`, `is_active`) and ensure `volunteer_hours` table matches app requirements | ✅ | None | REQ-011, REQ-012 | Implemented in `scripts/migrate_volunteer_clock.py` |
 | TASK-612 | Create reusable migration code for `volunteers` from `PIF Volunteer Reporting time clock.xlsx` | ✅ | None | REQ-011 | Implemented in `scripts/migrate_volunteer_clock.py` (Title-Case standardization, 180-day cutoff) |
 | TASK-613 | Create reusable migration code for `volunteer_hours` table implementing Option B catch-up backfill on open shop days | ✅ | None | REQ-012 | Implemented in `scripts/migrate_volunteer_clock.py` (backfills >24h entries across Mon/Wed/Sat for B/R, Mon/Wed for S with note 'Catchup hours') |
-| TASK-614 | Rehearse migration on a test database copy, reconcile entries, and execute one-time migration with backup | 🔵 | TASK-611, TASK-612, TASK-613 | REQ-001 | Rehearsal succeeded on `/tmp/pif-volunteer-rehearsal.db` (493 vols, 5,466 shifts, 0 FK errors); awaiting owner sign-off for active DB `--apply` |
+| TASK-614 | Rehearse migration on a test database copy, reconcile entries, and execute one-time migration with backup | ✅ | None | REQ-001 | Applied to `data/processed/pif.db` with backup `pif-before-volunteer-clock-20261124T073832Z.db` (493 vols, 5,466 shifts, 0 FK errors, integrity ok) |
 | TASK-615 | Upgrade `shops` table with `address`, `landmark`, and `store_hours` | ✅ | None | REQ-006 | Implemented in `scripts/migrate_volunteer_clock.py` (resolves legacy `bikes` FK mismatch as well) |
 
 ---

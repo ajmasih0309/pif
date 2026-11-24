@@ -6,16 +6,20 @@ Format: `## [date] — brief description`
 
 ---
 
-## [2026-11-24] — Planned Option B catch-up shift backfill and shops table upgrade (TASK-611 to TASK-615)
+## [2026-11-24] — Applied volunteer time clock migration and shop upgrade to active database (TASK-611 to TASK-615)
 
-**Type:** Architecture refinement / Planning
-**Git state at time of entry:** local `main` at `9eab145`
-**Author:** Development agent (Antigravity) / Project owner instruction
+**Type:** Data migration / Schema upgrade / Operational execution
+**Git state at time of entry:** local `main` at `1ad9a48`
+**Author:** Development agent (Antigravity) / Approved by Project Owner
 
 ### Summary
 
-Owner confirmed the resolution of the >24-hour time clock entries (**Option B**): break catch-up entries into standard 3-hour shifts on prior days the shop was open, tagged with note `'Catchup hours'`.
-Additionally, planned **TASK-615** to upgrade the `shops` table with physical addresses, landmarks, and store operating hours for Bentonville, Rogers, and Springdale.
+Successfully executed the one-time migration against the active database `data/processed/pif.db` using `scripts/migrate_volunteer_clock.py --apply`.
+- **Pre-execution Backup**: Created `/Users/abhishekjohnmasih/Documents/01_John/02_Activities/01_Code/04_PythonVenv/pif/data/processed/backups/pif-before-volunteer-clock-20261124T073832Z.db`.
+- **Shops Upgrade (TASK-615)**: Added `shop_id` (1, 2, 3), `address`, `landmark`, and `store_hours` for Bentonville, Rogers, and Springdale. Cleaned rogue NULL shop row.
+- **Volunteers Directory (TASK-611, TASK-612)**: Standardized and inserted 493 unique volunteer profiles with `joined_on` date and 180-day `is_active` flag (192 active, 301 inactive).
+- **Volunteer Hours (TASK-613, TASK-614)**: Inserted 5,466 shift logs (1,025,948 minutes = 17,099.13 hours) across Bentonville (2,284 raw), Rogers (1,347 raw), and Springdale (1,077 raw). Applied Option B catch-up backfill on open shop days for 25 entries > 24 hours (generating 783 3-hour shifts tagged 'Catchup hours').
+- **Integrity Verification**: `PRAGMA foreign_key_check` returned zero errors; `PRAGMA integrity_check` returned `ok`. All 156 Python tests pass cleanly (7.10 s).
 
 ---
 
@@ -47,16 +51,20 @@ Added tasks TASK-611 through TASK-614 to `TASKS.md` for migrating volunteer prof
 
 ---
 
-## [2026-11-24] — Planned Option B catch-up shift backfill and shops table upgrade (TASK-611 to TASK-615)
+## [2026-11-24] — Applied volunteer time clock migration and shop upgrade to active database (TASK-611 to TASK-615)
 
-**Type:** Architecture refinement / Planning
-**Git state at time of entry:** local `main` at `9eab145`
-**Author:** Development agent (Antigravity) / Project owner instruction
+**Type:** Data migration / Schema upgrade / Operational execution
+**Git state at time of entry:** local `main` at `1ad9a48`
+**Author:** Development agent (Antigravity) / Approved by Project Owner
 
 ### Summary
 
-Owner confirmed the resolution of the >24-hour time clock entries (**Option B**): break catch-up entries into standard 3-hour shifts on prior days the shop was open, tagged with note `'Catchup hours'`.
-Additionally, planned **TASK-615** to upgrade the `shops` table with physical addresses, landmarks, and store operating hours for Bentonville, Rogers, and Springdale.
+Successfully executed the one-time migration against the active database `data/processed/pif.db` using `scripts/migrate_volunteer_clock.py --apply`.
+- **Pre-execution Backup**: Created `/Users/abhishekjohnmasih/Documents/01_John/02_Activities/01_Code/04_PythonVenv/pif/data/processed/backups/pif-before-volunteer-clock-20261124T073832Z.db`.
+- **Shops Upgrade (TASK-615)**: Added `shop_id` (1, 2, 3), `address`, `landmark`, and `store_hours` for Bentonville, Rogers, and Springdale. Cleaned rogue NULL shop row.
+- **Volunteers Directory (TASK-611, TASK-612)**: Standardized and inserted 493 unique volunteer profiles with `joined_on` date and 180-day `is_active` flag (192 active, 301 inactive).
+- **Volunteer Hours (TASK-613, TASK-614)**: Inserted 5,466 shift logs (1,025,948 minutes = 17,099.13 hours) across Bentonville (2,284 raw), Rogers (1,347 raw), and Springdale (1,077 raw). Applied Option B catch-up backfill on open shop days for 25 entries > 24 hours (generating 783 3-hour shifts tagged 'Catchup hours').
+- **Integrity Verification**: `PRAGMA foreign_key_check` returned zero errors; `PRAGMA integrity_check` returned `ok`. All 156 Python tests pass cleanly (7.10 s).
 
 ---
 
