@@ -1,8 +1,8 @@
 # CURRENT_STATUS.md — PIF Portal
 
-**Status date:** 2026-11-23  
-**Git baseline:** `main` at `00c864b` (aligned with `origin/main`)  
-**Phase:** Development baseline established. Specification and architecture under owner review.
+**Status date:** 2026-11-23 (re-verified 2026-11-23; full code audit completed 2026-11-23)
+**Git baseline:** local `main` at `029a613` | `origin/main` at `00c864b`
+**Phase:** Development baseline established. SPECIFICATION.md and ARCHITECTURE.md **approved by owner** 2026-11-23.
 
 ---
 
@@ -10,7 +10,7 @@
 
 | Check | Result |
 |---|---|
-| Python test suite (155 tests) | **PASS — 155 tests in 7.17 s** |
+| Python test suite (155 tests) | **PASS — 155 tests in 6.748 s** (re-verified 2026-11-23) |
 | Python syntax compilation | **PASS** |
 | `git diff --check` | **PASS** (no whitespace errors) |
 | Node order-action test (`test_order_actions.cjs`) | **NOT RUN** — Node unavailable in current shell |
@@ -71,6 +71,29 @@ All staff share one permission level (confirmed acceptable for initial release �
 
 ---
 
+## Codebase scan & ongoing development status (verified 2026-11-23)
+
+A full audit of the complete project folder confirmed:
+- **Core modules**: 12 Python files in root (2,913 LOC total): `admin_tools.py`, `app.py`, `config.py`, `database.py`, `order_intake.py`, `order_search.py`, `pickup_policy.py`, `requester_links.py`, `utils.py`, `volunteer_entry.py`, `volunteer_impact.py`, `workshop.py`.
+- **Scripts**: 5 CLI utilities in `scripts/`: `admin_db.py`, `fix_duplicate_shops.py`, `fix_person_ids.py`, `migrate_history.py`, `users.py`.
+- **Tests**: 13 test files in `tests/` — 155 unit tests passing cleanly in 6.75 s.
+- **Templates & Static Assets**: 23 HTML templates, 5 email templates, 7 JavaScript files in `static/js/`, Sharpie-on-whiteboard CSS (`static/css/whiteboard.css`).
+- **Git branches**: All feature branches (`codex/responsive-portal`, `codex/spreadsheet-cleanup`, `codex/database-cleanup`) are 100% merged into `main`. No unmerged branches or WIP code branches exist.
+- **Isolated preview code**: `data/previews/order-review-20261008-a770c3/` contains an archived October preview runner (`run.py`); it does not affect main runtime.
+
+---
+
+## Recent owner decisions (2026-11-23 follow-up)
+
+- **DEC-001 (Host Selection)**: Placed on hold / deferred to deployment planning phase while app remains in active development.
+- **DEC-003 (`SECRET_KEY` Production Enforcement)**: Placed on hold / deferred to production deployment setup.
+- **DEC-004 (Staff Account Governance)**: Resolved — owner confirms no account lifecycle rules are enforced; staff account creation, activation, and modification workflows are intentionally skipped due to small, persistent staff headcount.
+- **TASK-104 (`.env.example`)**: Completed — template committed to project root.
+- **TASK-204 (Centralize `PRAGMA foreign_keys=ON`)**: Deferred to deployment/migration phase per owner request.
+- **Git Sync**: User requested push/sync of approved `design/` documentation and tracking updates.
+
+---
+
 ## Open owner decisions blocking next work
 
 The following are unresolved as of 2026-11-23. No implementation work requiring these decisions should proceed without an explicit owner answer.
@@ -119,25 +142,21 @@ See [design/SPECIFICATION.md §7](design/SPECIFICATION.md) for full debt registe
 
 ## Worktree state
 
-Untracked/modified files relative to committed `main`:
+> [!NOTE] The local `main` branch is at `029a613`, one merge commit ahead of `origin/main` (`00c864b`). The local merge commit added documentation and reference files only; `app.py` and all Python source are identical to `origin/main`.
+
+**Local-only commits (not yet pushed to `origin/main`):**
+
+| Commit | Description |
+|---|---|
+| `029a613` | Merge branch `codex/database-cleanup` — added AGENTS.md, CHANGELOG.md, CURRENT_STATUS.md, TASKS.md, VERIFICATION.md, definitions/, progress/pif-technical-audit-2026-11-23.md; updated PROJECT_NOTES.md, README.md, .gitignore, .vscode/extensions.json; design docs, design/database.md, design/git-handoff.md, design/order-workflow-review.md, design/dashboard-count-review.md |
+
+**Modified/untracked relative to committed `main` (`029a613`):**
 
 | File | State | Notes |
 |---|---|---|
-| `.gitignore` | Modified | Not committed |
-| `.vscode/extensions.json` | Staged (added) | Authorship/purpose unverified |
-| `PROJECT_NOTES.md` | Modified | Current decisions updated after audit |
-| `README.md` | Modified | Updated post-audit |
-| `design/dashboard-count-review.md` | Modified | Updated post-audit |
-| `design/database.md` | Modified | Updated post-audit |
-| `design/git-handoff.md` | Modified | Updated post-audit |
-| `design/order-workflow-review.md` | Modified | Updated post-audit |
-| `definitions/` | Untracked | Reference files; purpose unverified |
-| `progress/` | Untracked | Audit progress artifacts |
-| `design/SPECIFICATION.md` | New (not committed) | Reconstructed product spec |
-| `design/ARCHITECTURE.md` | New (not committed) | Proposed architecture |
-| `design/TRACEABILITY_MATRIX.md` | New (not committed) | Requirements traceability |
-| `AGENTS.md` | Updated | Development conventions |
-| `CURRENT_STATUS.md` | New | This file |
-| `TASKS.md` | New | Outstanding work |
-| `VERIFICATION.md` | New | Evidence register |
-| `CHANGELOG.md` | New | Change history |
+| `.gitignore` | Modified (working tree) | Staged version differs from HEAD; working-tree change uncommitted |
+| `design/SPECIFICATION.md` | Untracked | Reconstructed product spec; under owner review |
+| `design/ARCHITECTURE.md` | Untracked | Proposed architecture; under owner review |
+| `design/TRACEABILITY_MATRIX.md` | Untracked | Requirements traceability; under owner review |
+| `design/operations.md` | Untracked | Proposed operating guidance; under owner review |
+| `design/pif-technical-audit-2026-11-23.md` | Untracked | Authoritative read-only audit evidence |

@@ -6,10 +6,110 @@ Format: `## [date] — brief description`
 
 ---
 
+## [2026-11-23] — Owner decisions on host, secret key, staff governance, and task prioritization
+
+**Type:** Owner decisions / Task updates  
+**Git state at time of entry:** local `main` at `029a613` | `origin/main` at `00c864b`  
+**Author:** Project owner / Development agent (Antigravity)
+
+### Decisions recorded
+
+- **DEC-001 (Production Host)**: Placed on hold / deferred to deployment planning phase as app is still in development.
+- **DEC-003 (`SECRET_KEY` Production Enforcement)**: Placed on hold / deferred to deployment setup.
+- **DEC-004 (Staff Account Governance)**: Resolved — owner confirmed no account lifecycle rules are enforced; staff creation/modification is intentionally skipped due to small, persistent staff headcount.
+- **TASK-104 (`.env.example`)**: Completed by owner; template created in project root with app and email variables.
+- **TASK-204 (Centralize `PRAGMA foreign_keys=ON`)**: Deferred to deployment/migration phase per owner instruction.
+- **TASK-801 (Fix bare excepts in utils.py)**: Clarified to owner; ready for review/application.
+
+---
+
+## [2026-11-23] — Milestone: Specification & Architecture Approved by Owner; Codebase Audited; UTM Protocol Established
+
+**Type:** Product milestone / Documentation / Architecture contract
+**Git state at time of entry:** local `main` at `029a613` | `origin/main` at `00c864b`
+**Author:** Project owner (approval) / Development agent (Antigravity)
+
+### Summary
+
+The project owner formally reviewed and approved `design/SPECIFICATION.md` and `design/ARCHITECTURE.md`. This completes **TASK-001** and **TASK-002** in `TASKS.md`, establishing the authoritative product requirements and architectural target for all subsequent development.
+
+A complete codebase scan was conducted across all directories to catalog ongoing code and ensure no rogue or unmerged work exists. Additionally, the Universal Transferable Memories (UTM) protocol was codified in `AGENTS.md` and applied across all repository artifacts.
+
+### Key Milestones & Findings
+
+1. **Owner Approval of Tier 1 Documents**:
+   - `design/SPECIFICATION.md`: Formally approved as the single source of truth for product rules, actor flows, and scope.
+   - `design/ARCHITECTURE.md`: Formally approved as the single source of truth for system boundaries, component design, and operational model.
+   - Traceability updated in `design/TRACEABILITY_MATRIX.md`.
+
+2. **Complete Codebase Audit**:
+   - 12 root Python modules (2,913 LOC total).
+   - 5 CLI maintenance utilities in `scripts/`.
+   - 13 test suites (155 unit tests passing cleanly in 6.75 s).
+   - 23 primary/sub-templates + 5 email templates in `templates/`.
+   - 7 JavaScript front-end action scripts in `static/js/` + Sharpie whiteboard CSS.
+   - Git branches inspected: all feature branches (`codex/responsive-portal`, `codex/spreadsheet-cleanup`, `codex/database-cleanup`) are 100% merged into `main`. No unmerged branches or WIP code branches exist.
+   - Isolated preview runner in `data/previews/` confirmed archived and non-conflicting.
+
+3. **Universal Transferable Memories (UTM) Protocol Established**:
+   - Codified in `AGENTS.md` §Universal Transferable Memories (UTM) Protocol.
+   - Mandates synchronized persistence of decisions, task status, verification evidence, and operational state across every step so that any future agent or developer has complete, unbroken context.
+
+---
+
+## [2026-11-23] — Baseline establishment task: documents updated and tests re-verified
+
+**Type:** Documentation / verification
+**Git state at time of entry:** local `main` at `029a613` | `origin/main` at `00c864b`
+**Author:** Development agent (Antigravity)
+
+### Summary
+
+Completed the "Establish Development Baseline" task. No implementation code was changed. All changes are documentation corrections and additions.
+
+### Discrepancies identified and resolved
+
+| Item | Previous state | Corrected state |
+|---|---|---|
+| AGENTS.md baseline commit reference | `00c864b` | `029a613` (local HEAD), `00c864b` (origin/main) |
+| CURRENT_STATUS.md baseline commit reference | `00c864b` (stated "aligned with origin/main") | Local HEAD is `029a613`; `origin/main` remains `00c864b` |
+| CURRENT_STATUS.md test time | `7.17 s` | `6.748 s` (re-verified run) |
+| CURRENT_STATUS.md worktree table | Listed files as "New" that are now committed | Replaced with accurate committed/untracked breakdown |
+| VERIFICATION.md baseline commit reference | `00c864b` | `029a613` / `00c864b` |
+
+### Discrepancies remaining (not resolved — owner required)
+
+| Item | Description |
+|---|---|
+| Local `main` ahead of `origin/main` | `029a613` is a local merge commit not yet pushed. Owner decision needed: push or keep local. |
+| `design/SPECIFICATION.md` untracked | Reconstructed spec not committed; under owner review. |
+| `design/ARCHITECTURE.md` untracked | Proposed architecture not committed; under owner review. |
+| `design/TRACEABILITY_MATRIX.md` untracked | Not committed; under owner review. |
+| `design/operations.md` untracked | Not committed; under owner review. |
+| `design/pif-technical-audit-2026-11-23.md` untracked | Audit evidence not committed. |
+| `.gitignore` working-tree modification | Modified in working tree vs HEAD; not staged or committed. |
+
+### Test re-verification
+
+```
+155 tests in 6.748 s — PASS
+Command: PYTHONDONTWRITEBYTECODE=1 EMAIL_MODE=disabled EMAIL_LIVE_ENABLED=false
+         EMAIL_REMINDERS_ENABLED=false DB_PATH=/tmp/pif-baseline-$$-new.db
+         .venv/bin/python -m unittest discover -s tests -p 'test_*.py' -v
+```
+
+Consistent with all previous runs. No regression introduced.
+
+### No implementation changes
+
+No application code, schema, database, or private configuration was modified. The active database was not opened. No email was sent.
+
+---
+
 ## [2026-11-23] — Development baseline established
 
-**Type:** Documentation / baseline  
-**Git state at time of entry:** `main` at `00c864b` (aligned with `origin/main`)  
+**Type:** Documentation / baseline
+**Git state at time of entry:** `main` at `00c864b` (aligned with `origin/main`)
 **Author:** Development agent (Antigravity)
 
 ### Summary
@@ -68,8 +168,8 @@ No application code, schema, database, or private configuration was modified. Th
 
 ## [2026-11-23] — Repository audit performed (read-only)
 
-**Type:** Audit (no changes)  
-**Git state:** `main` at `00c864b`  
+**Type:** Audit (no changes)
+**Git state:** `main` at `00c864b`
 **Author:** Development agent (Antigravity), read-only audit run
 
 ### Summary

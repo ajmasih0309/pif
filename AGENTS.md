@@ -1,7 +1,7 @@
 # AGENTS.md — PIF Portal Development Conventions
 
-**Updated:** 2026-11-23 (development baseline established)  
-**Authoritative baseline:** `main` at `00c864b` | Python: `155 tests / 7.17 s`
+**Updated:** 2026-11-23 (development baseline established; re-verified 2026-11-23)
+**Authoritative baseline:** `main` at `029a613` (local HEAD) | `origin/main` at `00c864b` | Python: `155 tests / 6.748 s`
 
 ---
 
@@ -98,8 +98,8 @@ Node is currently unavailable on the audit shell; this test is unverified at bas
 | Document | Purpose |
 |---|---|
 | `PROJECT_NOTES.md` | Current project decisions; supersedes older notes |
-| `design/SPECIFICATION.md` | Product contract; tracks requirements and open questions |
-| `design/ARCHITECTURE.md` | Proposed technical design; not yet approved |
+| `design/SPECIFICATION.md` | Product contract; tracks requirements and open questions (**Approved by owner 2026-11-23**) |
+| `design/ARCHITECTURE.md` | Authoritative technical design (**Approved by owner 2026-11-23**) |
 | `design/TRACEABILITY_MATRIX.md` | Links requirements to implementation evidence |
 | `CURRENT_STATUS.md` | Latest verified implementation state |
 | `TASKS.md` | Outstanding work items |
@@ -111,3 +111,17 @@ Node is currently unavailable on the audit shell; this test is unverified at bas
 | `design/pif-technical-audit-2026-11-23.md` | Authoritative read-only audit evidence |
 
 Do not use `design/git-handoff.md` as a current-state reference. It describes a superseded branch state (`2fd083b`).
+
+---
+
+## Universal Transferable Memories (UTM) Protocol
+
+Every developer or AI agent working on PIF Portal must maintain persistent, self-contained transferable memories across each work step:
+
+1. **Zero Context Loss**: Never rely solely on chat conversation memory. Every decision, architectural agreement, status change, and verification result must be written immediately into the governing project documents (`design/SPECIFICATION.md`, `design/ARCHITECTURE.md`, `CURRENT_STATUS.md`, `TASKS.md`, `VERIFICATION.md`, `CHANGELOG.md`).
+2. **Synchronized Documentation**: At each task step, update:
+   - `TASKS.md` to reflect task state changes with evidence references.
+   - `VERIFICATION.md` with exact command, parameters, execution time, and outcome for all tests or inspections.
+   - `CURRENT_STATUS.md` with active blockers, worktree state, and current milestone.
+   - `CHANGELOG.md` with a reverse-chronological entry explaining what changed and why.
+3. **Traceability**: All requirement and design changes must flow through `design/TRACEABILITY_MATRIX.md` to keep requirements, architecture, code, and test evidence 100% aligned.

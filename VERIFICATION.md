@@ -1,7 +1,7 @@
 # VERIFICATION.md — PIF Portal Evidence Register
 
-**Updated:** 2026-11-23  
-**Baseline:** `main` at `00c864b` (aligned with `origin/main`)
+**Updated:** 2026-11-23 (re-verified during baseline establishment task)
+**Baseline:** local `main` at `029a613` | `origin/main` at `00c864b`
 
 This document records what has been verified, by what method, and what remains unverified. "Verified" means direct evidence was obtained. It does not mean production readiness or owner approval.
 
@@ -13,6 +13,7 @@ This document records what has been verified, by what method, and what remains u
 
 | Run | Date | Environment | Command | Result |
 |---|---|---|---|---|
+| Baseline establishment re-verification | 2026-11-23 | Local `.venv` Python 3.14.7 / SQLite 3.53.4 / temp DB | `PYTHONDONTWRITEBYTECODE=1 EMAIL_MODE=disabled EMAIL_LIVE_ENABLED=false EMAIL_REMINDERS_ENABLED=false DB_PATH=/tmp/pif-baseline-$$-new.db .venv/bin/python -m unittest discover -s tests -p 'test_*.py' -v` | **PASS — 155 tests in 6.748 s** |
 | Baseline re-verification | 2026-11-23 | Local `.venv` Python 3.14.7 / SQLite 3.53.4 / temp DB | `PYTHONDONTWRITEBYTECODE=1 EMAIL_MODE=disabled EMAIL_LIVE_ENABLED=false EMAIL_REMINDERS_ENABLED=false DB_PATH=/tmp/pif-baseline-test.db .venv/bin/python -m unittest discover -s tests -p 'test_*.py' -v` | **PASS — 155 tests in 7.17 s** |
 | Original audit run | 2026-11-23 | `.venv` / temp DB at `/private/tmp/pif-audit-disabled.db` | Same flags, audit DB path | **PASS — 155 tests in 7.09 s** |
 
@@ -30,9 +31,21 @@ No test failures on either run. Warning messages during email-negative tests are
 
 | Item | Verified value |
 |---|---|
-| `main` HEAD | `00c864b389024ec8ed3b28df3d4d93a5c009a9ed` |
-| `origin/main` | Aligned with local `main` at `00c864b` |
+| local `main` HEAD | `029a61346fc08429c27fd2521b05d12104106eec` |
+| `origin/main` | `00c864b389024ec8ed3b28df3d4d93a5c009a9ed` (diverged by 1 local merge commit containing docs/references; zero code diff) |
+| Feature branches | `codex/responsive-portal`, `codex/spreadsheet-cleanup`, `codex/database-cleanup` (all 100% merged into `main`) |
 | `git diff --check` | No tracked whitespace errors |
+
+### 1.4 Complete codebase inventory (verified 2026-11-23)
+
+| Component | Count | Verification |
+|---|---|---|
+| Root Python modules | 12 files (2,913 LOC) | Syntax compiled, imported in tests, 100% accounted for |
+| CLI scripts (`scripts/`) | 5 files (`admin_db.py`, `fix_duplicate_shops.py`, `fix_person_ids.py`, `migrate_history.py`, `users.py`) | Verified; covered by admin and migration test suites |
+| Unit tests (`tests/`) | 13 test files | 155 tests passing in 6.75 s |
+| Templates (`templates/`) | 23 primary/sub-templates, 5 email templates | Verified against routes; valid Jinja syntax |
+| Front-end static assets | 7 JavaScript files in `static/js/`, Sharpie CSS | Checked; actions align with backend routes |
+| Isolated preview code | 1 runner (`data/previews/order-review-20261008-a770c3/run.py`) | Archived October preview harness; does not affect active runtime |
 
 ---
 

@@ -1,6 +1,6 @@
 # TASKS.md — PIF Portal Outstanding Work
 
-**Updated:** 2026-11-23  
+**Updated:** 2026-11-23 (re-verified during baseline establishment task)
 **Rules:**
 - Do not start a task blocked by an open owner decision (see [CURRENT_STATUS.md](CURRENT_STATUS.md)).
 - Do not mark a task complete without verification evidence (test, audit, or owner sign-off).
@@ -29,10 +29,10 @@ These are not code tasks. They block multiple downstream items and require the p
 
 | ID | Decision needed | Blocking tasks |
 |---|---|---|
-| DEC-001 | Confirm production host: organization site vs. developer home pending connectivity test | TASK-101, TASK-102 |
+| DEC-001 | Confirm production host: organization site vs. developer home pending connectivity test (⏸ On hold — planned for deployment phase) | TASK-101, TASK-102 |
 | DEC-002 | Select WSGI server, reverse proxy, service manager (agent-assisted at deployment time) | TASK-101 |
-| DEC-003 | Confirm `SECRET_KEY` mandatory at startup; session rotation/revocation plan | TASK-201 |
-| DEC-004 | Staff account provisioning, password reset, disable/revocation procedures | TASK-202 |
+| DEC-003 | Confirm `SECRET_KEY` mandatory at startup; session rotation/revocation plan (⏸ On hold — planned for deployment phase) | TASK-201 |
+| DEC-004 | Staff account provisioning, password reset, disable/revocation procedures | ✅ Resolved: Owner confirms no rules enforced; staff creation/modification lifecycle skipped due to small, persistent headcount |
 | DEC-005 | Whether public volunteer attribution without authentication is acceptable for deployment | TASK-301 |
 | DEC-006 | Tag format for order completion: numeric-only or align with inventory text format | TASK-401 |
 | DEC-007 | UAT functional scenarios, acceptance checklist, Google Sheets switch-over date | TASK-501 |
@@ -52,8 +52,8 @@ These are not code tasks. They block multiple downstream items and require the p
 
 | ID | Task | Status | Blocking decisions | Notes |
 |---|---|---|---|---|
-| TASK-001 | Owner reviews and approves `design/SPECIFICATION.md` | 🔴 | All DEC-* | Must resolve remaining Q-* questions in §9; owner confirms Section 2 constraints |
-| TASK-002 | Owner reviews and approves `design/ARCHITECTURE.md` | 🔴 | DEC-001 through DEC-009 | Depends on TASK-001; architecture not binding until separately approved |
+| TASK-001 | Owner reviews and approves `design/SPECIFICATION.md` | ✅ | None | **Approved by owner 2026-11-23.** Authoritative product contract established. |
+| TASK-002 | Owner reviews and approves `design/ARCHITECTURE.md` | ✅ | None | **Approved by owner 2026-11-23.** Authoritative technical architecture established. |
 | TASK-003 | Owner confirms all unverified implemented behaviors (§2.2 of SPEC) | 🔴 | DEC-010, DEC-011 | Age/phone/pickup windows/requester expiry/cookie lifetime |
 | TASK-004 | Owner resolves all documentation conflicts (CON-001 through CON-008 in TRACEABILITY_MATRIX) | 🔴 | DEC-012 | Navigation shortcut, desktop layout, test totals, stale handoff |
 
@@ -66,7 +66,7 @@ These are not code tasks. They block multiple downstream items and require the p
 | TASK-201 | Require `SECRET_KEY` from env; fail startup without it; remove `loremipsum` fallback | 🔴 | DEC-003 | DEBT-002 | Add startup validation; document rotation procedure |
 | TASK-202 | Add login CSRF token and rate limiting; convert logout to POST with CSRF | 🔴 | DEC-004 | DEBT-004, DEBT-005 | Do not add MFA or roles without DEC-004 decision |
 | TASK-203 | Disable `debug=True` in production entry point; add WSGI entry point | 🔴 | DEC-002 | DEBT-001 | Separate `app.py` dev runner from production WSGI entry |
-| TASK-204 | Centralize SQLite connection creation; enable `PRAGMA foreign_keys=ON` on all connections | 🟡 | None | DEBT-007 | Inspect legacy table constraints before enabling; add regression tests |
+| TASK-204 | Centralize SQLite connection creation; enable `PRAGMA foreign_keys=ON` on all connections | ⏸ | None | DEBT-007 | Deferred to deployment/migration phase per owner decision |
 | TASK-205 | Assign single scheduler owner; remove import-time APScheduler startup | 🔴 | DEC-002 | DEBT-010 | Production process model must be decided first |
 | TASK-206 | Add global session cookie security config (Secure, HttpOnly, SameSite) and security headers | 🔴 | DEC-001, DEC-002 | DEBT-013 | Requires HTTPS proxy knowledge |
 | TASK-207 | Define and document trusted reverse-proxy forwarding header policy | 🔴 | DEC-001, DEC-002 | DEBT-014 | Currently trusts `X-Forwarded-For` without defined proxy boundary |
@@ -92,7 +92,7 @@ These are not code tasks. They block multiple downstream items and require the p
 | TASK-101 | Research and select production stack (WSGI server, proxy, service manager); produce deployment manifest | 🔴 | DEC-001, DEC-002 | TODO-005 | Agent-assisted; keep selection open until host connectivity test |
 | TASK-102 | Implement and verify daily offsite backup automation | 🔴 | DEC-015 | NFR-010 | Define destination, encryption, retention, SQLite WAL handling, restore procedure |
 | TASK-103 | Write operational runbook (provisioning, reset, backup/restore drills, incident response) | 🔴 | DEC-004, TASK-101 | TODO-006 | Cannot write until WSGI/process model is chosen |
-| TASK-104 | Add `.env.example` configuration template | 🟡 | None | TODO-008 | List all env vars with safe defaults; must not expose real values |
+| TASK-104 | Add `.env.example` configuration template | ✅ | None | TODO-008 | Completed by owner (template added to project root) |
 | TASK-105 | Add CI workflow; include Node test prerequisite and safe email overrides | 🟡 | None | TODO-007 | Must run Node `test_order_actions.cjs` in CI |
 | TASK-106 | Pin all CDN dependency versions; evaluate adding integrity metadata or self-hosting | 🔴 | DEC-014 | DEBT-011 | Chart.js currently has no version in template |
 | TASK-107 | Connectivity test at organization shop for staff access and public link reachability | 🔴 | DEC-001 | O-009 | Owner action; test before choosing host |
