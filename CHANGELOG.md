@@ -6,6 +6,22 @@ Format: `## [date] — brief description`
 
 ---
 
+## [2026-11-25] — Synchronized owner decisions and resolved documentation conflicts (TASK-003, TASK-004)
+
+**Type:** Governance / Documentation synchronization
+**Git state at time of entry:** local `main`
+**Author:** Development agent (Antigravity) / Approved by Project Owner
+
+### Summary
+
+Updated [design/SPECIFICATION.md](design/SPECIFICATION.md), [design/TRACEABILITY_MATRIX.md](design/TRACEABILITY_MATRIX.md), [TASKS.md](TASKS.md), and [CURRENT_STATUS.md](CURRENT_STATUS.md) to reflect owner confirmations:
+1. **`DEC-010` / `Q-015` (Resolved):** Confirmed age range 1–80 and phone normalization (plain 10-digit string stored in `contacts.contact_phone_number` by `order_intake.py`, formatted `(123) 456-7890` for web display only by `utils.format_phone()`).
+2. **`DEC-011` / `Q-016` (Resolved):** Confirmed 7-day Public and 28-day Pedal Partner pickup windows. Marked **TASK-003** complete.
+3. **`CON-001`–`CON-007` (Resolved):** Confirmed New Order under `Orders` menu (`Q-017`), 2-column desktop/tablet layout (`Q-018`), organic test-count growth (`160 tests`), SMTP setup/testing, feature-driven schema evolution (`TASK-602` gate before deployment), and no-grouping independent order cards (`TASK-806`).
+4. **`CON-008` (In Progress — TASK-004):** Remains open for owner review regarding tag format alignment between `bike_inventory` (text) and `orders.bike_tag` (numeric `REAL`).
+
+---
+
 ## [2026-11-25] — Login CSRF, rate limiting, POST logout, and repo hygiene closure (TASK-202, TASK-803, TASK-804)
 
 **Type:** Security hardening / Repo hygiene

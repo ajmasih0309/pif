@@ -38,8 +38,8 @@ These are not code tasks. They block multiple downstream items and require the p
 | DEC-007 | UAT functional scenarios, acceptance checklist, Google Sheets switch-over date | TASK-501 |
 | DEC-008 | Request-time DDL vs. explicit versioned migrations | TASK-601 |
 | DEC-009 | SMTP sender, test-recipient policy, preview retention, approval gate | TASK-701 |
-| DEC-010 | Confirm age 1–80 and phone normalization as approved intake requirements | TASK-003 |
-| DEC-011 | Confirm 7-day / 28-day pickup windows still correct | TASK-003 |
+| DEC-010 | Confirm age 1–80 and phone normalization as approved intake requirements | ✅ Resolved: Age 1–80 and phone normalization approved (plain 10-digit DB storage, `(123) 456-7890` web display) |
+| DEC-011 | Confirm 7-day / 28-day pickup windows still correct | ✅ Resolved: 7-day Public / 28-day Pedal Partner confirmed active |
 | DEC-012 | Confirm approved layout: "Desktop unchanged" or unified two-column from 768px | ✅ Resolved: Owner approved Order Desk redesign displaying independent order cards with responsive two-column recipient layout stacking on mobile |
 | DEC-013 | Confirm volunteer impact aggregate visibility rules | TASK-302 |
 | DEC-014 | CDN assets: pin with integrity metadata, or self-host | TASK-801 |
@@ -54,8 +54,8 @@ These are not code tasks. They block multiple downstream items and require the p
 |---|---|---|---|---|
 | TASK-001 | Owner reviews and approves `design/SPECIFICATION.md` | ✅ | None | **Approved by owner 2026-11-23.** Authoritative product contract established. |
 | TASK-002 | Owner reviews and approves `design/ARCHITECTURE.md` | ✅ | None | **Approved by owner 2026-11-23.** Authoritative technical architecture established. |
-| TASK-003 | Owner confirms all unverified implemented behaviors (§2.2 of SPEC) | 🔴 | DEC-010, DEC-011 | Age/phone/pickup windows/requester expiry/cookie lifetime |
-| TASK-004 | Owner resolves all documentation conflicts (CON-001 through CON-008 in TRACEABILITY_MATRIX) | 🔴 | DEC-012 | Navigation shortcut, desktop layout, test totals, stale handoff |
+| TASK-003 | Owner confirms all unverified implemented behaviors (§2.2 of SPEC) | ✅ | None | **Resolved 2026-11-25:** `DEC-010` (age 1–80, 10-digit phone storage / display formatting) and `DEC-011` (7-day / 28-day pickup windows) confirmed by owner. |
+| TASK-004 | Owner resolves all documentation conflicts (CON-001 through CON-008 in TRACEABILITY_MATRIX) | 🔵 | DEC-006 (CON-008) | `CON-001`–`CON-007` resolved (2026-11-25); only `CON-008` (tag format between inventory text vs. order numeric `REAL`) remains under owner review. |
 
 ---
 

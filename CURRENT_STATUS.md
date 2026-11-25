@@ -114,16 +114,12 @@ The following are unresolved as of 2026-11-23. No implementation work requiring 
 | Q-009 | Request-time DDL vs. explicit versioned migrations |
 | Q-010 | SMTP sender, test-recipient policy, preview retention, approval gate for live mail |
 | Q-011 | Which document is authoritative; whether stale handoff material should be archived |
-| Q-015 | Whether age 1–80 and phone normalization are confirmed intake requirements |
-| Q-016 | Whether 7-day / 28-day pickup windows are still correct |
-| Q-017 | Whether the top-level New Order shortcut removal is the approved final decision |
-| Q-018 | Approved layout: "Desktop unchanged" or unified two-column from 768px |
 | Q-019 | Volunteer impact aggregate visibility rules |
 | Q-020 | CDN assets: pin with integrity, or self-host |
 | Q-021 | Backup retention, RPO/RTO, restore-test cadence |
 | Q-022 | Privacy/retention rules for requester data, volunteer records, audit logs, email previews |
 
-Owner-confirmed decisions (no longer blocking): O-001 through O-011, Q-007, Q-014.
+Owner-confirmed decisions (no longer blocking): O-001 through O-011, Q-007, Q-014, Q-015, Q-016, Q-017, Q-018.
 
 ---
 
