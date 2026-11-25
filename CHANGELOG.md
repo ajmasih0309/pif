@@ -6,6 +6,24 @@ Format: `## [date] — brief description`
 
 ---
 
+## [2026-11-25] — Read-only active database schema and FK inspection (TASK-602)
+
+**Type:** Audit / Documentation
+**Git state at time of entry:** local `main`
+**Author:** Development agent (Antigravity)
+
+### Summary
+
+Performed a read-only inspection (`?mode=ro`) of `data/processed/pif.db` against [design/database.md](design/database.md):
+- **Integrity & Foreign Keys:** `PRAGMA integrity_check = ok`, `0` declared FK violations, and `0` orphaned `orders` references (`contact_id`, `recipient_id`, `shop_name`, `pedal_partner_id`) across 5,712 rows.
+- **Schema Drift Noted:**
+  - `admin_changes`, `workshop_submissions`, `order_pickup_tracking`, and `pickup_reminder_delivery` are not yet present in `pif.db`.
+  - Legacy/staging tables (`bikes`, `bikes_test`, `orders_50`, `orders_old`, `orders_test`) exist in `pif.db`.
+  - `orders` lacks declared `REFERENCES` constraints (unblocking **TASK-605**), and `users.username` has legacy `VARHAR(5)` without a `UNIQUE` constraint.
+- Marked **TASK-602** ✅ Complete and unblocked **TASK-605** in [TASKS.md](TASKS.md).
+
+---
+
 ## [2026-11-25] — Self-hosted all frontend vendor assets and fonts (TASK-106)
 
 **Type:** Availability / Security / Dependency pinning

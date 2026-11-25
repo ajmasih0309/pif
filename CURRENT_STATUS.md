@@ -18,7 +18,7 @@
 | Live SMTP | **NOT TESTED** — not in scope |
 | Scheduler production execution | **NOT TESTED** — not in scope |
 | Browser / device / accessibility | **NOT TESTED** — not in scope |
-| Active database schema/data | **NOT INSPECTED** — private data not opened |
+| Active database schema/data | **INSPECTED (read-only, TASK-602)** — `integrity_check = ok`, `0` FK errors, `0` `orders` orphans; findings in `design/database.md` |
 
 Test command used:
 ```sh

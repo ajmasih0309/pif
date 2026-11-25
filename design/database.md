@@ -10,8 +10,8 @@ read-only inspection before maintenance or cutover.
 | Area | Status |
 | --- | --- |
 | Storage | SQLite; `DB_PATH` selects the file, default `data/processed/pif.db` |
-| Active database | Historical documentation describes July-era orders plus app edits; current schema/data were not inspected in the 2026-11-23 audit |
-| Workshop schema | Maintenance v5 is implemented in source; the target database requires explicit backed-up initialization before workshop pages can operate |
+| Active database | Read-only inspection completed **2026-11-25** (`TASK-602`): `integrity_check = ok`, `0` declared FK errors, `0` implicit `orders` orphan references |
+| Workshop schema | `bike_inventory`, `bike_contributions`, `volunteers`, `volunteer_hours`, and `shops` are populated in `pif.db`; `admin_changes`, `workshop_submissions`, `order_pickup_tracking`, and `pickup_reminder_delivery` are not yet initialized |
 | Finished bikes | Staff lookup/entry and volunteer self-entry; unique global tags and multiple contributions |
 | Volunteers | Staff create profiles; shared IDs connect contributions and hours |
 | Hours | Staff entry/corrections and volunteer-facing name lookup, exact hours/minutes and remembered-name preference |
@@ -23,6 +23,16 @@ Schema sources: [admin_tools.py](../admin_tools.py),
 [fix_person_ids.py](../scripts/fix_person_ids.py). Runtime behavior lives in
 [workshop.py](../workshop.py), [volunteer_entry.py](../volunteer_entry.py),
 [requester_links.py](../requester_links.py) and [app.py](../app.py).
+
+## Active database inspection (2026-11-25, TASK-602)
+
+Read-only inspection (`?mode=ro`) of `data/processed/pif.db` confirmed:
+- **Integrity:** `PRAGMA integrity_check = ok`; `PRAGMA foreign_key_check` returned `0` violations.
+- **Logical `orders` references:** `0` orphaned rows across all `5,712` `orders` rows for `contact_id` (`2,175` contacts), `recipient_id` (`1,206` recipients), `shop_name` (`3` shops), and `pedal_partner_id` (`147` pedal partners).
+- **Initialized active tables:** `orders` (`5,712`), `contacts` (`2,175`), `recipients` (`1,206`), `pedal_partners` (`147`), `shops` (`3`), `volunteers` (`660`), `bike_inventory` (`14,994`, `bike_tag INTEGER`), `bike_contributions` (`15,460`), `volunteer_hours` (`5,466`), `users` (`3`), `login_logs` (`10`), `request_invites` (`1`), `order_submissions` (`0`).
+- **Missing maintenance/runtime tables:** `admin_changes`, `workshop_submissions`, `order_pickup_tracking`, and `pickup_reminder_delivery` are not yet initialized in `data/processed/pif.db`.
+- **Legacy staging/backup tables present:** `bikes` (`0`), `bikes_test` (`13,900`), `orders_50` (`54`), `orders_old` (`5,713`), and `orders_test` (`7,667`).
+- **FK & constraint gaps (`TASK-605`):** `orders` declares no `REFERENCES` constraints on `contact_id`, `recipient_id`, `shop_name`, or `pedal_partner_id`; `login_logs` has no FK to `users`; `users.username` has legacy `VARHAR(5)` without a `UNIQUE` constraint.
 
 ## Relationships and order semantics
 
