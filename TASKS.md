@@ -136,7 +136,7 @@ These are not code tasks. They block multiple downstream items and require the p
 | TASK-803 | Resolve `definitions/` untracked directory ownership and purpose | 🟡 | DEBT-018 | Owner decision: commit, ignore, or remove |
 | TASK-804 | Resolve `.vscode/extensions.json` staged change | 🟡 | DEBT-018 | Owner decision: commit or revert |
 | TASK-805 | Archive or rewrite `design/git-handoff.md` (describes superseded `2fd083b` state) | ✅ | CON-004 | Completed: added archival banner and warning notice pointing developers to `AGENTS.md`, `SPECIFICATION.md`, and `ARCHITECTURE.md` |
-| TASK-806 | Implement approved Order Desk redesign without bulk grouping | ✅ | None | Completed: independent order cards per recipient/bike, collapsed card summary (`Contact → Recipient`), expanded 4-section card layout (Contact Info, Recipient & Bike Requirements in responsive 2-column grid, Notes, Actions), `Mark contacted` renamed to `Contact`, consistent across Open, Contacted, Cancelled, Completed, All; 156/156 tests pass |
+| TASK-806 | Implement approved Order Desk redesign without bulk grouping | ✅ | None | Completed: independent order cards per recipient/bike, collapsed card summary (`Contact → Recipient`) with prominent bike criteria badges, expanded 2-column layout (Contact Info on left, Recipient & Bike Requirements on right, full-width Notes beneath), strict recipient/contact field separation, top-level Actions dropdown accessible without scrolling in both collapsed and expanded states; 156/156 tests pass |
 
 ---
 

@@ -4,90 +4,228 @@
     {% set card_key = 'desk-' ~ status ~ '-' ~ order.order_id %}
     <details class="desk-order" name="desk-orders-{{ status }}">
         <summary class="desk-order-summary">
-            <div class="desk-order-heading">
-                <strong>{{ order.contact_name or 'Unnamed contact' }} → {{ order.recipient_name or 'Unnamed recipient' }}</strong>
-                <span class="desk-order-status badge {% if order.order_status == 'Open' %}bg-warning text-dark{% elif order.order_status == 'Contacted' %}bg-info text-dark{% elif order.order_status == 'Completed' %}bg-success text-white{% elif order.order_status == 'Cancelled' %}bg-secondary text-white{% else %}bg-light text-dark{% endif %} border">{{ order.order_status }}</span>
+            <div class="desk-order-header-row">
+                <div class="desk-order-title-group">
+                    <span class="desk-order-names"><strong>{{ order.contact_name or 'Unnamed contact' }} → {{ order.recipient_name or 'Unnamed recipient' }}</strong></span>
+                    <span class="desk-order-status badge {% if order.order_status == 'Open' %}bg-warning text-dark{% elif order.order_status == 'Contacted' %}bg-info text-dark{% elif order.order_status == 'Completed' %}bg-success text-white{% elif order.order_status == 'Cancelled' %}bg-secondary text-white{% else %}bg-light text-dark{% endif %} border">{{ order.order_status }}</span>
+                </div>
+                <div class="desk-actions-wrap" onclick="event.stopPropagation();">
+                    <div class="dropdown desk-actions-dropdown">
+                        <button class="btn btn-dark btn-sm dropdown-toggle desk-actions-btn" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" onclick="event.stopPropagation();">
+                            Actions
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-lg" onclick="event.stopPropagation();">
+                            {% if status == 'open' %}
+                            <li>
+                                <form action="{{ url_for('update_status', order_id=order.order_id) }}" method="post" class="m-0">
+                                    {{ desk_return_fields() }}
+                                    <input type="hidden" name="new_status" value="Contacted">
+                                    <button type="submit" class="dropdown-item text-primary fw-bold py-2 px-3">
+                                        Contact
+                                    </button>
+                                </form>
+                            </li>
+                            <li>
+                                <form action="{{ url_for('update_status', order_id=order.order_id) }}" method="post" class="m-0">
+                                    {{ desk_return_fields() }}
+                                    <input type="hidden" name="new_status" value="Cancelled">
+                                    <button type="submit" class="dropdown-item text-danger py-2 px-3" data-confirm="Cancel this order?" data-pending-label="Cancelling…">
+                                        Cancel order
+                                    </button>
+                                </form>
+                            </li>
+                            <li><hr class="dropdown-divider my-1"></li>
+                            <li>
+                                <a class="dropdown-item desk-explorer-link py-2 px-3 text-secondary" href="{{ url_for('explorer', q='#' ~ order.order_id) }}" aria-label="View order {{ order.order_id }}">
+                                    Open in Explorer ↗
+                                </a>
+                            </li>
+                            {% elif status == 'contacted' %}
+                            <li class="px-3 py-2">
+                                <form action="{{ url_for('fulfill', order_id=order.order_id) }}" method="post" class="desk-pickup-form m-0">
+                                    {{ desk_return_fields() }}
+                                    <div class="mb-2">
+                                        <label for="{{ card_key }}-date" class="form-label small fw-bold mb-1">Pickup date</label>
+                                        <input id="{{ card_key }}-date" type="date" name="date_picked_up" value="{{ today }}" required class="form-control form-control-sm">
+                                    </div>
+                                    <div class="mb-2">
+                                        <label for="{{ card_key }}-tag" class="form-label small fw-bold mb-1">Bike tag</label>
+                                        <input id="{{ card_key }}-tag" type="number" name="bike_tag" min="1" step="1" inputmode="numeric" required class="form-control form-control-sm" placeholder="Tag #">
+                                    </div>
+                                    <button type="submit" class="btn btn-sm btn-success border-dark w-100 py-2 fw-bold">
+                                        Save pickup
+                                    </button>
+                                </form>
+                                {% if order.pickup_window and order.pickup_window.deadline %}
+                                <p class="small text-muted mt-2 mb-1">Due {{ order.pickup_window.deadline.strftime('%b %d, %Y') }}</p>
+                                {% endif %}
+                            </li>
+                            <li><hr class="dropdown-divider my-1"></li>
+                            <li>
+                                <form action="{{ url_for('update_status', order_id=order.order_id) }}" method="post" class="m-0">
+                                    {{ desk_return_fields() }}
+                                    <input type="hidden" name="new_status" value="Cancelled">
+                                    <button type="submit" class="dropdown-item text-danger py-2 px-3" data-confirm="Cancel this order?" data-pending-label="Cancelling…">
+                                        Cancel order
+                                    </button>
+                                </form>
+                            </li>
+                            <li><hr class="dropdown-divider my-1"></li>
+                            <li>
+                                <a class="dropdown-item desk-explorer-link py-2 px-3 text-secondary" href="{{ url_for('explorer', q='#' ~ order.order_id) }}" aria-label="View order {{ order.order_id }}">
+                                    Open in Explorer ↗
+                                </a>
+                            </li>
+                            {% elif status == 'cancelled' %}
+                            <li>
+                                <form action="{{ url_for('update_status', order_id=order.order_id) }}" method="post" class="m-0">
+                                    {{ desk_return_fields() }}
+                                    <input type="hidden" name="new_status" value="Open">
+                                    <button type="submit" class="dropdown-item text-warning-emphasis fw-bold py-2 px-3">
+                                        Restore to Open
+                                    </button>
+                                </form>
+                            </li>
+                            <li><hr class="dropdown-divider my-1"></li>
+                            <li>
+                                <a class="dropdown-item desk-explorer-link py-2 px-3 text-secondary" href="{{ url_for('explorer', q='#' ~ order.order_id) }}" aria-label="View order {{ order.order_id }}">
+                                    Open in Explorer ↗
+                                </a>
+                            </li>
+                            {% else %}
+                            <li>
+                                <a class="dropdown-item desk-explorer-link py-2 px-3 fw-bold" href="{{ url_for('explorer', q='#' ~ order.order_id) }}" aria-label="View order {{ order.order_id }}">
+                                    Open in Explorer ↗
+                                </a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
             </div>
+
             <div class="desk-order-meta">
                 Order #{{ order.order_id }} · {{ order.order_date or 'Date unknown' }} · Shop {{ order.shop_location or order.shop_name or '—' }} · {{ order.order_type }}{% if order.pedal_partner_name %} · {{ order.pedal_partner_name }}{% endif %}{% if order.notes %} · Has notes{% endif %}
             </div>
+
             <div class="desk-order-collapsed-facts">
-                {% if order.height %}<span class="fact-pill"><strong>Height:</strong> {{ order.height }}</span>{% endif %}
-                {% if order.bike_type_first_choice %}<span class="fact-pill"><strong>1st choice:</strong> {{ order.bike_type_first_choice }}</span>{% endif %}
-                {% if order.bike_type_second_choice %}<span class="fact-pill"><strong>2nd choice:</strong> {{ order.bike_type_second_choice }}</span>{% endif %}
-                {% if order.bike_style_preference %}<span class="fact-pill"><strong>Style:</strong> {{ order.bike_style_preference }}</span>{% endif %}
-                {% if order.bike_tag %}<span class="fact-pill"><strong>Tag:</strong> #{{ order.bike_tag }}</span>{% endif %}
-                {% if order.date_picked_up %}<span class="fact-pill"><strong>Picked up:</strong> {{ order.date_picked_up }}</span>{% endif %}
+                {% if order.height %}
+                <span class="fact-badge fact-badge-height"><span class="badge-lbl">Height</span> <strong class="badge-val">{{ order.height }}</strong></span>
+                {% endif %}
+                {% if order.bike_type_first_choice %}
+                <span class="fact-badge fact-badge-choice"><span class="badge-lbl">1st Choice</span> <strong class="badge-val">{{ order.bike_type_first_choice }}</strong></span>
+                {% endif %}
+                {% if order.bike_type_second_choice %}
+                <span class="fact-badge fact-badge-choice-2"><span class="badge-lbl">2nd Choice</span> <strong class="badge-val">{{ order.bike_type_second_choice }}</strong></span>
+                {% endif %}
+                {% if order.bike_style_preference %}
+                <span class="fact-badge fact-badge-style"><span class="badge-lbl">Style</span> <strong class="badge-val">{{ order.bike_style_preference }}</strong></span>
+                {% endif %}
+                {% if order.bike_tag %}
+                <span class="fact-badge fact-badge-tag"><span class="badge-lbl">Tag</span> <strong class="badge-val">#{{ order.bike_tag }}</strong></span>
+                {% endif %}
+                {% if order.date_picked_up %}
+                <span class="fact-badge fact-badge-picked"><span class="badge-lbl">Picked up</span> <strong class="badge-val">{{ order.date_picked_up }}</strong></span>
+                {% endif %}
             </div>
-            {% if order.pickup_window %}<span class="desk-deadline {{ 'text-danger' if order.pickup_window.overdue else '' }}">{{ order.pickup_window.label }}{% if order.pickup_window.deadline %} · Due {{ order.pickup_window.deadline.strftime('%b %d, %Y') }}{% endif %}</span>{% endif %}
-            <span class="desk-expand-label"><span class="when-closed">View details &amp; actions</span><span class="when-open">Hide details</span><span aria-hidden="true">⌄</span></span>
+
+            {% if order.pickup_window %}
+            <span class="desk-deadline {{ 'text-danger fw-bold' if order.pickup_window.overdue else '' }}">
+                {{ order.pickup_window.label }}{% if order.pickup_window.deadline %} · Due {{ order.pickup_window.deadline.strftime('%b %d, %Y') }}{% endif %}
+            </span>
+            {% endif %}
+
+            <span class="desk-expand-label">
+                <span class="when-closed">View details &amp; actions</span>
+                <span class="when-open">Hide details</span>
+                <span aria-hidden="true">⌄</span>
+            </span>
         </summary>
+
         <div class="desk-order-body">
             <div class="desk-sections-row">
-                <!-- Section A: Contact information -->
+                <!-- Left Column: Contact Information -->
                 <div class="desk-section desk-contact-info">
-                    <h4 class="desk-section-title">Contact information</h4>
-                    <dl class="desk-facts">
-                        <div><dt>Contact person</dt><dd>{{ order.contact_name or 'Unnamed contact' }}</dd></div>
-                        <div><dt>Recipient</dt><dd>{{ order.recipient_name or 'Unnamed recipient' }}</dd></div>
-                        <div><dt>Phone</dt><dd>{{ order.contact_phone_number or order.contact_phone or 'Not provided' }}</dd></div>
-                        <div><dt>Email</dt><dd>{{ order.contact_email or 'Not provided' }}</dd></div>
-                        {% if order.pedal_partner_name %}<div><dt>Pedal Partner</dt><dd>{{ order.pedal_partner_name }}</dd></div>{% endif %}
+                    <h4 class="desk-section-title">Contact Information</h4>
+                    <dl class="desk-contact-facts">
+                        <div class="contact-field">
+                            <dt>Contact person</dt>
+                            <dd class="contact-value">{{ order.contact_name or 'Unnamed contact' }}</dd>
+                        </div>
+                        <div class="contact-field">
+                            <dt>Phone</dt>
+                            <dd class="contact-value">{{ order.contact_phone_number or order.contact_phone or 'Not provided' }}</dd>
+                        </div>
+                        <div class="contact-field">
+                            <dt>Email</dt>
+                            <dd class="contact-value">{{ order.contact_email or 'Not provided' }}</dd>
+                        </div>
+                        {% if order.pedal_partner_name %}
+                        <div class="contact-field">
+                            <dt>Pedal Partner</dt>
+                            <dd class="contact-value">{{ order.pedal_partner_name }}</dd>
+                        </div>
+                        {% endif %}
                     </dl>
                 </div>
-                <!-- Section B: Recipient and bike requirements -->
+
+                <!-- Right Column: Recipient & Bike Requirements -->
                 <div class="desk-section desk-bike-requirements">
-                    <h4 class="desk-section-title">Recipient &amp; bike requirements</h4>
-                    <dl class="desk-facts">
-                        {% if order.age %}<div><dt>Age</dt><dd>{{ order.age }}</dd></div>{% endif %}
-                        {% if order.height %}<div><dt>Height</dt><dd>{{ order.height }}</dd></div>{% endif %}
-                        {% if order.bike_style_preference %}<div><dt>Bike style</dt><dd>{{ order.bike_style_preference }}</dd></div>{% endif %}
-                        {% if order.bike_type_first_choice %}<div><dt>First choice</dt><dd>{{ order.bike_type_first_choice }}</dd></div>{% endif %}
-                        {% if order.bike_type_second_choice %}<div><dt>Second choice</dt><dd>{{ order.bike_type_second_choice }}</dd></div>{% endif %}
-                        {% if order.bike_tag %}<div><dt>Bike tag</dt><dd>{{ order.bike_tag }}</dd></div>{% endif %}
-                        {% if order.date_picked_up %}<div><dt>Picked up</dt><dd>{{ order.date_picked_up }}</dd></div>{% endif %}
+                    <h4 class="desk-section-title">Recipient &amp; Bike Requirements</h4>
+                    <dl class="desk-req-facts">
+                        <div class="req-field req-field-recipient">
+                            <dt>Recipient name</dt>
+                            <dd class="req-recipient-name">{{ order.recipient_name or 'Unnamed recipient' }}</dd>
+                        </div>
+                        {% if order.age %}
+                        <div class="req-field req-field-age">
+                            <dt>Age</dt>
+                            <dd class="req-age-val">{{ order.age }}</dd>
+                        </div>
+                        {% endif %}
+                        <div class="req-field-grid">
+                            <div class="req-highlight req-height">
+                                <dt>Height</dt>
+                                <dd class="req-val-height">{{ order.height or '—' }}</dd>
+                            </div>
+                            <div class="req-highlight req-style">
+                                <dt>Bike style</dt>
+                                <dd class="req-val-style">{{ order.bike_style_preference or '—' }}</dd>
+                            </div>
+                            <div class="req-highlight req-choice-1">
+                                <dt>First choice</dt>
+                                <dd class="req-val-choice1">{{ order.bike_type_first_choice or '—' }}</dd>
+                            </div>
+                            {% if order.bike_type_second_choice %}
+                            <div class="req-highlight req-choice-2">
+                                <dt>Second choice</dt>
+                                <dd class="req-val-choice2">{{ order.bike_type_second_choice }}</dd>
+                            </div>
+                            {% endif %}
+                            {% if order.bike_tag %}
+                            <div class="req-highlight req-tag">
+                                <dt>Bike tag</dt>
+                                <dd class="req-val-tag">#{{ order.bike_tag }}</dd>
+                            </div>
+                            {% endif %}
+                            {% if order.date_picked_up %}
+                            <div class="req-highlight req-picked-up">
+                                <dt>Picked up</dt>
+                                <dd class="req-val-picked">{{ order.date_picked_up }}</dd>
+                            </div>
+                            {% endif %}
+                        </div>
                     </dl>
                 </div>
             </div>
-            <!-- Section C: Notes -->
+
+            <!-- Notes: Spans full width below both columns -->
             {% if order.notes %}
             <div class="desk-section desk-order-notes">
                 <h4 class="desk-section-title">Notes</h4>
                 <p>{{ order.notes }}</p>
             </div>
             {% endif %}
-            <!-- Section D: Actions -->
-            <div class="desk-section desk-actions-section">
-                {% if status == 'contacted' %}
-                <form action="{{ url_for('fulfill', order_id=order.order_id) }}" method="post" class="desk-pickup-form">
-                    {{ desk_return_fields() }}
-                    <div><label for="{{ card_key }}-date">Pickup date</label><input id="{{ card_key }}-date" type="date" name="date_picked_up" value="{{ today }}" required class="form-control"></div>
-                    <div><label for="{{ card_key }}-tag">Bike tag</label><input id="{{ card_key }}-tag" type="number" name="bike_tag" min="1" step="1" inputmode="numeric" required class="form-control" placeholder="Tag #"></div>
-                    <button type="submit" class="btn btn-success border-dark">Save pickup</button>
-                </form>
-                {% if order.pickup_window and order.pickup_window.deadline %}<p class="small mb-2">Pick up by {{ order.pickup_window.deadline.strftime('%m/%d/%Y at %I:%M %p %Z') }}.</p>{% endif %}
-                {% endif %}
-                <div class="desk-actions-bar">
-                    {% if status == 'open' %}
-                    <form action="{{ url_for('update_status', order_id=order.order_id) }}" method="post">
-                        {{ desk_return_fields() }}<input type="hidden" name="new_status" value="Contacted">
-                        <button type="submit" class="btn btn-info border-dark">Contact</button>
-                    </form>
-                    {% endif %}
-                    {% if status in ['open', 'contacted'] %}
-                    <form action="{{ url_for('update_status', order_id=order.order_id) }}" method="post">
-                        {{ desk_return_fields() }}<input type="hidden" name="new_status" value="Cancelled">
-                        <button type="submit" class="btn btn-outline-danger" data-confirm="Cancel this order?" data-pending-label="Cancelling…">Cancel order</button>
-                    </form>
-                    {% elif status == 'cancelled' %}
-                    <form action="{{ url_for('update_status', order_id=order.order_id) }}" method="post">
-                        {{ desk_return_fields() }}<input type="hidden" name="new_status" value="Open">
-                        <button type="submit" class="btn btn-warning border-dark">Restore to Open</button>
-                    </form>
-                    {% endif %}
-                    <a class="desk-explorer-link" href="{{ url_for('explorer', q='#' ~ order.order_id) }}" aria-label="View order {{ order.order_id }}">Open #{{ order.order_id }} in Explorer</a>
-                </div>
-            </div>
         </div>
     </details>
     {% else %}

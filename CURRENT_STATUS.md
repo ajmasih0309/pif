@@ -10,7 +10,7 @@
 
 | Check | Result |
 |---|---|
-| Python test suite (156 tests) | **PASS — 156 tests in 7.06 s** (re-verified 2026-11-24 after TASK-806 Order Desk Redesign) |
+| Python test suite (156 tests) | **PASS — 156 tests in 7.25 s** (re-verified 2026-11-24 after TASK-806 Order Desk visual hierarchy & layout refinement) |
 | Python syntax compilation | **PASS** |
 | `git diff --check` | **PASS** (no whitespace errors) |
 | Node order-action test (`test_order_actions.cjs`) | Configured in CI (`.github/workflows/ci.yml`) — runs on Node 20 runner |

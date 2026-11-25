@@ -6,6 +6,40 @@ Format: `## [date] — brief description`
 
 ---
 
+## [2026-11-24] — Enhanced Order Desk visual hierarchy, responsive layout, field separation, and top-level actions (TASK-806)
+
+**Type:** Bug fix / UI Enhancement / Field separation / Accessibility
+**Git state at time of entry:** local `main`
+**Author:** Development agent (Antigravity) / Approved by Project Owner
+
+### Summary
+
+Refined and completed the Order Desk implementation per owner review:
+1. **Responsive Two-Column Layout**:
+   - Re-established strict two-column layout on tablet and desktop screens (`min-width: 768px`) with `grid-template-columns: minmax(0, 1fr) minmax(0, 1fr)`.
+   - Contact Information strictly occupies the left column; Recipient & Bike Requirements strictly occupies the right column.
+   - Notes section spans the full width of the card beneath both columns.
+   - Cleanly stacks into a single column on mobile screens (<768px).
+2. **Correct Recipient / Contact Field Separation**:
+   - Fixed field leakage: Recipient name is exclusively rendered in Recipient & Bike Requirements, never in Contact Information.
+   - Contact Information contains only Contact person, Phone, and Email (plus Pedal Partner if present).
+   - Recipient & Bike Requirements contains Recipient name, Age (when available), Height, Bike style, First choice, Second choice, and Bike tag.
+   - Missing contact or recipient names render explicit fallback labels (`Unnamed contact`, `Unnamed recipient`) without shifting columns.
+3. **Top-Level Actions Dropdown**:
+   - Replaced bottom-of-card action area with a compact, clearly identifiable `Actions` dropdown button at the top header of each card.
+   - Accessible in both collapsed and expanded card states without scrolling through card details.
+   - Status-appropriate actions: Open (`Contact`, `Cancel order`, `Open in Explorer`), Contacted (`Save pickup` form with date and tag, `Cancel order`, `Open in Explorer`), Cancelled (`Restore to Open`, `Open in Explorer`), Completed/All (`Open in Explorer`).
+   - Click propagation stopped to prevent toggling the card when interacting with the menu or forms.
+   - Stacking context managed via `z-index` and Bootstrap events so open dropdown menus are never clipped or hidden behind neighboring cards.
+4. **Strong Visual Prominence for Key Bike Details**:
+   - Height, First bike choice, Second bike choice, Bike style, and Bike tag given high-contrast badge treatment in collapsed summary.
+   - Expanded card features prominent highlight cards with semantic color themes, bold typography, and clear scannable labels.
+5. **Verification**:
+   - All 156 unit and integration tests pass cleanly in 7.245 s.
+   - DOM and field separation verified across Open, Contacted, Cancelled, Completed, and All tabs.
+
+---
+
 ## [2026-11-24] — Implemented owner-approved Order Desk redesign (TASK-806)
 
 **Type:** Feature / Presentation layer redesign / Technical debt resolution
