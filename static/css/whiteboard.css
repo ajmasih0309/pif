@@ -328,47 +328,20 @@
     transform: rotate(180deg);
 }
 
-/* Expanded Card Layout: Bootstrap row with fallback CSS */
+/* Expanded Card Layout: Compact hierarchy with Bootstrap grid */
 .desk-order-body {
-    padding: 1rem;
+    padding: .65rem .75rem;
     margin: 0;
     background: #fff;
     width: 100%;
     box-sizing: border-box;
 }
 
-/* Fallback two-column grid if Bootstrap grid is unstyled */
-@media (min-width: 768px) {
-    .desk-order-body:not(.row) {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-        gap: 1.25rem;
-        align-items: start;
-    }
-    .desk-order-body:not(.row) > .desk-contact-info {
-        grid-column: 1;
-        grid-row: 1;
-    }
-    .desk-order-body:not(.row) > .desk-bike-requirements {
-        grid-column: 2;
-        grid-row: 1;
-    }
-    .desk-order-body:not(.row) > .desk-order-notes {
-        grid-column: 1 / -1;
-        grid-row: 2;
-    }
-}
-
-/* In case any parent or cached wrapper references .desk-sections-row */
-.desk-sections-row {
-    display: contents;
-}
-
 .desk-section {
     background: #fafbfa;
-    border: 1.5px solid #d0d6cc;
-    border-radius: .4rem;
-    padding: .9rem 1rem;
+    border: 1px solid #d5dbd1;
+    border-radius: .35rem;
+    padding: .5rem .65rem;
     display: flex;
     flex-direction: column;
     min-width: 0;
@@ -376,98 +349,89 @@
     box-sizing: border-box;
 }
 .desk-section-title {
-    font-size: 1.05rem;
+    font-size: .82rem;
     font-weight: 700;
-    color: #202521;
+    color: #363d36;
     text-transform: uppercase;
     letter-spacing: .04em;
-    margin: 0 0 .75rem 0;
-    border-bottom: 2px solid #e2e6de;
-    padding-bottom: .35rem;
+    margin: 0 0 .35rem 0;
+    border-bottom: 1.5px solid #e2e6de;
+    padding-bottom: .2rem;
 }
 
-/* Contact information list */
-.desk-contact-facts {
+/* Compact Contact & Recipient key-value lists */
+.desk-compact-dl {
     display: flex;
     flex-direction: column;
-    gap: .65rem;
+    gap: .28rem;
     margin: 0;
 }
-.contact-field dt {
-    font-size: .85rem;
+.compact-field {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+.compact-field dt {
+    font-size: .72rem;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: .03em;
-    color: #545c54;
-    margin-bottom: .1rem;
-}
-.contact-field dd {
+    color: #5a635a;
+    line-height: 1.1;
     margin: 0;
-    font-size: 1.15rem;
+}
+.compact-field dd {
+    margin: 0;
+    font-size: .98rem;
     font-weight: 600;
     color: #202521;
+    line-height: 1.25;
     overflow-wrap: anywhere;
 }
-
-/* Recipient and bike requirements */
-.desk-req-facts {
-    display: flex;
-    flex-direction: column;
-    gap: .75rem;
-    margin: 0;
-}
-.req-field-recipient dt {
-    font-size: .85rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: .03em;
-    color: #545c54;
-    margin-bottom: .1rem;
-}
-.req-recipient-name {
-    margin: 0;
-    font-size: 1.35rem;
+.compact-field .req-recipient-name {
+    font-size: 1.12rem;
     font-weight: 700;
     color: #111;
-    overflow-wrap: anywhere;
 }
-.req-field-age dt {
-    font-size: .85rem;
+.compact-field .req-age-val {
+    font-size: 1rem;
     font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: .03em;
-    color: #545c54;
 }
-.req-age-val {
-    margin: 0;
-    font-size: 1.1rem;
-    font-weight: 600;
+
+/* Bike requirements: consistent 2x2 grid */
+.desk-bike-requirements {
+    background: #fff;
+    border-color: #cbd3c6;
 }
 .req-field-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: .65rem;
+    gap: .45rem;
+    margin: 0;
 }
 .req-highlight {
     background: #fff;
     border: 1.5px solid #d0d6cc;
-    border-radius: .35rem;
-    padding: .45rem .6rem;
+    border-radius: .3rem;
+    padding: .35rem .5rem;
     display: flex;
     flex-direction: column;
     justify-content: center;
+    height: 100%;
+    min-width: 0;
 }
 .req-highlight dt {
-    font-size: .8rem;
-    font-weight: 600;
+    font-size: .72rem;
+    font-weight: 700;
     text-transform: uppercase;
     letter-spacing: .03em;
     color: #545c54;
-    margin-bottom: .15rem;
+    line-height: 1.1;
+    margin-bottom: .1rem;
 }
 .req-highlight dd {
     margin: 0;
-    font-size: 1.25rem;
+    font-size: 1.12rem;
     font-weight: 700;
     line-height: 1.2;
     overflow-wrap: anywhere;
@@ -492,7 +456,6 @@
 }
 .req-val-choice1 {
     color: #0d4665;
-    font-size: 1.3rem;
 }
 .req-choice-2 {
     background: #f2f5f7;
@@ -501,38 +464,61 @@
 .req-val-choice2 {
     color: #2c424e;
 }
-.req-tag {
-    background: #202521;
-    border-color: #000;
-    color: #fff;
+
+/* Compact metadata footer inside Bike Requirements (bike tag, picked up) */
+.req-meta-footer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem;
+    margin-top: .45rem;
+    padding-top: .4rem;
+    border-top: 1px dashed #d5dbd1;
 }
-.req-tag dt {
+.req-meta-pill {
+    display: inline-flex;
+    align-items: baseline;
+    gap: .3rem;
+    padding: .15rem .45rem;
+    border-radius: .25rem;
+    font-size: .88rem;
+    line-height: 1.2;
+}
+.req-meta-pill .meta-lbl {
+    font-size: .72rem;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+    font-weight: 700;
+}
+.req-meta-tag {
+    background: #202521;
+    color: #ffeb3b;
+    border: 1px solid #000;
+}
+.req-meta-tag .meta-lbl {
     color: #d1d8cc;
 }
-.req-val-tag {
-    color: #ffeb3b;
-    font-size: 1.3rem;
-}
-.req-picked-up {
+.req-meta-picked {
     background: #eef5ee;
-    border-color: #437a43;
-}
-.req-val-picked {
     color: #1f501f;
+    border: 1px solid #437a43;
+}
+.req-meta-picked .meta-lbl {
+    color: #355e35;
 }
 
-/* Notes section spans full width below both columns */
+/* Notes section: compact full-width below Bike Requirements */
 .desk-order-notes {
     width: 100%;
     background: #fffdf5;
     border-color: #ded7b8;
+    padding: .45rem .65rem;
 }
 .desk-order-notes p {
     margin: 0;
     white-space: pre-wrap;
-    font-size: 1.05rem;
+    font-size: .96rem;
     color: #3b3a32;
-    line-height: 1.4;
+    line-height: 1.35;
 }
 
 .desk-pickup-form input {

@@ -10,7 +10,7 @@
 
 | Check | Result |
 |---|---|
-| Python test suite (156 tests) | **PASS — 156 tests in 6.99 s** (re-verified 2026-11-24 after TASK-806 hardened Bootstrap 2-col layout & cache-buster) |
+| Python test suite (156 tests) | **PASS — 156 tests in 8.91 s** (re-verified 2026-11-25 after TASK-806 compact expanded card & 2x2 Bike Requirements grid) |
 | Python syntax compilation | **PASS** |
 | `git diff --check` | **PASS** (no whitespace errors) |
 | Node order-action test (`test_order_actions.cjs`) | Configured in CI (`.github/workflows/ci.yml`) — runs on Node 20 runner |

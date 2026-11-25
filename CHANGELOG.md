@@ -6,6 +6,30 @@ Format: `## [date] — brief description`
 
 ---
 
+## [2026-11-25] — Compact expanded Order Desk card layout and 2x2 Bike Requirements grid (TASK-806)
+
+**Type:** UI refinement / Space efficiency / Visual hierarchy
+**Git state at time of entry:** local `main`
+**Author:** Development agent (Antigravity) / Approved by Project Owner
+
+### Summary
+
+Refined the expanded Order Desk card in [templates/_order_cards.html](templates/_order_cards.html) and [static/css/whiteboard.css](static/css/whiteboard.css) to reduce excessive vertical height while keeping key bike criteria scannable:
+1. **Side-by-Side Contact & Recipient Information (`col-12 col-md-6`)**:
+   - Separated **Contact Information** (Contact person, Phone, Email, Pedal Partner when present) and **Recipient Information** (Recipient name, Age when available) into compact, equal-height (`h-100`) side-by-side sections on tablet/desktop (`>= 768px`), stacking cleanly on mobile (`< 768px`).
+   - Reduced section padding, heading margins, and key-value spacing to eliminate oversized panel treatment.
+2. **Dedicated Bike Requirements 2 × 2 Grid**:
+   - Moved **Bike Requirements** into a full-width (`col-12`) section beneath Contact and Recipient with a consistent 2 × 2 grid (`.req-field-grid`) for **Height**, **Bike style**, **First choice**, and **Second choice** (rendering `—` when missing so alignment never breaks).
+   - Preserved existing color distinctions, prominent values, and readable labels with compact tile padding.
+   - Moved **Bike tag** and **Picked up** date (when present) into a compact metadata footer (`.req-meta-footer`) inside Bike Requirements.
+3. **Compact Full-Width Notes**:
+   - Placed **Notes** below Bike Requirements (`col-12`) with reduced padding while preserving complete note text and line breaks (`white-space: pre-wrap`).
+4. **Verification**:
+   - All 156 Python tests pass in 8.905 s.
+   - Verified rendered HTML structure for both complete and incomplete order records.
+
+---
+
 ## [2026-11-24] — Hardened Order Desk responsive layouts and CSS cache prevention (TASK-806)
 
 **Type:** Bug fix / Layout resilience / Cache prevention

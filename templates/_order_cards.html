@@ -142,47 +142,58 @@
             </span>
         </summary>
 
-        <div class="row g-3 desk-order-body">
-            <!-- Left Column: Contact Information -->
-            <div class="col-12 col-md-6 desk-section desk-contact-info">
-                <h4 class="desk-section-title">Contact Information</h4>
-                <dl class="desk-contact-facts">
-                    <div class="contact-field">
-                        <dt>Contact person</dt>
-                        <dd class="contact-value">{{ order.contact_name or 'Unnamed contact' }}</dd>
-                    </div>
-                    <div class="contact-field">
-                        <dt>Phone</dt>
-                        <dd class="contact-value">{{ order.contact_phone_number or order.contact_phone or 'Not provided' }}</dd>
-                    </div>
-                    <div class="contact-field">
-                        <dt>Email</dt>
-                        <dd class="contact-value">{{ order.contact_email or 'Not provided' }}</dd>
-                    </div>
-                    {% if order.pedal_partner_name %}
-                    <div class="contact-field">
-                        <dt>Pedal Partner</dt>
-                        <dd class="contact-value">{{ order.pedal_partner_name }}</dd>
-                    </div>
-                    {% endif %}
-                </dl>
+        <div class="row g-2 desk-order-body">
+            <!-- Top Row Left: Contact Information -->
+            <div class="col-12 col-md-6">
+                <div class="desk-section desk-contact-info h-100">
+                    <h4 class="desk-section-title">Contact Information</h4>
+                    <dl class="desk-compact-dl">
+                        <div class="compact-field">
+                            <dt>Contact person</dt>
+                            <dd>{{ order.contact_name or 'Unnamed contact' }}</dd>
+                        </div>
+                        <div class="compact-field">
+                            <dt>Phone</dt>
+                            <dd>{{ order.contact_phone_number or order.contact_phone or 'Not provided' }}</dd>
+                        </div>
+                        <div class="compact-field">
+                            <dt>Email</dt>
+                            <dd>{{ order.contact_email or 'Not provided' }}</dd>
+                        </div>
+                        {% if order.pedal_partner_name %}
+                        <div class="compact-field">
+                            <dt>Pedal Partner</dt>
+                            <dd>{{ order.pedal_partner_name }}</dd>
+                        </div>
+                        {% endif %}
+                    </dl>
+                </div>
             </div>
 
-            <!-- Right Column: Recipient & Bike Requirements -->
-            <div class="col-12 col-md-6 desk-section desk-bike-requirements">
-                <h4 class="desk-section-title">Recipient &amp; Bike Requirements</h4>
-                <dl class="desk-req-facts">
-                    <div class="req-field req-field-recipient">
-                        <dt>Recipient name</dt>
-                        <dd class="req-recipient-name">{{ order.recipient_name or 'Unnamed recipient' }}</dd>
-                    </div>
-                    {% if order.age %}
-                    <div class="req-field req-field-age">
-                        <dt>Age</dt>
-                        <dd class="req-age-val">{{ order.age }}</dd>
-                    </div>
-                    {% endif %}
-                    <div class="req-field-grid">
+            <!-- Top Row Right: Recipient Information -->
+            <div class="col-12 col-md-6">
+                <div class="desk-section desk-recipient-info h-100">
+                    <h4 class="desk-section-title">Recipient Information</h4>
+                    <dl class="desk-compact-dl">
+                        <div class="compact-field">
+                            <dt>Recipient name</dt>
+                            <dd class="req-recipient-name">{{ order.recipient_name or 'Unnamed recipient' }}</dd>
+                        </div>
+                        {% if order.age %}
+                        <div class="compact-field">
+                            <dt>Age</dt>
+                            <dd class="req-age-val">{{ order.age }}</dd>
+                        </div>
+                        {% endif %}
+                    </dl>
+                </div>
+            </div>
+
+            <!-- Middle Row: Bike Requirements (2x2 Grid + Compact Metadata Footer) -->
+            <div class="col-12">
+                <div class="desk-section desk-bike-requirements">
+                    <h4 class="desk-section-title">Bike Requirements</h4>
+                    <dl class="req-field-grid">
                         <div class="req-highlight req-height">
                             <dt>Height</dt>
                             <dd class="req-val-height">{{ order.height or '—' }}</dd>
@@ -195,33 +206,31 @@
                             <dt>First choice</dt>
                             <dd class="req-val-choice1">{{ order.bike_type_first_choice or '—' }}</dd>
                         </div>
-                        {% if order.bike_type_second_choice %}
                         <div class="req-highlight req-choice-2">
                             <dt>Second choice</dt>
-                            <dd class="req-val-choice2">{{ order.bike_type_second_choice }}</dd>
+                            <dd class="req-val-choice2">{{ order.bike_type_second_choice or '—' }}</dd>
                         </div>
-                        {% endif %}
+                    </dl>
+                    {% if order.bike_tag or order.date_picked_up %}
+                    <div class="req-meta-footer">
                         {% if order.bike_tag %}
-                        <div class="req-highlight req-tag">
-                            <dt>Bike tag</dt>
-                            <dd class="req-val-tag">#{{ order.bike_tag }}</dd>
-                        </div>
+                        <span class="req-meta-pill req-meta-tag"><span class="meta-lbl">Bike tag</span> <strong>#{{ order.bike_tag }}</strong></span>
                         {% endif %}
                         {% if order.date_picked_up %}
-                        <div class="req-highlight req-picked-up">
-                            <dt>Picked up</dt>
-                            <dd class="req-val-picked">{{ order.date_picked_up }}</dd>
-                        </div>
+                        <span class="req-meta-pill req-meta-picked"><span class="meta-lbl">Picked up</span> <strong>{{ order.date_picked_up }}</strong></span>
                         {% endif %}
                     </div>
-                </dl>
+                    {% endif %}
+                </div>
             </div>
 
-            <!-- Notes: Spans full width below both columns -->
+            <!-- Bottom Row: Notes -->
             {% if order.notes %}
-            <div class="col-12 desk-section desk-order-notes">
-                <h4 class="desk-section-title">Notes</h4>
-                <p>{{ order.notes }}</p>
+            <div class="col-12">
+                <div class="desk-section desk-order-notes">
+                    <h4 class="desk-section-title">Notes</h4>
+                    <p>{{ order.notes }}</p>
+                </div>
             </div>
             {% endif %}
         </div>
