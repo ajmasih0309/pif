@@ -6,6 +6,27 @@ Format: `## [date] — brief description`
 
 ---
 
+## [2026-11-25] — Login CSRF, rate limiting, POST logout, and repo hygiene closure (TASK-202, TASK-803, TASK-804)
+
+**Type:** Security hardening / Repo hygiene
+**Git state at time of entry:** local `main`
+**Author:** Development agent (Antigravity) / Approved by Project Owner
+
+### Summary
+
+1. **Login CSRF & Rate Limiting (`TASK-202`, `DEBT-004`)**:
+   - Added CSRF token validation to `POST /login` in [app.py](app.py) and [templates/login.html](templates/login.html) using `order_intake.form_token` / `check_token`.
+   - Added thread-safe sliding-window `LoginRateLimiter` in [utils.py](utils.py) (5 failed attempts per 300 s per client IP, returning HTTP `429` when exceeded and resetting on successful login).
+2. **POST-Only CSRF Logout (`TASK-202`, `DEBT-005`)**:
+   - Restricted `/logout` in [app.py](app.py) to `methods=['POST']` with `check_token(..., 'logout')` validation.
+   - Updated the navbar Logout link in [templates/base.html](templates/base.html) to a `POST` form with a hidden `csrf_token`.
+3. **Repo Hygiene Closure (`TASK-803`, `TASK-804`)**:
+   - Verified `definitions/` and `.vscode/extensions.json` are already committed and tracked on `main` (`029a613`) with a clean working tree; marked `TASK-803` and `TASK-804` complete in [TASKS.md](TASKS.md).
+4. **Verification**:
+   - Added 4 regression tests in [tests/test_auth_security.py](tests/test_auth_security.py); full Python suite passes (`160 tests` in `8.051 s`).
+
+---
+
 ## [2026-11-25] — Compact expanded Order Desk card layout and 2x2 Bike Requirements grid (TASK-806)
 
 **Type:** UI refinement / Space efficiency / Visual hierarchy

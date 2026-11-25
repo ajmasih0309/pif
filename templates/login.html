@@ -12,6 +12,7 @@
                 
                 <!-- Login Form -->
                 <form action="{{ url_for('login') }}" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token('login') }}">
                     
                     <div class="mb-3">
                         <label for="username" class="form-label fw-bold fs-5">Username</label>

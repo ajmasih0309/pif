@@ -64,7 +64,7 @@ These are not code tasks. They block multiple downstream items and require the p
 | ID | Task | Status | Blocking | SPEC/DEBT ref | Notes |
 |---|---|---|---|---|---|
 | TASK-201 | Require `SECRET_KEY` from env; fail startup without it; remove `loremipsum` fallback | 🔴 | DEC-003 | DEBT-002 | Add startup validation; document rotation procedure |
-| TASK-202 | Add login CSRF token and rate limiting; convert logout to POST with CSRF | 🔴 | DEC-004 | DEBT-004, DEBT-005 | Do not add MFA or roles without DEC-004 decision |
+| TASK-202 | Add login CSRF token and rate limiting; convert logout to POST with CSRF | ✅ | None | DEBT-004, DEBT-005 | Implemented in `app.py`, `utils.py` (`LoginRateLimiter`), `login.html`, `base.html`; 4 regression tests in `tests/test_auth_security.py` |
 | TASK-203 | Disable `debug=True` in production entry point; add WSGI entry point | 🔴 | DEC-002 | DEBT-001 | Separate `app.py` dev runner from production WSGI entry |
 | TASK-204 | Centralize SQLite connection creation; enable `PRAGMA foreign_keys=ON` on all connections | ⏸ | None | DEBT-007 | Deferred to deployment/migration phase per owner decision |
 | TASK-205 | Assign single scheduler owner; remove import-time APScheduler startup | 🔴 | DEC-002 | DEBT-010 | Production process model must be decided first |
@@ -133,8 +133,8 @@ These are not code tasks. They block multiple downstream items and require the p
 |---|---|---|---|---|
 | TASK-801 | Fix bare `except` suppression in `utils.py` formatting helpers | ✅ | DEBT-012 | Completed: replaced bare `except:` with explicit `(ValueError, TypeError, IndexError)` in `format_date` and `(ValueError, TypeError)` in `clean_int`; regression unit tests added |
 | TASK-802 | Move order browsing filters/grouping/pagination into SQL | ⏸ | DEBT-008 | Deferred until data volume justifies it; add regression tests first |
-| TASK-803 | Resolve `definitions/` untracked directory ownership and purpose | 🟡 | DEBT-018 | Owner decision: commit, ignore, or remove |
-| TASK-804 | Resolve `.vscode/extensions.json` staged change | 🟡 | DEBT-018 | Owner decision: commit or revert |
+| TASK-803 | Resolve `definitions/` untracked directory ownership and purpose | ✅ | DEBT-018 | Verified already committed and tracked on `main` (`029a613`); working tree clean |
+| TASK-804 | Resolve `.vscode/extensions.json` staged change | ✅ | DEBT-018 | Verified already committed and tracked on `main` (`029a613`); working tree clean |
 | TASK-805 | Archive or rewrite `design/git-handoff.md` (describes superseded `2fd083b` state) | ✅ | CON-004 | Completed: added archival banner and warning notice pointing developers to `AGENTS.md`, `SPECIFICATION.md`, and `ARCHITECTURE.md` |
 | TASK-806 | Implement approved Order Desk redesign without bulk grouping | ✅ | None | Completed: independent order cards per recipient/bike, collapsed card summary (`Contact → Recipient`) with prominent bike criteria badges, expanded 2-column layout (Contact Info on left, Recipient & Bike Requirements on right, full-width Notes beneath), strict recipient/contact field separation, top-level Actions dropdown accessible without scrolling in both collapsed and expanded states; 156/156 tests pass |
 

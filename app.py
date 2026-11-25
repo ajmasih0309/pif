@@ -28,7 +28,7 @@ from database import get_db_connection
 from order_search import search_orders
 from order_intake import (ensure_schema, form_token, check_token, form_values, validate,
                           save_order, existing_submission, shops, HEIGHTS, TYPES)
-from utils import send_email, email_feedback, fetch_all_orders
+from utils import send_email, email_feedback, fetch_all_orders, LoginRateLimiter
 from pickup_policy import now_utc, record_contact, pickup_window, send_due_reminders
 
 
@@ -69,9 +69,24 @@ def login_required(f):
 # =============================================================================
 # APP ROUTES
 # =============================================================================
+login_limiter = LoginRateLimiter()
+
+
+def _client_ip():
+    ip_address = request.headers.get('X-Forwarded-For', request.remote_addr)
+    return ip_address.split(',')[0].strip() if ip_address else 'unknown'
+
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
+        check_token(request.form.get('csrf_token', ''), 'login')
+        ip_address = _client_ip()
+        limited, retry_after = login_limiter.is_limited(ip_address)
+        if limited:
+            flash(f"Too many failed login attempts. Please try again in {retry_after} seconds.", "danger")
+            return render_template('login.html'), 429
+
         username = request.form.get('username')
         password = request.form.get('password')
         
@@ -80,18 +95,16 @@ def login():
         conn.close()
 
         if user and check_password_hash(user['password_hash'], password):
+            login_limiter.reset(ip_address)
             session['username'] = user['username']
             
             # --- Capture and Log Device Info ---
-            ip_address = request.headers.get('X-Forwarded-For', request.remote_addr)
-            ip_address = ip_address.split(',')[0].strip() if ip_address else None
-
             log_conn = None
             try:
                 log_conn = get_db_connection()
                 log_conn.execute(
                     "INSERT INTO login_logs (username, ip_address, device_info) VALUES (?, ?, ?)",
-                    (user['username'], ip_address, request.user_agent.string)
+                    (user['username'], ip_address if ip_address != 'unknown' else None, request.user_agent.string)
                 )
                 log_conn.commit()
             except Exception as e:
@@ -103,6 +116,7 @@ def login():
 
             return redirect(url_for('index'))
         else:
+            login_limiter.record_failure(ip_address)
             flash("Invalid credentials. Please try again.")
             
     return render_template('login.html')
@@ -287,8 +301,9 @@ def fulfill(order_id):
     flash(f'Order #{order_id} completed. Pickup date and bike tag saved.', 'success')
     return redirect_to_desk()
 
-@app.route('/logout')
+@app.route('/logout', methods=['POST'])
 def logout():
+    check_token(request.form.get('csrf_token', ''), 'logout')
     session.pop('username', None)
     return redirect(url_for('login'))
 
@@ -431,7 +446,8 @@ def get_git_revision_short_hash():
 @app.context_processor
 def inject_global_vars():
     return dict(
-        app_version=f"v1.0.1 ({get_git_revision_short_hash()})"
+        app_version=f"v1.0.1 ({get_git_revision_short_hash()})",
+        csrf_token=form_token,
     )
 
 

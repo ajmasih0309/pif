@@ -10,7 +10,7 @@
 
 | Check | Result |
 |---|---|
-| Python test suite (156 tests) | **PASS — 156 tests in 8.91 s** (re-verified 2026-11-25 after TASK-806 compact expanded card & 2x2 Bike Requirements grid) |
+| Python test suite (160 tests) | **PASS — 160 tests in 8.05 s** (re-verified 2026-11-25 after TASK-202 login CSRF, rate limiting, and POST logout) |
 | Python syntax compilation | **PASS** |
 | `git diff --check` | **PASS** (no whitespace errors) |
 | Node order-action test (`test_order_actions.cjs`) | Configured in CI (`.github/workflows/ci.yml`) — runs on Node 20 runner |
@@ -33,7 +33,7 @@ EMAIL_REMINDERS_ENABLED=false DB_PATH=/tmp/pif-baseline-test.db \
 
 | Area | Status | Evidence |
 |---|---|---|
-| Staff login | ✅ Implemented (source-tested) | Routes covered indirectly; no auth-hardening test suite |
+| Staff login | ✅ Implemented and tested | Login CSRF, sliding-window rate limiting, and POST-only CSRF logout verified in `tests/test_auth_security.py` |
 | Order Desk | ✅ Implemented and tested (Redesigned) | Independent order cards, 4-section expanded layout, responsive 2-column, Contact button; 156/156 tests pass |
 | Order Explorer | ✅ Implemented and tested | Covered in search and workflow tests |
 | New Order (multi-recipient) | ✅ Implemented and tested | Intake/workflow tests |
@@ -135,8 +135,6 @@ See [design/SPECIFICATION.md §7](design/SPECIFICATION.md) for full debt registe
 |---|---|---|
 | DEBT-001 | `app.py` runs `debug=True` on port 5003 | Must not reach production |
 | DEBT-002 | `SECRET_KEY` falls back to literal `loremipsum` | Unsafe session secret |
-| DEBT-004 | Login form has no CSRF token and no visible rate limiting | Credential guessing / CSRF exposure |
-| DEBT-005 | Logout is a GET action | No CSRF protection on logout |
 | DEBT-006 | Schema lifecycle split (request-time DDL + CLI) | No single migration contract |
 | DEBT-007 | `foreign_keys=ON` only on workshop/CLI connections | Inconsistent integrity enforcement |
 | DEBT-010 | Scheduler starts at app import | Multi-process risk of duplicate schedulers |

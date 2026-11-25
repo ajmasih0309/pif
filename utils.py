@@ -5,10 +5,13 @@ Handles frontend data presentation.
 """
 
 import re
+from collections import deque
 from datetime import datetime
 import smtplib
 import ssl
 import os
+import threading
+import time
 from pathlib import Path
 from dataclasses import dataclass
 from uuid import uuid4
@@ -204,3 +207,48 @@ def fetch_all_orders():
         items.append(row_dict)
         
     return items
+
+
+class LoginRateLimiter:
+    """Thread-safe sliding-window rate limiter for failed login attempts."""
+
+    def __init__(self, max_attempts=5, window_seconds=300, clock=time.monotonic):
+        self.max_attempts = max_attempts
+        self.window_seconds = window_seconds
+        self._clock = clock
+        self._attempts = {}
+        self._lock = threading.Lock()
+
+    def _prune(self, bucket, now):
+        cutoff = now - self.window_seconds
+        while bucket and bucket[0] <= cutoff:
+            bucket.popleft()
+
+    def is_limited(self, key):
+        now = self._clock()
+        with self._lock:
+            bucket = self._attempts.get(key)
+            if not bucket:
+                return False, 0
+            self._prune(bucket, now)
+            if len(bucket) >= self.max_attempts:
+                retry_after = max(1, int(bucket[0] + self.window_seconds - now))
+                return True, retry_after
+            if not bucket:
+                del self._attempts[key]
+            return False, 0
+
+    def record_failure(self, key):
+        now = self._clock()
+        with self._lock:
+            bucket = self._attempts.setdefault(key, deque())
+            self._prune(bucket, now)
+            bucket.append(now)
+
+    def reset(self, key):
+        with self._lock:
+            self._attempts.pop(key, None)
+
+    def clear(self):
+        with self._lock:
+            self._attempts.clear()
