@@ -102,7 +102,7 @@ These are not code tasks. They block multiple downstream items and require the p
 | TASK-103 | Write operational runbook (provisioning, reset, backup/restore drills, incident response) | 🔴 | DEC-004, TASK-101 | TODO-006 | Cannot write until WSGI/process model is chosen |
 | TASK-104 | Add `.env.example` configuration template | ✅ | None | TODO-008 | Completed by owner (template added to project root) |
 | TASK-105 | Add CI workflow; include Node test prerequisite and safe email overrides | ✅ | None | TODO-007 | Completed: added `.github/workflows/ci.yml` running Python 3.12 test suite, syntax compilation, safe email flags, and Node 20 runner for `tests/test_order_actions.cjs` |
-| TASK-106 | Pin all CDN dependency versions; evaluate adding integrity metadata or self-hosting | 🟡 | None | DEBT-011 | `DEC-014` resolved: self-host Bootstrap, Chart.js, jQuery, and DataTables under `static/vendor/` |
+| TASK-106 | Pin all CDN dependency versions; evaluate adding integrity metadata or self-hosting | ✅ | None | DEBT-011 | Self-hosted pinned Bootstrap 5.3.0, jQuery 3.7.1, DataTables 1.13.6, Chart.js 4.4.7, and Patrick Hand font under `static/vendor/` (`base.html`, `explorer.html`, `dashboard.html`); 0 external CDN assets remaining |
 | TASK-107 | Connectivity test at organization shop for staff access and public link reachability | 🔴 | DEC-001 | O-009 | Owner action; test before choosing host |
 | TASK-108 | Configure Tailscale on production host; document device authorization and recovery | 🔴 | TASK-101 | REQ-028 | Do not mark complete until tested |
 

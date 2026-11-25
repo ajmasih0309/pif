@@ -6,6 +6,25 @@ Format: `## [date] — brief description`
 
 ---
 
+## [2026-11-25] — Self-hosted all frontend vendor assets and fonts (TASK-106)
+
+**Type:** Availability / Security / Dependency pinning
+**Git state at time of entry:** local `main`
+**Author:** Development agent (Antigravity) / Approved by Project Owner
+
+### Summary
+
+- Downloaded and self-hosted pinned vendor bundles under `static/vendor/`:
+  - Bootstrap `5.3.0` (`bootstrap.min.css`, `bootstrap.bundle.min.js`)
+  - jQuery `3.7.1` (`jquery-3.7.1.min.js`)
+  - DataTables `1.13.6` (`dataTables.bootstrap5.min.css`, `jquery.dataTables.min.js`, `dataTables.bootstrap5.min.js`)
+  - Chart.js `4.4.7` (`chart.umd.min.js`)
+  - Patrick Hand font (`patrick-hand.css`, `patrick-hand-latin.woff2`, `patrick-hand-latin-ext.woff2`)
+- Updated [templates/base.html](templates/base.html), [templates/explorer.html](templates/explorer.html), and [templates/dashboard.html](templates/dashboard.html) to serve all assets from `/static/vendor/` with zero external CDN requests.
+- Verified all `160` Python tests pass.
+
+---
+
 ## [2026-11-25] — Unified bike_tag to numeric INTEGER across inventory and orders, and recorded DEC-008/DEC-014 (TASK-401)
 
 **Type:** Schema & validation alignment / Governance

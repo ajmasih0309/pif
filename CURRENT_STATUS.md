@@ -68,7 +68,7 @@ The application is a **Flask 3.1.3 / Jinja / SQLite 3.53.4** server-rendered mon
 - Python 3.14.7, local `.venv` at project root
 - APScheduler 3.11.3 / Flask-APScheduler 1.13.1 (in-process 15-minute reminder job)
 - `itsdangerous` for signed form tokens; `werkzeug` for password hashing
-- Bootstrap 5.3, Chart.js, jQuery, DataTables loaded from CDN (no local pinning)
+- Bootstrap 5.3.0, Chart.js 4.4.7, jQuery 3.7.1, DataTables 1.13.6, and Patrick Hand font self-hosted under `static/vendor/` (TASK-106 complete)
 - Entry point: `app.py` runs `debug=True` on port 5003 (development only)
 
 All staff share one permission level (confirmed acceptable for initial release — O-002).
