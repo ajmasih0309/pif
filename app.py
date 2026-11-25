@@ -30,6 +30,7 @@ from order_intake import (form_token, check_token, form_values, validate,
                           save_order, existing_submission, shops, HEIGHTS, TYPES)
 from utils import send_email, email_feedback, fetch_all_orders, LoginRateLimiter
 from pickup_policy import now_utc, record_contact, pickup_window, send_due_reminders
+from migrations import verify_schema_ready
 
 
 # =============================================================================
@@ -450,8 +451,14 @@ def inject_global_vars():
     )
 
 
+def check_startup_readiness():
+    """Verify database schema is at the expected version before serving traffic."""
+    return verify_schema_ready(app.config['DB_PATH'])
+
+
 # =============================================================================
 # EXECUTION
 # =============================================================================
 if __name__ == '__main__':
+    check_startup_readiness()
     app.run(debug=True, port=5003)

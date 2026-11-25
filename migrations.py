@@ -106,6 +106,28 @@ def current_version(conn):
     return max(versions) if versions else 0
 
 
+def verify_schema_ready(db_path):
+    """Fail fast with an operator-facing message if db_path is missing or behind EXPECTED_SCHEMA_VERSION."""
+    path = Path(db_path)
+    if not path.exists():
+        raise RuntimeError(
+            f"Database file not found at '{path}'. "
+            f"Initialize and migrate it before starting the server: "
+            f".venv/bin/python scripts/migrate_db.py --apply --db-path {path}"
+        )
+    conn = sqlite3.connect(f'file:{path.resolve()}?mode=ro', uri=True)
+    try:
+        version = current_version(conn)
+    finally:
+        conn.close()
+    if version < EXPECTED_SCHEMA_VERSION:
+        raise RuntimeError(
+            f"Database schema at '{path}' is at version {version}, expected {EXPECTED_SCHEMA_VERSION}. "
+            f"Run '.venv/bin/python scripts/migrate_db.py --apply --db-path {path}' before starting the server."
+        )
+    return version
+
+
 def pending_migrations(conn, target_version=None):
     limit = EXPECTED_SCHEMA_VERSION if target_version is None else target_version
     done = applied_versions(conn)

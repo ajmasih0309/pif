@@ -10,6 +10,7 @@ from migrations import (
     current_version,
     migrate_database,
     pending_migrations,
+    verify_schema_ready,
 )
 
 
@@ -73,3 +74,23 @@ class MigrationFrameworkTests(unittest.TestCase):
             self.assertNotIn('bike_inventory', tables)
         finally:
             conn.close()
+
+    def test_verify_schema_ready_reports_clear_operator_errors(self):
+        missing = Path(self.tmp.name) / 'does_not_exist.db'
+        with self.assertRaisesRegex(RuntimeError, 'Database file not found'):
+            verify_schema_ready(missing)
+
+        with self.assertRaisesRegex(RuntimeError, f'version 0, expected {EXPECTED_SCHEMA_VERSION}.*migrate_db\\.py --apply'):
+            verify_schema_ready(self.db_path)
+
+        conn = sqlite3.connect(self.db_path)
+        try:
+            apply_migrations(conn, target_version=1)
+            conn.commit()
+        finally:
+            conn.close()
+        with self.assertRaisesRegex(RuntimeError, f'version 1, expected {EXPECTED_SCHEMA_VERSION}'):
+            verify_schema_ready(self.db_path)
+
+        migrate_database(self.db_path, backup=False, dry_run=False)
+        self.assertEqual(verify_schema_ready(self.db_path), EXPECTED_SCHEMA_VERSION)

@@ -10,7 +10,7 @@
 
 | Check | Result |
 |---|---|
-| Python test suite (162 tests) | **PASS — 162 tests in 8.92 s** (re-verified 2026-11-25 after TASK-601 versioned migration framework & request-time DDL removal) |
+| Python test suite (163 tests) | **PASS — 163 tests in 8.80 s** (re-verified 2026-11-25 after TASK-604 startup schema-version readiness check) |
 | Python syntax compilation | **PASS** |
 | `git diff --check` | **PASS** (no whitespace errors) |
 | Node order-action test (`test_order_actions.cjs`) | Configured in CI (`.github/workflows/ci.yml`) — runs on Node 20 runner |

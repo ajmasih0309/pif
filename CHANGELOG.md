@@ -6,6 +6,20 @@ Format: `## [date] — brief description`
 
 ---
 
+## [2026-11-25] — Startup schema-version readiness check (TASK-604)
+
+**Type:** Reliability / Operations (`PART-006`)
+**Git state at time of entry:** local `main`
+**Author:** Development agent (Antigravity) / Approved by Project Owner
+
+### Summary
+
+- Added `verify_schema_ready(db_path)` in [migrations.py](migrations.py) and `check_startup_readiness()` in [app.py](app.py) (`if __name__ == '__main__'`).
+- Fails fast with a clear operator message (including the exact `scripts/migrate_db.py --apply` command) if the database file is missing or behind `EXPECTED_SCHEMA_VERSION` (`3`).
+- Added unit tests in [tests/test_migrations.py](tests/test_migrations.py); all `163` Python tests pass in `8.804 s`, and `data/processed/pif.db` passes readiness check at version `3`.
+
+---
+
 ## [2026-11-25] — Versioned schema migration framework & removal of request-time DDL (TASK-601)
 
 **Type:** Architecture / Schema lifecycle (`DEBT-006`)
