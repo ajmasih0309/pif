@@ -6,6 +6,34 @@ Format: `## [date] — brief description`
 
 ---
 
+## [2026-11-24] — Hardened Order Desk responsive layouts and CSS cache prevention (TASK-806)
+
+**Type:** Bug fix / Layout resilience / Cache prevention
+**Git state at time of entry:** local `main`
+**Author:** Development agent (Antigravity) / Approved by Project Owner
+
+### Summary
+
+Resolved the issue where the Order Desk appeared locked into a single-column layout on laptop screens:
+1. **Root Cause Analysis**:
+   - Two factors contributed:
+     - First, `.desk-order-list` had previously been set to a single column `grid-template-columns: minmax(0, 1fr)` at all screen widths. The baseline behavior (`@media (min-width: 768px) { .desk-order-list { grid-template-columns: repeat(2, minmax(0, 1fr)); } }`), which placed order cards side-by-side in 2 columns on desktop/tablet, was restored.
+     - Second, inside each expanded order card, relying purely on custom CSS Grid declarations without standard Bootstrap utility classes was susceptible to local browser stylesheet caching (`whiteboard.css` had no cache-busting query parameter).
+2. **Underlying Fix**:
+   - Restored `.desk-order-list` 2-column card grid for tablet and desktop (`@media (min-width: 768px) { grid-template-columns: repeat(2, minmax(0, 1fr)); }`) in both `whiteboard.css` and `index.html`.
+   - Structured `.desk-order-body` with native Bootstrap 5 responsive grid classes:
+     - Container: `<div class="row g-3 desk-order-body">`
+     - Contact Information (left column): `<div class="col-12 col-md-6 desk-section desk-contact-info">`
+     - Recipient & Bike Requirements (right column): `<div class="col-12 col-md-6 desk-section desk-bike-requirements">`
+     - Notes (full-width beneath both): `<div class="col-12 desk-section desk-order-notes">`
+   - Added CSS cache-buster `?v={{ app_version }}` to `<link rel="stylesheet" href="{{ url_for('static', filename='css/whiteboard.css') }}?v={{ app_version }}">` in `base.html` so client browsers automatically refresh the stylesheet.
+   - Retained pure CSS grid fallback in `whiteboard.css`.
+3. **Verification**:
+   - All 156 Python tests pass in 6.99 s.
+   - Verified Bootstrap `col-12 col-md-6` layout behavior on mobile (<768px, 100% stacked) and desktop/tablet (>=768px, 50% side-by-side with full-width notes).
+
+---
+
 ## [2026-11-24] — Fixed expanded order card responsive grid structure (TASK-806)
 
 **Type:** Bug fix / Layout refinement / Responsive design

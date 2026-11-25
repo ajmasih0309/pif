@@ -28,48 +28,18 @@
     #tab-cancelled { background-color: #f4e4e4; color: #202521 !important; }
     #tab-all { background-color: #f2eddd; color: black !important; }
 
-    /* Expanded Card Responsive Two-Column Grid */
-    .desk-order-body {
+    /* Order Desk Card List: 2 columns on tablet and desktop, 1 on mobile */
+    .desk-order-list {
         display: grid;
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
         gap: 1rem;
-        width: 100%;
-        box-sizing: border-box;
+        align-items: start;
+        overflow: visible;
     }
     @media (min-width: 768px) {
-        .desk-order-body {
-            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-            gap: 1.25rem;
-            align-items: start;
-        }
-        .desk-contact-info {
-            grid-column: 1;
-            grid-row: 1;
-        }
-        .desk-bike-requirements {
-            grid-column: 2;
-            grid-row: 1;
-        }
-        .desk-order-notes {
-            grid-column: 1 / -1;
-            grid-row: 2;
-        }
-    }
-    @media (max-width: 767.98px) {
-        .desk-order-body {
-            grid-template-columns: 1fr;
-        }
-        .desk-contact-info {
-            grid-column: 1;
-            grid-row: 1;
-        }
-        .desk-bike-requirements {
-            grid-column: 1;
-            grid-row: 2;
-        }
-        .desk-order-notes {
-            grid-column: 1;
-            grid-row: 3;
+        .desk-order-list {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 1rem;
         }
     }
     .desk-sections-row {

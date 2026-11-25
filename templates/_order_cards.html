@@ -142,9 +142,9 @@
             </span>
         </summary>
 
-        <div class="desk-order-body">
+        <div class="row g-3 desk-order-body">
             <!-- Left Column: Contact Information -->
-            <div class="desk-section desk-contact-info">
+            <div class="col-12 col-md-6 desk-section desk-contact-info">
                 <h4 class="desk-section-title">Contact Information</h4>
                 <dl class="desk-contact-facts">
                     <div class="contact-field">
@@ -169,7 +169,7 @@
             </div>
 
             <!-- Right Column: Recipient & Bike Requirements -->
-            <div class="desk-section desk-bike-requirements">
+            <div class="col-12 col-md-6 desk-section desk-bike-requirements">
                 <h4 class="desk-section-title">Recipient &amp; Bike Requirements</h4>
                 <dl class="desk-req-facts">
                     <div class="req-field req-field-recipient">
@@ -219,7 +219,7 @@
 
             <!-- Notes: Spans full width below both columns -->
             {% if order.notes %}
-            <div class="desk-section desk-order-notes">
+            <div class="col-12 desk-section desk-order-notes">
                 <h4 class="desk-section-title">Notes</h4>
                 <p>{{ order.notes }}</p>
             </div>

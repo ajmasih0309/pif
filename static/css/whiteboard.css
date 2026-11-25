@@ -133,6 +133,12 @@
     align-items: start;
     overflow: visible;
 }
+@media (min-width: 768px) {
+    .desk-order-list {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1rem;
+    }
+}
 .desk-order {
     min-width: 0;
     border: 1.5px solid #606860;
@@ -322,62 +328,34 @@
     transform: rotate(180deg);
 }
 
-/* Expanded Card Layout: Unified Responsive Grid */
+/* Expanded Card Layout: Bootstrap row with fallback CSS */
 .desk-order-body {
     padding: 1rem;
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 1rem;
+    margin: 0;
     background: #fff;
     width: 100%;
-    min-width: 0;
     box-sizing: border-box;
 }
 
-/* Tablet & Desktop: explicit two-column grid */
+/* Fallback two-column grid if Bootstrap grid is unstyled */
 @media (min-width: 768px) {
-    .desk-order-body {
+    .desk-order-body:not(.row) {
+        display: grid;
         grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
         gap: 1.25rem;
         align-items: start;
     }
-    .desk-contact-info {
+    .desk-order-body:not(.row) > .desk-contact-info {
         grid-column: 1;
         grid-row: 1;
-        width: 100%;
     }
-    .desk-bike-requirements {
+    .desk-order-body:not(.row) > .desk-bike-requirements {
         grid-column: 2;
         grid-row: 1;
-        width: 100%;
     }
-    .desk-order-notes {
+    .desk-order-body:not(.row) > .desk-order-notes {
         grid-column: 1 / -1;
         grid-row: 2;
-        width: 100%;
-    }
-}
-
-/* Mobile: clean single-column stacked layout */
-@media (max-width: 767.98px) {
-    .desk-order-body {
-        grid-template-columns: 1fr;
-        gap: 1rem;
-    }
-    .desk-contact-info {
-        grid-column: 1;
-        grid-row: 1;
-        width: 100%;
-    }
-    .desk-bike-requirements {
-        grid-column: 1;
-        grid-row: 2;
-        width: 100%;
-    }
-    .desk-order-notes {
-        grid-column: 1;
-        grid-row: 3;
-        width: 100%;
     }
 }
 
