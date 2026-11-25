@@ -109,7 +109,6 @@ The following are unresolved as of 2026-11-23. No implementation work requiring 
 | Q-003 | `SECRET_KEY` must be mandatory at startup; session/credential rotation plan |
 | Q-004 | Staff account provisioning, password reset, disable/revocation procedures |
 | Q-005 | Whether public volunteer attribution without authentication is acceptable for deployment |
-| Q-006 | Whether order completion should support text tags (matching inventory) or remain numeric-only |
 | Q-008 | UAT functional scenarios, acceptance checklist, and Google Sheets switch-over date |
 | Q-009 | Request-time DDL vs. explicit versioned migrations |
 | Q-010 | SMTP sender, test-recipient policy, preview retention, approval gate for live mail |
@@ -119,7 +118,7 @@ The following are unresolved as of 2026-11-23. No implementation work requiring 
 | Q-021 | Backup retention, RPO/RTO, restore-test cadence |
 | Q-022 | Privacy/retention rules for requester data, volunteer records, audit logs, email previews |
 
-Owner-confirmed decisions (no longer blocking): O-001 through O-011, Q-007, Q-014, Q-015, Q-016, Q-017, Q-018.
+Owner-confirmed decisions (no longer blocking): O-001 through O-011, Q-006, Q-007, Q-014, Q-015, Q-016, Q-017, Q-018.
 
 ---
 

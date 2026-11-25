@@ -34,7 +34,7 @@ These are not code tasks. They block multiple downstream items and require the p
 | DEC-003 | Confirm `SECRET_KEY` mandatory at startup; session rotation/revocation plan (⏸ On hold — planned for deployment phase) | TASK-201 |
 | DEC-004 | Staff account provisioning, password reset, disable/revocation procedures | ✅ Resolved: Owner confirms no rules enforced; staff creation/modification lifecycle skipped due to small, persistent headcount |
 | DEC-005 | Whether public volunteer attribution without authentication is acceptable for deployment | TASK-301 |
-| DEC-006 | Tag format for order completion: numeric-only or align with inventory text format | TASK-401 |
+| DEC-006 | Tag format for order completion: numeric-only or align with inventory text format | ✅ Resolved: Bike Tag is numeric-only; both `bike_inventory.bike_tag` and `orders.bike_tag` must share the same numeric data type (`TASK-401`) |
 | DEC-007 | UAT functional scenarios, acceptance checklist, Google Sheets switch-over date | TASK-501 |
 | DEC-008 | Request-time DDL vs. explicit versioned migrations | TASK-601 |
 | DEC-009 | SMTP sender, test-recipient policy, preview retention, approval gate | TASK-701 |
@@ -55,7 +55,7 @@ These are not code tasks. They block multiple downstream items and require the p
 | TASK-001 | Owner reviews and approves `design/SPECIFICATION.md` | ✅ | None | **Approved by owner 2026-11-23.** Authoritative product contract established. |
 | TASK-002 | Owner reviews and approves `design/ARCHITECTURE.md` | ✅ | None | **Approved by owner 2026-11-23.** Authoritative technical architecture established. |
 | TASK-003 | Owner confirms all unverified implemented behaviors (§2.2 of SPEC) | ✅ | None | **Resolved 2026-11-25:** `DEC-010` (age 1–80, 10-digit phone storage / display formatting) and `DEC-011` (7-day / 28-day pickup windows) confirmed by owner. |
-| TASK-004 | Owner resolves all documentation conflicts (CON-001 through CON-008 in TRACEABILITY_MATRIX) | 🔵 | DEC-006 (CON-008) | `CON-001`–`CON-007` resolved (2026-11-25); only `CON-008` (tag format between inventory text vs. order numeric `REAL`) remains under owner review. |
+| TASK-004 | Owner resolves all documentation conflicts (CON-001 through CON-008 in TRACEABILITY_MATRIX) | ✅ | None | **Resolved 2026-11-25:** All conflicts `CON-001`–`CON-008` resolved (`CON-008` resolved via `DEC-006`: numeric-only tags across inventory and orders, tracked in `TASK-401`). |
 
 ---
 
@@ -82,6 +82,7 @@ These are not code tasks. They block multiple downstream items and require the p
 | TASK-603 | Implement authorized Excel workbook importer for historical data cutover | 🔴 | DEC-007 | TODO-001 | Needs approved workbook, mapping rules, rehearsal, backup, sign-off. No cutover without all gates. |
 | TASK-604 | Add startup schema-version readiness check | 🔴 | DEC-008 | PART-006 | Fail with clear operator message if schema not at expected version |
 | TASK-605 | Audit and document active database foreign key gaps; add constraints progressively | 🔴 | TASK-602 | DEBT-007 | Do not add constraints that would reject existing records without reconciliation |
+| TASK-401 | Align `bike_inventory.bike_tag` and `orders.bike_tag` to a shared numeric-only data type & validation | 🟡 | None | Q-006 / CON-008 | Audit existing `bike_inventory` tags for any non-numeric legacy rows first; unify schema (`INTEGER`) and workshop/order validation with rehearsal & backup |
 | TASK-611 | Update database schema for `volunteers` (`joined_on`, `is_active`) and ensure `volunteer_hours` table matches app requirements | ✅ | None | REQ-011, REQ-012 | Implemented in `scripts/migrate_volunteer_clock.py` |
 | TASK-612 | Create reusable migration code for `volunteers` from `PIF Volunteer Reporting time clock.xlsx` | ✅ | None | REQ-011 | Implemented in `scripts/migrate_volunteer_clock.py` (Title-Case standardization, 180-day cutoff) |
 | TASK-613 | Create reusable migration code for `volunteer_hours` table implementing Option B catch-up backfill on open shop days | ✅ | None | REQ-012 | Implemented in `scripts/migrate_volunteer_clock.py` (backfills >24h entries across Mon/Wed/Sat for B/R, Mon/Wed for S with note 'Catchup hours') |
@@ -148,7 +149,7 @@ These are not code tasks. They block multiple downstream items and require the p
 | TASK-D02 | Workshop-activity reporting | Planned; no approved scope, metric, or audience. Define before implementation. |
 | TASK-D03 | QR artwork generation | Deferred until stable production address confirmed. |
 | TASK-D04 | Order header / durable request identity | On hold per SPEC Q-014 and ARCH PA-009. Owner confirms not currently needed. |
-| TASK-D05 | Tag format unification (order completion ↔ inventory) | On hold per SPEC Q-006. Changes affect schema, migration, and reporting. |
+| TASK-D05 | Tag format unification (order completion ↔ inventory) | ✅ Moved to `TASK-401` per `DEC-006` (2026-11-25): numeric-only shared data type approved. |
 | TASK-D06 | Staff role model beyond one-tier | On hold per O-002. Revisit only if operational needs change. |
 | TASK-D07 | Public volunteer authentication (PIN / QR / sign-in) | On hold per Q-005. Must not add or reject without owner decision. |
 | TASK-D08 | Reintroduce removed prototypes (Streamlit, legacy import/setup scripts) | Do not reintroduce without specific requirement and owner approval. |

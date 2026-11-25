@@ -6,6 +6,20 @@ Format: `## [date] — brief description`
 
 ---
 
+## [2026-11-25] — Resolved CON-008 / DEC-006: numeric-only bike tags across inventory and orders (TASK-004, TASK-401)
+
+**Type:** Governance / Product contract decision
+**Git state at time of entry:** local `main`
+**Author:** Development agent (Antigravity) / Approved by Project Owner
+
+### Summary
+
+- Recorded owner decision for `DEC-006` / `Q-006` / `CON-008`: Bike Tag is **numeric-only** across both `bike_inventory.bike_tag` and `orders.bike_tag`, and both tables must share the same numeric data type so refurbished bikes can be referenced by tag at order pickup.
+- Marked **TASK-004** (`CON-001`–`CON-008`) ✅ Complete in [TASKS.md](TASKS.md).
+- Promoted tag-type & validation unification from deferred `TASK-D05` to **TASK-401** (Ready 🟡: audit existing `bike_inventory` tags first, then align schema & validation with rehearsal and backup).
+
+---
+
 ## [2026-11-25] — Synchronized owner decisions and resolved documentation conflicts (TASK-003, TASK-004)
 
 **Type:** Governance / Documentation synchronization
