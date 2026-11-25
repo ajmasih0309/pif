@@ -6,6 +6,18 @@ Format: `## [date] — brief description`
 
 ---
 
+## [2026-11-25] — Added UI overhaul and unified template tasks (TASK-807–TASK-810)
+
+**Type:** Planning / UI consistency
+**Git state at time of entry:** local `main`
+**Author:** Development agent (Antigravity) / Approved by Project Owner
+
+### Summary
+
+Added `TASK-807` through `TASK-810` in [TASKS.md](TASKS.md) to establish a unified template system and consistent visual hierarchy across all staff and public volunteer pages.
+
+---
+
 ## [2026-11-25] — Deferred TASK-605 until after TASK-603 historical order cutover
 
 **Type:** Governance / Scheduling
