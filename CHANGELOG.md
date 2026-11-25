@@ -6,6 +6,18 @@ Format: `## [date] — brief description`
 
 ---
 
+## [2026-11-25] — Deferred TASK-605 until after TASK-603 historical order cutover
+
+**Type:** Governance / Scheduling
+**Git state at time of entry:** local `main`
+**Author:** Development agent (Antigravity) / Approved by Project Owner
+
+### Summary
+
+- Marked **TASK-605** (progressive FK constraints on `orders` and `login_logs`) as `⏸` Deferred until after `TASK-603` (historical order cutover/reconciliation), matching `TASK-204`.
+
+---
+
 ## [2026-11-25] — Startup schema-version readiness check (TASK-604)
 
 **Type:** Reliability / Operations (`PART-006`)
