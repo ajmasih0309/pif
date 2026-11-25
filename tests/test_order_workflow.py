@@ -6,6 +6,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
+from migrations import apply_migrations
 from scripts.fix_person_ids import TABLES, migrate_person_ids, repair_database
 from utils import fetch_all_orders, send_email
 
@@ -38,6 +39,8 @@ def create_legacy_database(path):
         INSERT INTO orders (contact_id, recipient_id, pedal_partner_id, shop_name,
             order_date, order_status) VALUES (20, 40, 60, 'B', '2026-01-01', 'Open');
     ''')
+    apply_migrations(conn, target_version=1)
+    conn.commit()
     conn.close()
 
 

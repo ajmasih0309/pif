@@ -8,7 +8,7 @@ from flask import Blueprint, abort, flash, redirect, render_template, request, s
 from werkzeug.datastructures import MultiDict
 
 from database import get_db_connection
-from order_intake import (HEIGHTS, TYPES, check_token, digest, ensure_schema, form_token,
+from order_intake import (HEIGHTS, TYPES, check_token, digest, form_token,
                           form_values, save_order, shops, validate)
 
 requester_links = Blueprint('requester_links', __name__)
@@ -42,7 +42,6 @@ def manage():
         values.update(order_type='Public', days='7')
     errors, created_link = {}, None
     with closing(get_db_connection()) as conn, conn:
-        ensure_schema(conn)
         available_shops = shops(conn)
         if request.method == 'POST':
             key = check_token(token, 'issue-link')
@@ -89,7 +88,6 @@ def revoke(invite_id):
         return redirect(url_for('login'))
     check_token(request.form.get('form_token', ''), 'revoke-link')
     with closing(get_db_connection()) as conn, conn:
-        ensure_schema(conn)
         conn.execute('UPDATE request_invites SET revoked_at=? WHERE invite_id=? AND used_at IS NULL AND revoked_at IS NULL', (int(time.time()), invite_id))
     flash('Link revoked. Any completed submission is unchanged.', 'success')
     return redirect(url_for('.manage'))
@@ -100,7 +98,6 @@ def intake(secret):
     if len(secret) != 43:
         abort(404)
     with closing(get_db_connection()) as conn, conn:
-        ensure_schema(conn)
         # The write lock serializes token consumption with order creation and revocation.
         if request.method == 'POST':
             conn.execute('BEGIN IMMEDIATE')

@@ -14,18 +14,6 @@ HEIGHTS = ["< 3'0\""] + [f"{feet}'{inches}\"" for feet in range(3, 7) for inches
 TYPES = ('Public', 'Pedal Partner', 'Speciality')
 
 
-def ensure_schema(conn):
-    # Additive only; existing orders and historical data are untouched.
-    conn.execute('''CREATE TABLE IF NOT EXISTS order_submissions (
-        submission_key TEXT PRIMARY KEY, order_ids TEXT NOT NULL, created_at TEXT NOT NULL)''')
-    conn.execute('''CREATE TABLE IF NOT EXISTS request_invites (
-        invite_id INTEGER PRIMARY KEY AUTOINCREMENT, token_hash TEXT UNIQUE NOT NULL,
-        issuance_key TEXT UNIQUE NOT NULL, label TEXT NOT NULL, shop_name TEXT NOT NULL,
-        order_type TEXT NOT NULL, pedal_partner_name TEXT NOT NULL,
-        issued_by TEXT NOT NULL, created_at INTEGER NOT NULL, expires_at INTEGER NOT NULL,
-        used_at INTEGER, revoked_at INTEGER)''')
-
-
 def digest(value):
     return hashlib.sha256(value.encode()).hexdigest()
 

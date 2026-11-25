@@ -39,29 +39,18 @@ def pickup_window(order_type, contacted_at, now=None):
     return {'deadline': deadline, 'label': label, 'overdue': seconds <= 0}
 
 
-def ensure_pickup_schema(conn):
-    conn.execute('''CREATE TABLE IF NOT EXISTS order_pickup_tracking (
-        order_id INTEGER PRIMARY KEY, contacted_at TEXT NOT NULL)''')
-    conn.execute('''CREATE TABLE IF NOT EXISTS pickup_reminder_delivery (
-        order_id INTEGER NOT NULL, contacted_at TEXT NOT NULL, deadline TEXT NOT NULL,
-        mode TEXT NOT NULL, claimed_at TEXT, sent_at TEXT,
-        PRIMARY KEY (order_id, contacted_at, deadline, mode))''')
-
-
 def contact_times(conn):
     exists = conn.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='order_pickup_tracking'").fetchone()
     return dict(conn.execute('SELECT order_id,contacted_at FROM order_pickup_tracking')) if exists else {}
 
 
 def record_contact(conn, order_id, timestamp):
-    ensure_pickup_schema(conn)
     conn.execute('INSERT OR REPLACE INTO order_pickup_tracking VALUES (?,?)', (order_id, timestamp))
 
 
 def send_due_reminders(conn, send, mode, now=None):
     """Claim once per contact cycle/mode; retry failures while still before expiry."""
     now = now or now_utc()
-    ensure_pickup_schema(conn)
     conn.commit()
     tracked = contact_times(conn)
     rows = conn.execute('''SELECT o.order_id,o.order_type,o.last_updated_date,

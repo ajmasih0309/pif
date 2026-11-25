@@ -10,7 +10,7 @@
 
 | Check | Result |
 |---|---|
-| Python test suite (160 tests) | **PASS — 160 tests in 8.05 s** (re-verified 2026-11-25 after TASK-202 login CSRF, rate limiting, and POST logout) |
+| Python test suite (162 tests) | **PASS — 162 tests in 8.92 s** (re-verified 2026-11-25 after TASK-601 versioned migration framework & request-time DDL removal) |
 | Python syntax compilation | **PASS** |
 | `git diff --check` | **PASS** (no whitespace errors) |
 | Node order-action test (`test_order_actions.cjs`) | Configured in CI (`.github/workflows/ci.yml`) — runs on Node 20 runner |
@@ -128,7 +128,6 @@ See [design/SPECIFICATION.md §7](design/SPECIFICATION.md) for full debt registe
 |---|---|---|
 | DEBT-001 | `app.py` runs `debug=True` on port 5003 | Must not reach production |
 | DEBT-002 | `SECRET_KEY` falls back to literal `loremipsum` | Unsafe session secret |
-| DEBT-006 | Schema lifecycle split (request-time DDL + CLI) | No single migration contract |
 | DEBT-007 | `foreign_keys=ON` only on workshop/CLI connections | Inconsistent integrity enforcement |
 | DEBT-010 | Scheduler starts at app import | Multi-process risk of duplicate schedulers |
 | DEBT-013 | No global session-cookie security, CSP, or proxy trust config | Security boundary undefined |

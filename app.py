@@ -26,7 +26,7 @@ load_dotenv()
 from config import Config
 from database import get_db_connection
 from order_search import search_orders
-from order_intake import (ensure_schema, form_token, check_token, form_values, validate,
+from order_intake import (form_token, check_token, form_values, validate,
                           save_order, existing_submission, shops, HEIGHTS, TYPES)
 from utils import send_email, email_feedback, fetch_all_orders, LoginRateLimiter
 from pickup_policy import now_utc, record_contact, pickup_window, send_due_reminders
@@ -179,7 +179,6 @@ def add():
     values, recipients = form_values(request.form if request.method == 'POST' else None)
     errors = {}
     with closing(get_db_connection()) as conn, conn:
-        ensure_schema(conn)
         available_shops = shops(conn)
         if request.method == 'POST':
             key = check_token(token, 'staff-order')

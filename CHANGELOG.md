@@ -6,6 +6,26 @@ Format: `## [date] — brief description`
 
 ---
 
+## [2026-11-25] — Versioned schema migration framework & removal of request-time DDL (TASK-601)
+
+**Type:** Architecture / Schema lifecycle (`DEBT-006`)
+**Git state at time of entry:** local `main`
+**Author:** Development agent (Antigravity) / Approved by Project Owner
+
+### Summary
+
+1. **Versioned Migration Framework ([migrations.py](migrations.py), [scripts/migrate_db.py](scripts/migrate_db.py)):**
+   - Introduced `schema_migrations` tracking table and ordered, idempotent migrations (`v1: core_intake_and_pickup_tables`, `v2: workshop_and_audit_tables`, `v3: numeric_bike_tag_constraints`) with WAL-safe backups and `PRAGMA foreign_key_check` / `PRAGMA integrity_check` verification.
+2. **Removed Request-Time DDL:**
+   - Removed `ensure_schema()` from [app.py](app.py), [requester_links.py](requester_links.py), and [order_intake.py](order_intake.py).
+   - Removed `ensure_pickup_schema()` from [pickup_policy.py](pickup_policy.py).
+   - Updated [tests/test_order_workflow.py](tests/test_order_workflow.py) (`create_legacy_database`) to apply `target_version=1` via `apply_migrations()`.
+3. **Rehearsal, Active DB Application & Verification:**
+   - Added 2 migration framework tests in [tests/test_migrations.py](tests/test_migrations.py); all `162` Python tests pass in `8.920 s`.
+   - Rehearsed on a temp copy and applied `scripts/migrate_db.py --apply` to `data/processed/pif.db` (schema version `3`, `0` FK errors, `integrity_check = ok`).
+
+---
+
 ## [2026-11-25] — Read-only active database schema and FK inspection (TASK-602)
 
 **Type:** Audit / Documentation

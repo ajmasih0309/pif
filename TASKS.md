@@ -77,7 +77,7 @@ These are not code tasks. They block multiple downstream items and require the p
 
 | ID | Task | Status | Blocking | SPEC/DEBT ref | Notes |
 |---|---|---|---|---|---|
-| TASK-601 | Design and implement versioned migration framework; remove request-time DDL | 🟡 | None | DEBT-006, PART-006 | `DEC-008` resolved; do not remove request-time DDL until migration plan rehearsed on a copy |
+| TASK-601 | Design and implement versioned migration framework; remove request-time DDL | ✅ | None | DEBT-006, PART-006 | Implemented `migrations.py` (`schema_migrations`, v1–v3) and `scripts/migrate_db.py`; removed `ensure_schema`/`ensure_pickup_schema` request-time DDL from `app.py`, `requester_links.py`, `order_intake.py`, `pickup_policy.py`; applied to `data/processed/pif.db` with backup; 162/162 tests pass |
 | TASK-602 | Inspect active database schema against tracked design documentation | ✅ | None | DEBT-017 | Read-only inspection of `data/processed/pif.db` completed 2026-11-25: `integrity_check = ok`, `0` FK errors, `0` `orders` orphans; documented missing maintenance tables (`admin_changes`, `workshop_submissions`, `order_pickup_tracking`, `pickup_reminder_delivery`), legacy staging tables (`bikes`, `bikes_test`, `orders_50`, `orders_old`, `orders_test`), and FK gaps in `design/database.md` |
 | TASK-603 | Implement authorized Excel workbook importer for historical data cutover | 🔴 | DEC-007 | TODO-001 | Needs approved workbook, mapping rules, rehearsal, backup, sign-off. No cutover without all gates. |
 | TASK-604 | Add startup schema-version readiness check | 🟡 | None | PART-006 | `DEC-008` resolved; fail with clear operator message if schema not at expected version |
