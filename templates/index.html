@@ -27,6 +27,54 @@
     #tab-completed { background-color: #e0eddf; color: black !important; }
     #tab-cancelled { background-color: #f4e4e4; color: #202521 !important; }
     #tab-all { background-color: #f2eddd; color: black !important; }
+
+    /* Expanded Card Responsive Two-Column Grid */
+    .desk-order-body {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    @media (min-width: 768px) {
+        .desk-order-body {
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            gap: 1.25rem;
+            align-items: start;
+        }
+        .desk-contact-info {
+            grid-column: 1;
+            grid-row: 1;
+        }
+        .desk-bike-requirements {
+            grid-column: 2;
+            grid-row: 1;
+        }
+        .desk-order-notes {
+            grid-column: 1 / -1;
+            grid-row: 2;
+        }
+    }
+    @media (max-width: 767.98px) {
+        .desk-order-body {
+            grid-template-columns: 1fr;
+        }
+        .desk-contact-info {
+            grid-column: 1;
+            grid-row: 1;
+        }
+        .desk-bike-requirements {
+            grid-column: 1;
+            grid-row: 2;
+        }
+        .desk-order-notes {
+            grid-column: 1;
+            grid-row: 3;
+        }
+    }
+    .desk-sections-row {
+        display: contents;
+    }
     
 </style>
 

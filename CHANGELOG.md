@@ -6,6 +6,31 @@ Format: `## [date] — brief description`
 
 ---
 
+## [2026-11-24] — Fixed expanded order card responsive grid structure (TASK-806)
+
+**Type:** Bug fix / Layout refinement / Responsive design
+**Git state at time of entry:** local `main`
+**Author:** Development agent (Antigravity) / Approved by Project Owner
+
+### Summary
+
+Resolved the issue where expanded order cards displayed Contact Information and Recipient & Bike Requirements in a single column on tablet and desktop:
+1. **Root Cause Identified**:
+   - The earlier implementation wrapped Contact Information and Recipient & Bike Requirements in an unnecessary `.desk-sections-row` container inside `.desk-order-body`, while Notes was rendered outside it.
+   - `.desk-order-body` was configured as `display: flex; flex-direction: column;`, decoupling Notes from the grid columns and making the internal grid susceptible to content-size blowout.
+2. **Underlying Fix**:
+   - Flattened the child section structure of `.desk-order-body`: Contact Information, Recipient & Bike Requirements, and Notes are now direct children of the expanded card grid container.
+   - Defined explicit CSS grid tracks on `.desk-order-body`:
+     - **Desktop & Tablet (`min-width: 768px`)**: `grid-template-columns: minmax(0, 1fr) minmax(0, 1fr)` with `align-items: start`. `.desk-contact-info` explicitly assigned to `grid-column: 1; grid-row: 1;`; `.desk-bike-requirements` explicitly assigned to `grid-column: 2; grid-row: 1;`; `.desk-order-notes` explicitly assigned to `grid-column: 1 / -1; grid-row: 2;` (spanning the full width beneath both columns).
+     - **Mobile (`max-width: 767.98px`)**: `grid-template-columns: 1fr` with Contact Information on row 1, Recipient & Bike Requirements on row 2, and Notes on row 3.
+   - Added `.desk-sections-row { display: contents; }` fallback.
+   - Injected layout rules into `index.html`'s in-page style block to prevent browser cache from serving stale stylesheets.
+3. **Verification**:
+   - Layout verified across mobile (375px), tablet (768px, 820px), and desktop (1024px, 1200px, 1440px) viewports.
+   - All 156 Python unit and integration tests pass cleanly (6.898 s).
+
+---
+
 ## [2026-11-24] — Enhanced Order Desk visual hierarchy, responsive layout, field separation, and top-level actions (TASK-806)
 
 **Type:** Bug fix / UI Enhancement / Field separation / Accessibility
