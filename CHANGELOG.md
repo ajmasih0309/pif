@@ -6,6 +6,30 @@ Format: `## [date] — brief description`
 
 ---
 
+## [2026-11-25] — Unified bike_tag to numeric INTEGER across inventory and orders, and recorded DEC-008/DEC-014 (TASK-401)
+
+**Type:** Schema & validation alignment / Governance
+**Git state at time of entry:** local `main`
+**Author:** Development agent (Antigravity) / Approved by Project Owner
+
+### Summary
+
+1. **Reusable Numeric `bike_tag` Migration (`TASK-401`)**:
+   - Created [scripts/migrate_bike_tag_numeric.py](scripts/migrate_bike_tag_numeric.py) (`--dry-run` / `--apply`, WAL-safe backup into `backups/`).
+   - Rehearsed on a temporary copy and applied to `data/processed/pif.db` (backup: `backups/pif-before-bike-tag-numeric-20261125T072700Z.db`):
+     - Corrected 4 legacy non-numeric inventory tags (`61`02` → `6102`, `596ffy` → `5966`, `2781Sch` → `2781`, `L3060` → `3060`).
+     - Deleted test placeholder `Xxxx` (`inventory_id=1713`) and its contribution row.
+     - Converted 2 zero-value `orders.bike_tag` rows (`325`, `326`) to `NULL`.
+     - Rebuilt `bike_inventory` and `orders` with `bike_tag INTEGER` and positive-integer `CHECK` constraints (`14,994` inventory bikes, `0` FK errors, `integrity_check = ok`).
+2. **Application & Validation Alignment**:
+   - Enforced numeric-only positive integer `bike_tag` validation in [admin_tools.py](admin_tools.py), [workshop.py](workshop.py), [volunteer_entry.py](volunteer_entry.py), [templates/inventory_form.html](templates/inventory_form.html), and [templates/volunteer_finished_bike.html](templates/volunteer_finished_bike.html).
+   - Updated unit tests in [tests/test_workshop.py](tests/test_workshop.py), [tests/test_volunteer_entry.py](tests/test_volunteer_entry.py), and [tests/test_admin_tools.py](tests/test_admin_tools.py); all `160` tests pass in `8.378 s`.
+3. **Owner Decisions Recorded**:
+   - **`DEC-014` / `Q-020`:** Self-host vendor assets (`TASK-106` unblocked).
+   - **`DEC-008` / `Q-009`:** Follow best-practice versioned schema maintenance and startup readiness check (`TASK-601`, `TASK-602`, `TASK-604` unblocked).
+
+---
+
 ## [2026-11-25] — Resolved CON-008 / DEC-006: numeric-only bike tags across inventory and orders (TASK-004, TASK-401)
 
 **Type:** Governance / Product contract decision

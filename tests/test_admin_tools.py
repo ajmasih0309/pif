@@ -164,7 +164,8 @@ class AdminToolsTests(DatabaseTestCase):
             add_bike(self.path, {'bike_tag': '00123', 'shop_name': 'R'}, 'operator', 'Duplicate')
         with closing(connect(self.path)) as conn:
             self.assertEqual(lookup_bike(conn, '00123')['wheel_size'], '26 inch')
-            self.assertEqual(lookup_bike(conn, '123')['bike_tag'], '123')
+            self.assertEqual(lookup_bike(conn, '123')['bike_tag'], 123)
+            self.assertIsNone(lookup_bike(conn, '2781Sch'))
         self.assertEqual(self.conn.execute('SELECT COUNT(*) FROM orders').fetchone()[0], 1)
         self.apply({'bike_tag': '456'})  # No matching inventory row required.
 
@@ -178,6 +179,8 @@ class AdminToolsTests(DatabaseTestCase):
                 conn.execute("INSERT INTO bike_inventory (bike_tag,shop_name,created_at) VALUES ('1','B','tomorrow')")
             with self.assertRaises(sqlite3.IntegrityError):
                 conn.execute("INSERT INTO bike_inventory (bike_tag,shop_name,created_at) VALUES ('0001','B','tomorrow')")
+            with self.assertRaises(sqlite3.IntegrityError):
+                conn.execute("INSERT INTO bike_inventory (bike_tag,shop_name,created_at) VALUES ('Xxxx','B','tomorrow')")
 
     def test_backup_includes_committed_wal_changes(self):
         self.conn.execute('PRAGMA journal_mode=WAL')

@@ -176,16 +176,12 @@ def finished_bike():
             if action not in {'check_tag', 'save'}:
                 errors['contribution_notes'] = 'This form has changed. Please review and submit your own contribution.'
             tag = values['bike_tag']
-            if (not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9-]{0,49}', tag)
-                    or not any(c.isdigit() for c in tag)):
-                errors['bike_tag'] = 'Enter the actual bike tag; include a number. Letters and hyphens are allowed.'
+            if not re.fullmatch(r'[0-9]{1,18}', tag) or int(tag) <= 0 or int(tag) > 2**53 - 1:
+                errors['bike_tag'] = 'Enter a positive whole-number bike tag (digits only).'
             else:
-                values['bike_tag'] = canonical_bike_tag(tag)
-                if values['bike_tag'] == '0' or values['bike_tag'].casefold() in {'test2', 'test3'}:
-                    errors['bike_tag'] = 'Enter the actual bike tag.'
-                else:
-                    existing = conn.execute(f'SELECT * FROM bike_inventory WHERE ({TAG_KEY_SQL})=?',
-                                            (values['bike_tag'],)).fetchone()
+                values['bike_tag'] = int(tag)
+                existing = conn.execute('SELECT * FROM bike_inventory WHERE bike_tag=?',
+                                        (values['bike_tag'],)).fetchone()
             if action == 'save':
                 if request.form.get('existing_token') and not existing:
                     errors['bike_tag'] = 'The tag changed. Check the new tag and review its bike details before saving.'

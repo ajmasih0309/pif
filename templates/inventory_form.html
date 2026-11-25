@@ -9,7 +9,7 @@
 <form method="post" data-workshop-form>
     <input type="hidden" name="form_token" value="{{ form_token }}">
     <div class="marker-panel row g-3">
-        <div class="col-md-4"><label for="bike_tag" class="form-label">Bike tag (required)</label><input id="bike_tag" name="bike_tag" class="form-control" maxlength="50" required value="{{ values.bike_tag }}" autofocus>{{ error('bike_tag',errors) }}<div class="small text-muted">Leading zeros identify the same bike.</div></div>
+        <div class="col-md-4"><label for="bike_tag" class="form-label">Bike tag (required)</label><input id="bike_tag" name="bike_tag" class="form-control" maxlength="18" inputmode="numeric" pattern="[0-9]+" required value="{{ values.bike_tag }}" autofocus>{{ error('bike_tag',errors) }}<div class="small text-muted">Numeric tag (leading zeros identify the same bike).</div></div>
         <div class="col-md-4"><label for="shop_name" class="form-label">Shop</label><select id="shop_name" name="shop_name" class="form-select" required>{% for shop in shops %}<option value="{{ shop.shop_name }}" {% if values.shop_name==shop.shop_name %}selected{% endif %}>{{ shop.shop_location }}</option>{% endfor %}</select>{{ error('shop_name',errors) }}</div>
         <div class="col-md-4"><label for="recorded_at" class="form-label">Finished time</label><input type="datetime-local" id="recorded_at" name="recorded_at" class="form-control" value="{{ values.recorded_at }}" required>{{ error('recorded_at',errors) }}</div>
         {% for field,label in [('make','Make'),('model','Model'),('colour','Colour'),('wheel_size','Wheel size'),('bike_type','Bike type')] %}

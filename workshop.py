@@ -230,13 +230,13 @@ def volunteers():
 def inventory():
     q = request.args.get('q', '').strip()
     shop = request.args.get('shop', '')
-    tag = canonical_bike_tag(q) if q else ''
+    tag = int(q) if re.fullmatch(r'[0-9]+', q) else None
     with closing(connection()) as conn:
         available_shops = shops(conn)
         rows, pagination = paginate(conn, '''SELECT b.*, s.shop_location,
             (SELECT COUNT(*) FROM bike_contributions c WHERE c.inventory_id=b.inventory_id) AS contributions
             FROM bike_inventory b LEFT JOIN shops s ON s.shop_name=b.shop_name
-            WHERE (?='' OR b.bike_tag=? OR b.bike_tag LIKE ? OR b.make LIKE ? OR b.model LIKE ? OR b.colour LIKE ?)
+            WHERE (?='' OR b.bike_tag=? OR CAST(b.bike_tag AS TEXT) LIKE ? OR b.make LIKE ? OR b.model LIKE ? OR b.colour LIKE ?)
               AND (?='' OR b.shop_name=?) ORDER BY b.inventory_id DESC''',
             (q, tag, f'%{q}%', f'%{q}%', f'%{q}%', f'%{q}%', shop, shop))
     return render_template('inventory.html', rows=rows, pagination=pagination, q=q, shop=shop, shops=available_shops)
@@ -260,12 +260,10 @@ def new_bike():
             if prior:
                 return redirect(url_for('.bike', inventory_id=prior['entity_id']), code=303)
             check_length(values, errors, fields)
-            if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9-]{0,49}', values['bike_tag']) or not any(c.isdigit() for c in values['bike_tag']):
-                errors['bike_tag'] = 'Enter a bike tag containing a number (letters and hyphens are allowed).'
+            if not re.fullmatch(r'[0-9]{1,18}', values['bike_tag']) or int(values['bike_tag']) <= 0 or int(values['bike_tag']) > 2**53 - 1:
+                errors['bike_tag'] = 'Enter a positive whole-number bike tag (digits only).'
             else:
-                values['bike_tag'] = canonical_bike_tag(values['bike_tag'])
-                if values['bike_tag'] == '0' or values['bike_tag'].casefold() in {'test2', 'test3'}:
-                    errors['bike_tag'] = 'Enter the actual bike tag.'
+                values['bike_tag'] = int(values['bike_tag'])
                 duplicate = lookup_bike(conn, values['bike_tag'])
                 if duplicate:
                     errors['bike_tag'] = 'This tag already exists. Open its record to add volunteers.'

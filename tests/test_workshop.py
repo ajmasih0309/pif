@@ -57,7 +57,7 @@ class WorkshopTests(DatabaseTestCase):
         for _ in range(2):
             self.assertEqual(self.client.post('/inventory/new', data=form).status_code, 303)
         self.assertEqual(self.conn.execute('SELECT bike_tag,make,model,colour FROM bike_inventory').fetchall(),
-                         [('123', 'Trek', 'Example', 'Blue')])
+                         [(123, 'Trek', 'Example', 'Blue')])
         self.assertEqual(self.conn.execute('SELECT volunteer_id FROM bike_contributions ORDER BY volunteer_id').fetchall(), [(10,), (20,)])
         self.assertEqual(self.conn.execute('SELECT COUNT(*) FROM volunteer_hours').fetchone()[0], 0)
         self.assertEqual(self.snapshot(), before)
@@ -81,8 +81,9 @@ class WorkshopTests(DatabaseTestCase):
         self.assertEqual(self.conn.execute('SELECT COUNT(*) FROM bike_contributions').fetchone()[0], 1)
 
     def test_invalid_bike_fields_do_not_save_partial_records(self):
-        for changes in [{'bike_tag': ''}, {'bike_tag': '000'}, {'bike_tag': 'TEST2'}, {'shop_name': 'missing'},
-                        {'volunteer_ids': ['999']}, {'volunteer_ids': []}, {'recorded_at': '2999-01-01T12:00'}]:
+        for changes in [{'bike_tag': ''}, {'bike_tag': '000'}, {'bike_tag': 'TEST2'}, {'bike_tag': '2781Sch'},
+                        {'shop_name': 'missing'}, {'volunteer_ids': ['999']}, {'volunteer_ids': []},
+                        {'recorded_at': '2999-01-01T12:00'}]:
             with self.subTest(changes=changes):
                 response = self.client.post('/inventory/new', data=self.bike_form(**changes))
                 self.assertEqual(response.status_code, 400)

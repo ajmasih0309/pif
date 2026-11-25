@@ -110,15 +110,13 @@ The following are unresolved as of 2026-11-23. No implementation work requiring 
 | Q-004 | Staff account provisioning, password reset, disable/revocation procedures |
 | Q-005 | Whether public volunteer attribution without authentication is acceptable for deployment |
 | Q-008 | UAT functional scenarios, acceptance checklist, and Google Sheets switch-over date |
-| Q-009 | Request-time DDL vs. explicit versioned migrations |
 | Q-010 | SMTP sender, test-recipient policy, preview retention, approval gate for live mail |
 | Q-011 | Which document is authoritative; whether stale handoff material should be archived |
 | Q-019 | Volunteer impact aggregate visibility rules |
-| Q-020 | CDN assets: pin with integrity, or self-host |
 | Q-021 | Backup retention, RPO/RTO, restore-test cadence |
 | Q-022 | Privacy/retention rules for requester data, volunteer records, audit logs, email previews |
 
-Owner-confirmed decisions (no longer blocking): O-001 through O-011, Q-006, Q-007, Q-014, Q-015, Q-016, Q-017, Q-018.
+Owner-confirmed decisions (no longer blocking): O-001 through O-011, Q-006, Q-007, Q-009, Q-014, Q-015, Q-016, Q-017, Q-018, Q-020.
 
 ---
 

@@ -35,7 +35,7 @@
     <section class="marker-panel mb-3" aria-labelledby="bike-details-heading">
         <h2 class="fs-4" id="bike-details-heading">Bike tag &amp; details</h2>
         <label class="form-label" for="bike_tag">Bike tag (required)</label>
-        <div class="d-flex gap-2"><input class="form-control form-control-lg" id="bike_tag" name="bike_tag" value="{{ values.bike_tag }}" maxlength="50" required placeholder="Tag number" autocapitalize="off" spellcheck="false"><button class="btn btn-outline-dark text-nowrap flex-shrink-0" type="submit" name="action" value="check_tag" formnovalidate>Check tag</button></div>
+        <div class="d-flex gap-2"><input class="form-control form-control-lg" id="bike_tag" name="bike_tag" value="{{ values.bike_tag }}" maxlength="18" inputmode="numeric" pattern="[0-9]+" required placeholder="Tag number" autocapitalize="off" spellcheck="false"><button class="btn btn-outline-dark text-nowrap flex-shrink-0" type="submit" name="action" value="check_tag" formnovalidate>Check tag</button></div>
         {{ error('bike_tag',errors) }}
         <p class="small mt-2">Enter the new tag with the bike's details below. Already recorded? Check the tag to add your contribution. Leading zeros identify the same bike.</p>
         {% if checked_tag and not existing and not errors.bike_tag %}<p class="text-success" role="status">This tag is ready for a new bike record.</p>{% endif %}

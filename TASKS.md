@@ -36,13 +36,13 @@ These are not code tasks. They block multiple downstream items and require the p
 | DEC-005 | Whether public volunteer attribution without authentication is acceptable for deployment | TASK-301 |
 | DEC-006 | Tag format for order completion: numeric-only or align with inventory text format | ✅ Resolved: Bike Tag is numeric-only; both `bike_inventory.bike_tag` and `orders.bike_tag` must share the same numeric data type (`TASK-401`) |
 | DEC-007 | UAT functional scenarios, acceptance checklist, Google Sheets switch-over date | TASK-501 |
-| DEC-008 | Request-time DDL vs. explicit versioned migrations | TASK-601 |
+| DEC-008 | Request-time DDL vs. explicit versioned migrations | ✅ Resolved: Follow best-practice versioned schema maintenance & startup readiness check (unblocks `TASK-601`, `TASK-602`, `TASK-604`, `TASK-605`) |
 | DEC-009 | SMTP sender, test-recipient policy, preview retention, approval gate | TASK-701 |
 | DEC-010 | Confirm age 1–80 and phone normalization as approved intake requirements | ✅ Resolved: Age 1–80 and phone normalization approved (plain 10-digit DB storage, `(123) 456-7890` web display) |
 | DEC-011 | Confirm 7-day / 28-day pickup windows still correct | ✅ Resolved: 7-day Public / 28-day Pedal Partner confirmed active |
 | DEC-012 | Confirm approved layout: "Desktop unchanged" or unified two-column from 768px | ✅ Resolved: Owner approved Order Desk redesign displaying independent order cards with responsive two-column recipient layout stacking on mobile |
 | DEC-013 | Confirm volunteer impact aggregate visibility rules | TASK-302 |
-| DEC-014 | CDN assets: pin with integrity metadata, or self-host | TASK-801 |
+| DEC-014 | CDN assets: pin with integrity metadata, or self-host | ✅ Resolved: Owner selects self-hosting vendor assets (`TASK-106`) |
 | DEC-015 | Backup retention, RPO/RTO, restore-test cadence | TASK-102 |
 | DEC-016 | Privacy/retention rules for all stored personal data | TASK-801 |
 
@@ -77,12 +77,12 @@ These are not code tasks. They block multiple downstream items and require the p
 
 | ID | Task | Status | Blocking | SPEC/DEBT ref | Notes |
 |---|---|---|---|---|---|
-| TASK-601 | Design and implement versioned migration framework; remove request-time DDL | 🔴 | DEC-008 | DEBT-006, PART-006 | Do not remove request-time DDL until migration plan rehearsed on a copy |
-| TASK-602 | Inspect active database schema against tracked design documentation | 🔴 | DEC-008 | DEBT-017 | Must not modify active database; report-only inspection |
+| TASK-601 | Design and implement versioned migration framework; remove request-time DDL | 🟡 | None | DEBT-006, PART-006 | `DEC-008` resolved; do not remove request-time DDL until migration plan rehearsed on a copy |
+| TASK-602 | Inspect active database schema against tracked design documentation | 🟡 | None | DEBT-017 | `DEC-008` resolved; must not modify active database; report-only inspection |
 | TASK-603 | Implement authorized Excel workbook importer for historical data cutover | 🔴 | DEC-007 | TODO-001 | Needs approved workbook, mapping rules, rehearsal, backup, sign-off. No cutover without all gates. |
-| TASK-604 | Add startup schema-version readiness check | 🔴 | DEC-008 | PART-006 | Fail with clear operator message if schema not at expected version |
+| TASK-604 | Add startup schema-version readiness check | 🟡 | None | PART-006 | `DEC-008` resolved; fail with clear operator message if schema not at expected version |
 | TASK-605 | Audit and document active database foreign key gaps; add constraints progressively | 🔴 | TASK-602 | DEBT-007 | Do not add constraints that would reject existing records without reconciliation |
-| TASK-401 | Align `bike_inventory.bike_tag` and `orders.bike_tag` to a shared numeric-only data type & validation | 🟡 | None | Q-006 / CON-008 | Audit existing `bike_inventory` tags for any non-numeric legacy rows first; unify schema (`INTEGER`) and workshop/order validation with rehearsal & backup |
+| TASK-401 | Align `bike_inventory.bike_tag` and `orders.bike_tag` to a shared numeric-only data type & validation | ✅ | None | Q-006 / CON-008 | Implemented in `scripts/migrate_bike_tag_numeric.py`, `admin_tools.py`, `workshop.py`, `volunteer_entry.py`; applied to `data/processed/pif.db` with backup `pif-before-bike-tag-numeric-20261125T072700Z.db` (14,994 bikes, 4 corrected, 1 placeholder deleted, 2 zero orders nulled, 0 FK errors, integrity ok, 160/160 tests pass) |
 | TASK-611 | Update database schema for `volunteers` (`joined_on`, `is_active`) and ensure `volunteer_hours` table matches app requirements | ✅ | None | REQ-011, REQ-012 | Implemented in `scripts/migrate_volunteer_clock.py` |
 | TASK-612 | Create reusable migration code for `volunteers` from `PIF Volunteer Reporting time clock.xlsx` | ✅ | None | REQ-011 | Implemented in `scripts/migrate_volunteer_clock.py` (Title-Case standardization, 180-day cutoff) |
 | TASK-613 | Create reusable migration code for `volunteer_hours` table implementing Option B catch-up backfill on open shop days | ✅ | None | REQ-012 | Implemented in `scripts/migrate_volunteer_clock.py` (backfills >24h entries across Mon/Wed/Sat for B/R, Mon/Wed for S with note 'Catchup hours') |
@@ -102,7 +102,7 @@ These are not code tasks. They block multiple downstream items and require the p
 | TASK-103 | Write operational runbook (provisioning, reset, backup/restore drills, incident response) | 🔴 | DEC-004, TASK-101 | TODO-006 | Cannot write until WSGI/process model is chosen |
 | TASK-104 | Add `.env.example` configuration template | ✅ | None | TODO-008 | Completed by owner (template added to project root) |
 | TASK-105 | Add CI workflow; include Node test prerequisite and safe email overrides | ✅ | None | TODO-007 | Completed: added `.github/workflows/ci.yml` running Python 3.12 test suite, syntax compilation, safe email flags, and Node 20 runner for `tests/test_order_actions.cjs` |
-| TASK-106 | Pin all CDN dependency versions; evaluate adding integrity metadata or self-hosting | 🔴 | DEC-014 | DEBT-011 | Chart.js currently has no version in template |
+| TASK-106 | Pin all CDN dependency versions; evaluate adding integrity metadata or self-hosting | 🟡 | None | DEBT-011 | `DEC-014` resolved: self-host Bootstrap, Chart.js, jQuery, and DataTables under `static/vendor/` |
 | TASK-107 | Connectivity test at organization shop for staff access and public link reachability | 🔴 | DEC-001 | O-009 | Owner action; test before choosing host |
 | TASK-108 | Configure Tailscale on production host; document device authorization and recovery | 🔴 | TASK-101 | REQ-028 | Do not mark complete until tested |
 

@@ -15,18 +15,17 @@ ORDER_FIELDS = {'notes', 'shop_name', 'pickup_date', 'bike_tag',
                 'bike_type_first_choice', 'bike_type_second_choice'}
 BIKE_FIELDS = {'recorded_at', 'shop_name', 'bike_tag', 'make', 'model', 'colour',
                'wheel_size', 'bike_type', 'volunteer_name'}
-TAG_KEY_SQL = "CASE WHEN bike_tag <> '' AND bike_tag NOT GLOB '*[^0-9]*' THEN COALESCE(NULLIF(ltrim(bike_tag, '0'), ''), '0') ELSE bike_tag END"
+TAG_KEY_SQL = "bike_tag"
 SCHEMA = (
     'CREATE UNIQUE INDEX IF NOT EXISTS ux_shops_shop_name ON shops(shop_name)',
     '''CREATE TABLE IF NOT EXISTS bike_inventory (
         inventory_id INTEGER PRIMARY KEY AUTOINCREMENT,
         recorded_at TEXT,
         shop_name TEXT NOT NULL REFERENCES shops(shop_name),
-        bike_tag TEXT NOT NULL UNIQUE CHECK(length(trim(bike_tag)) > 0),
+        bike_tag INTEGER NOT NULL UNIQUE CHECK(typeof(bike_tag) = 'integer' AND bike_tag > 0),
         make TEXT, model TEXT, colour TEXT, wheel_size TEXT, bike_type TEXT,
         created_at TEXT NOT NULL
     )''',
-    f'CREATE UNIQUE INDEX IF NOT EXISTS ux_inventory_canonical_tag ON bike_inventory ({TAG_KEY_SQL})',
     '''CREATE TABLE IF NOT EXISTS volunteers (
         volunteer_id INTEGER PRIMARY KEY,
         volunteer_name TEXT NOT NULL,
@@ -180,11 +179,10 @@ def initialize(path, actor, reason):
         conn.execute('BEGIN IMMEDIATE')
         _actor(conn, actor, reason)
         present = {r[0] for r in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")}
-        canonical_index = conn.execute("SELECT 1 FROM sqlite_master WHERE type='index' AND name='ux_inventory_canonical_tag'").fetchone()
         contribution_columns = {r[1] for r in conn.execute('PRAGMA table_info(bike_contributions)')}
         volunteer_columns = {r[1] for r in conn.execute('PRAGMA table_info(volunteers)')}
         if {'bike_inventory', 'admin_changes', 'volunteers', 'bike_contributions',
-            'volunteer_hours', 'workshop_submissions'} <= present and canonical_index and 'notes' in contribution_columns and {'joined_on', 'is_active'} <= volunteer_columns:
+            'volunteer_hours', 'workshop_submissions'} <= present and 'notes' in contribution_columns and {'joined_on', 'is_active'} <= volunteer_columns:
             return {'applied': False, 'message': 'Maintenance tables already exist.'}
         backup = _backup(path)
         for statement in SCHEMA:
@@ -227,15 +225,26 @@ def edit_order(path, order_id, changes, version, actor, reason):
         return {'applied': True, 'backup': backup, 'changes': preview['changes']}
 
 
+def parse_numeric_bike_tag(tag):
+    """Validate and normalize a bike tag to a positive integer."""
+    raw = str(tag or '').strip()
+    if not re.fullmatch(r'[0-9]+', raw):
+        raise ValueError('Bike tag must be numeric (digits only).')
+    num = int(raw)
+    if num <= 0 or num > 2**53 - 1:
+        raise ValueError('Bike tag must be a positive whole number.')
+    return num
+
+
 def bike_preview(conn, values):
     values = clean_fields(values, BIKE_FIELDS)
     if not values.get('bike_tag'):
-        raise ValueError('A globally unique bike_tag is required.')
-    values['bike_tag'] = canonical_bike_tag(values['bike_tag'])
+        raise ValueError('A globally unique numeric bike_tag is required.')
+    values['bike_tag'] = parse_numeric_bike_tag(values['bike_tag'])
     values['shop_name'] = valid_shop(conn, values.get('shop_name'))
     if values.get('recorded_at'):
         datetime.fromisoformat(values['recorded_at'])
-    if conn.execute(f'SELECT 1 FROM bike_inventory WHERE ({TAG_KEY_SQL})=?', (values['bike_tag'],)).fetchone():
+    if conn.execute('SELECT 1 FROM bike_inventory WHERE bike_tag=?', (values['bike_tag'],)).fetchone():
         raise ValueError('Bike tag already exists; tags are unique across all shops and years.')
     return values
 
@@ -265,7 +274,10 @@ def canonical_bike_tag(tag):
 
 
 def lookup_bike(conn, tag):
-    row = conn.execute(f'SELECT * FROM bike_inventory WHERE ({TAG_KEY_SQL})=?', (canonical_bike_tag(tag),)).fetchone()
+    raw = str(tag or '').strip()
+    if not re.fullmatch(r'[0-9]+', raw):
+        return None
+    row = conn.execute('SELECT * FROM bike_inventory WHERE bike_tag=?', (int(raw),)).fetchone()
     if row is None:
         return None
     result = dict(row)

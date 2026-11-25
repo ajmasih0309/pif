@@ -57,7 +57,7 @@ class VolunteerEntryTests(DatabaseTestCase):
         values=self.bike_form(contribution_notes='Adjusted brakes with Alex',remember='yes')
         for _ in range(2): self.assertEqual(self.bike_post(values).status_code,303)
         self.assertEqual(self.conn.execute('SELECT bike_tag,make,wheel_size,bike_type,colour FROM bike_inventory').fetchall(),
-                         [('123','Trek','26 inch','B','Blue')])
+                         [(123,'Trek','26 inch','B','Blue')])
         self.assertEqual(self.conn.execute('SELECT volunteer_id,notes FROM bike_contributions ORDER BY contribution_id').fetchall(),[(10,'Adjusted brakes with Alex')])
         self.assertEqual(self.conn.execute('SELECT COUNT(*) FROM volunteer_hours').fetchone()[0],0)
         self.assertEqual(self.snapshot(),before)
@@ -115,7 +115,7 @@ class VolunteerEntryTests(DatabaseTestCase):
         self.assertEqual(self.conn.execute('SELECT COUNT(*) FROM workshop_submissions').fetchone()[0],0)
 
     def test_invalid_finished_bike_does_not_write_or_create_profiles(self):
-        for changes in [{'bike_tag':''},{'bike_tag':'TEST2'},{'bike_tag':'000'}, {'bike_tag':'x'*5000},
+        for changes in [{'bike_tag':''},{'bike_tag':'TEST2'},{'bike_tag':'L3060'},{'bike_tag':'000'}, {'bike_tag':'x'*5000},
                         {'shop_name':'missing'},{'volunteer_id':'999'},{'helper_ids':['999']},
                         {'helper_ids':['20']},{'volunteer_ids':['20']},{'action':'find_helpers'},
                         {'contribution_notes':'x'*2001},{'make':'x'*201},
