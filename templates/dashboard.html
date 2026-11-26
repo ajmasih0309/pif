@@ -3,15 +3,13 @@
 {% block title %}Reporting - PIF Portal{% endblock %}
 
 {% block content %}
+{% from '_ui.html' import page_header %}
 {% set month_labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] %}
-<!-- Chart.js CDN -->
+<!-- Chart.js -->
 <script src="{{ url_for('static', filename='vendor/chartjs/4.4.7/chart.umd.min.js') }}"></script>
 
-<h1 class="page-heading">Reporting</h1>
-<h2 class="fs-3">Bike Distribution</h2>
-<p>Completed bikes by pickup date. Each completed recipient bike counts separately,
-    including multiple bikes in one order. Both years use the selected shops and months.
-    Bikes without a usable pickup date are excluded.</p>
+{{ page_header('Reporting', subtitle='Bike Distribution — Completed bikes by pickup date. Each completed recipient bike counts separately.', action_href=url_for('index'), action_label='Back to Order Desk') }}
+<p class="small text-muted mb-3">Both years use the selected shops and months. Bikes without a usable pickup date are excluded.</p>
 
 <div class="row">
     <!-- FILTERS SIDEBAR -->

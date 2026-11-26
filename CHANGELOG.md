@@ -6,6 +6,20 @@ Format: `## [date] — brief description`
 
 ---
 
+## [2026-11-26] — Aligned Order Explorer, New Order, Reporting, Request Links, and Login to unified template (TASK-808)
+
+**Type:** UI consistency
+**Git state at time of entry:** local `main`
+**Author:** Development agent (Antigravity) / Approved by Project Owner
+
+### Summary
+
+- Applied the `page_header()` macro from [templates/_ui.html](templates/_ui.html) across [templates/add.html](templates/add.html) (preserving `requester_mode` without staff links), [templates/dashboard.html](templates/dashboard.html), and [templates/request_links.html](templates/request_links.html).
+- Aligned [templates/login.html](templates/login.html) to `.marker-panel` and `.chalk-header` without inline card styles.
+- Verified all `163` Python tests pass.
+
+---
+
 ## [2026-11-26] — Unified page shell, CSS design tokens, and shared header primitive (TASK-807)
 
 **Type:** UI architecture / Design system

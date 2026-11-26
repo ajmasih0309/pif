@@ -4,11 +4,10 @@
 {% block title %}Login - PIF Portal{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
+<div class="row justify-content-center my-4">
     <div class="col-md-6 col-lg-5">
-        <div class="card shadow border-dark" style="border-radius: 12px; background-color: #fff;">
-            <div class="card-body p-4 p-sm-5">
-                <h1 class="page-heading">Login</h1>
+        <div class="marker-panel p-4 p-sm-5 shadow-sm">
+            <h1 class="chalk-header mb-4">Login</h1>
                 
                 <!-- Login Form -->
                 <form action="{{ url_for('login') }}" method="POST">
@@ -25,13 +24,12 @@
                     </div>
                     
                     <div class="d-grid gap-2 mt-4">
-                        <button type="submit" class="btn btn-dark fw-bold shadow-sm" style="font-size: 1.25rem; border-radius: 8px;">
+                        <button type="submit" class="btn btn-dark btn-lg fw-bold">
                             Log In
                         </button>
                     </div>
                     
                 </form>
-            </div>
         </div>
     </div>
 </div>

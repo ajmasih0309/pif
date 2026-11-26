@@ -1,8 +1,8 @@
 {% extends 'base.html' %}
 {% block title %}Request Form Links - PIF Portal{% endblock %}
 {% block content %}
-<h1 class="chalk-header fw-bold">Request Form Links</h1>
-<p>Create a link for one completed request. A request can include several recipients. Opening a link does not use it.</p>
+{% from '_ui.html' import page_header %}
+{{ page_header('Request Form Links', subtitle='Create a link for one completed request. A request can include several recipients. Opening a link does not use it.', action_href=url_for('index'), action_label='Back to Order Desk') }}
 {% if created_link %}
 <div class="marker-panel mb-4" role="status">
     <h2 class="fs-3">Your link is ready</h2>

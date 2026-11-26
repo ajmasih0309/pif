@@ -40,9 +40,14 @@
     </div>
 </fieldset>
 {% endmacro %}
+{% from '_ui.html' import page_header %}
 <div class="intake-page mx-auto">
-    <h1 class="chalk-header fw-bold">{{ 'Request a Bike' if requester_mode else 'New Order' }}</h1>
-    <p class="text-muted">{{ 'Tell us who needs a bike. This link accepts one completed request, which can include several recipients.' if requester_mode else 'Contact details first, then one section for each person who needs a bike.' }} Fields marked (required) must be filled. You can leave optional fields blank.</p>
+    {{ page_header(
+        'Request a Bike' if requester_mode else 'New Order',
+        subtitle=('Tell us who needs a bike. This link accepts one completed request, which can include several recipients.' if requester_mode else 'Contact details first, then one section for each person who needs a bike.') ~ ' Fields marked (required) must be filled. You can leave optional fields blank.',
+        action_href='' if requester_mode else url_for('index'),
+        action_label='' if requester_mode else 'Back to Order Desk'
+    ) }}
     {% if errors %}<div class="alert alert-danger border-dark" role="alert" tabindex="-1" id="form-errors"><strong>Please check the marked fields.</strong> Your entries are still here.{{ error_for('recipients') }}</div>{% endif %}
     <form method="post" id="intake-form" data-staff="{{ 'false' if requester_mode else 'true' }}">
         <input type="hidden" name="form_token" value="{{ form_token }}">
