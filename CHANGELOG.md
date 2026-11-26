@@ -6,6 +6,19 @@ Format: `## [date] — brief description`
 
 ---
 
+## [2026-11-26] — Aligned Staff Workshop pages to unified template (TASK-809)
+
+**Type:** UI consistency
+**Git state at time of entry:** local `main`
+**Author:** Development agent (Antigravity) / Approved by Project Owner
+
+### Summary
+
+- Applied `page_header()` from [templates/_ui.html](templates/_ui.html) across all 9 Staff Workshop templates: `volunteers.html`, `volunteer_profile.html`, `volunteer_impact_preview.html`, `inventory.html`, `inventory_form.html`, `inventory_detail.html`, `volunteer_hours.html`, `volunteer_hours_form.html`, and `volunteer_entry_links.html`.
+- Verified all `163` Python tests pass.
+
+---
+
 ## [2026-11-26] — Aligned Order Explorer, New Order, Reporting, Request Links, and Login to unified template (TASK-808)
 
 **Type:** UI consistency

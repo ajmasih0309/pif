@@ -1,9 +1,10 @@
 {% extends 'base.html' %}
+{% from '_ui.html' import page_header %}
 {% from '_workshop_forms.html' import pages, duration with context %}
 {% block title %}Volunteer Hours - PIF Portal{% endblock %}
 {% block content %}
-<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3"><h1 class="chalk-header mb-0">Volunteer Hours</h1><a class="btn btn-dark" href="{{ url_for('workshop.hours_form') }}">＋ Log hours</a></div>
-<p>Record time independently of bikes and orders. <a href="{{ url_for('workshop.volunteers') }}">Manage volunteers</a> · <a href="{{ url_for('workshop.volunteer_links') }}">Volunteer Form Links</a>.</p>
+{{ page_header('Volunteer Hours', subtitle='Record time independently of bikes and orders.', action_href=url_for('workshop.hours_form'), action_label='＋ Log hours') }}
+<p><a href="{{ url_for('workshop.volunteers') }}">Manage volunteers</a> · <a href="{{ url_for('workshop.volunteer_links') }}">Volunteer Form Links</a></p>
 <form method="get" class="marker-panel row g-2 align-items-end">
     <div class="col-md-4"><label for="volunteer_id" class="form-label">Volunteer</label><select name="volunteer_id" id="volunteer_id" class="form-select"><option value="">All volunteers</option>{% for p in volunteers %}<option value="{{ p.volunteer_id }}" {% if filters.volunteer_id==p.volunteer_id|string %}selected{% endif %}>{{ p.volunteer_name }} #{{ p.volunteer_id }}</option>{% endfor %}</select></div>
     <div class="col-md-2"><label for="shop" class="form-label">Shop</label><select name="shop" id="shop" class="form-select"><option value="">All shops / unassigned</option>{% for s in shops %}<option value="{{ s.shop_name }}" {% if filters.shop==s.shop_name %}selected{% endif %}>{{ s.shop_location }}</option>{% endfor %}</select></div>

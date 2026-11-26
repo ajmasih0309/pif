@@ -1,10 +1,10 @@
 {% extends 'base.html' %}
+{% from '_ui.html' import page_header %}
 {% from '_workshop_forms.html' import error, volunteer_picker with context %}
 {% block title %}Record Finished Bike - PIF Portal{% endblock %}
 {% block content %}
 <div class="intake-page mx-auto">
-<h1 class="chalk-header">Record Finished Bike</h1>
-<p>Enter the tag once and select everyone who helped. Shop, finished time and at least one volunteer are required; other bike details are optional.</p>
+{{ page_header('Record Finished Bike', subtitle='Enter the tag once and select everyone who helped. Shop, finished time and at least one volunteer are required; other bike details are optional.', action_href=url_for('workshop.inventory'), action_label='Back to bikes') }}
 {% if duplicate %}<div class="alert alert-warning">This bike is already recorded. <a href="{{ url_for('workshop.bike',inventory_id=duplicate.inventory_id) }}">Open tag {{ duplicate.bike_tag }} to add contributions</a>.</div>{% endif %}
 <form method="post" data-workshop-form>
     <input type="hidden" name="form_token" value="{{ form_token }}">

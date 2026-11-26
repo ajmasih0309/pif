@@ -10,7 +10,7 @@
 
 | Check | Result |
 |---|---|
-| Python test suite (163 tests) | **PASS — 163 tests in 8.47 s** (re-verified 2026-11-26 after TASK-808 Order/Reporting/Login template alignment) |
+| Python test suite (163 tests) | **PASS — 163 tests in 9.07 s** (re-verified 2026-11-26 after TASK-809 Staff Workshop template alignment) |
 | Python syntax compilation | **PASS** |
 | `git diff --check` | **PASS** (no whitespace errors) |
 | Node order-action test (`test_order_actions.cjs`) | Configured in CI (`.github/workflows/ci.yml`) — runs on Node 20 runner |

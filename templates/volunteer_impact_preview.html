@@ -1,11 +1,10 @@
 {% extends 'base.html' %}
+{% from '_ui.html' import page_header %}
 {% block title %}Volunteer Summary - PIF Portal{% endblock %}
 {% block content %}
 <div class="mx-auto" style="max-width:600px">
-<h1 class="chalk-header">Volunteer Summary</h1>
-<p>{{ person.volunteer_name }} · #{{ person.volunteer_id }}</p>
+{{ page_header('Volunteer Summary', subtitle=person.volunteer_name ~ ' · #' ~ person.volunteer_id, action_href=url_for('workshop.volunteers'), action_label='Back to volunteers') }}
 <p class="small">Staff preview of the summary shown after a volunteer selects their name.</p>
 {% include '_volunteer_impact.html' %}
-<a href="{{ url_for('workshop.volunteers') }}" class="btn btn-outline-dark">Back to volunteers</a>
 </div>
 {% endblock %}

@@ -1,10 +1,10 @@
 {% extends 'base.html' %}
+{% from '_ui.html' import page_header %}
 {% from '_workshop_forms.html' import error with context %}
 {% block title %}{{ 'Correct' if row else 'Log' }} Volunteer Hours - PIF Portal{% endblock %}
 {% block content %}
 <div class="intake-page mx-auto" style="max-width: 900px;">
-<h1 class="chalk-header">{{ 'Correct' if row else 'Log' }} Volunteer Hours</h1>
-<p>Choose a volunteer, work date and hours worked. Shop, activity and notes are optional.</p>
+{{ page_header(('Correct' if row else 'Log') ~ ' Volunteer Hours', subtitle='Choose a volunteer, work date and hours worked. Shop, activity and notes are optional.', action_href=url_for('workshop.hours'), action_label='Back to hours') }}
 <form method="post" class="marker-panel row g-3" data-workshop-form>
     <input type="hidden" name="form_token" value="{{ form_token }}">
     {% if row %}<input type="hidden" name="version" value="{{ row.version }}">{% endif %}
