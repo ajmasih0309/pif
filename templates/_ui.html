@@ -1,0 +1,17 @@
+{# Reusable UI primitives for PIF Portal (TASK-807). #}
+
+{% macro page_header(title, subtitle='', action_href='', action_label='') %}
+<div class="portal-page-header">
+    <div>
+        <h1 class="portal-page-title">{{ title }}</h1>
+        {% if subtitle %}
+        <p class="portal-page-subtitle">{{ subtitle }}</p>
+        {% endif %}
+    </div>
+    {% if action_href and action_label %}
+    <div class="portal-page-actions">
+        <a class="btn btn-dark" href="{{ action_href }}">{{ action_label }}</a>
+    </div>
+    {% endif %}
+</div>
+{% endmacro %}

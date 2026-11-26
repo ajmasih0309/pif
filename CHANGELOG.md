@@ -6,6 +6,21 @@ Format: `## [date] — brief description`
 
 ---
 
+## [2026-11-26] — Unified page shell, CSS design tokens, and shared header primitive (TASK-807)
+
+**Type:** UI architecture / Design system
+**Git state at time of entry:** local `main`
+**Author:** Development agent (Antigravity) / Approved by Project Owner
+
+### Summary
+
+- Consolidated all inline `<style>` blocks from [templates/base.html](templates/base.html), [templates/index.html](templates/index.html), and [templates/explorer.html](templates/explorer.html) into [static/css/whiteboard.css](static/css/whiteboard.css) under `:root` design tokens (`--portal-font: 'Patrick Hand', cursive`, Order Desk surface/ink/border palette).
+- Added [templates/_ui.html](templates/_ui.html) with the reusable `page_header()` macro (left-aligned title, optional subtitle, right-aligned action button) and standardized `.portal-page-header`, `.chalk-header`, `.page-heading`, `.marker-panel`, `#orderTabs`, and DataTables styles.
+- Adopted `page_header()` in [templates/index.html](templates/index.html) and [templates/explorer.html](templates/explorer.html).
+- Verified 0 inline `<style>` blocks remain in `templates/` and all `163` Python tests pass.
+
+---
+
 ## [2026-11-25] — Added UI overhaul and unified template tasks (TASK-807–TASK-810)
 
 **Type:** Planning / UI consistency

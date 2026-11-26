@@ -3,37 +3,11 @@
 {% block title %}Order Explorer - PIF Portal{% endblock %}
 
 {% block content %}
+{% from '_ui.html' import page_header %}
 <!-- DataTables CSS for Bootstrap 5 -->
 <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='vendor/datatables/1.13.6/dataTables.bootstrap5.min.css') }}">
 
-<style>
-    /* Ensure DataTables inherits your chalkboard font and sizing */
-    .dataTables_wrapper {
-        font-family: 'Patrick Hand', cursive !important;
-        font-size: 1.15rem;
-    }
-    table.dataTable thead th {
-        background-color: #b3b3b3 !important;
-        color: #000;
-        border-bottom: 2px dashed #000 !important;
-    }
-    .dataTables_filter input {
-        border: 1px solid #000;
-        border-radius: 5px;
-    }
-    .explorer-table-controls .dataTables_info {
-        padding-top: 0;
-    }
-    .explorer-table-controls .pagination {
-        flex-wrap: wrap;
-    }
-</style>
-
-<div class="row mt-4 mb-3">
-    <div class="col-12">
-        <h1 class="chalk-header fw-bold text-center">Order Explorer</h1>
-    </div>
-</div>
+{{ page_header('Order Explorer', action_href=url_for('index'), action_label='Back to Order Desk') }}
 
 {% include '_order_filters.html' %}
 

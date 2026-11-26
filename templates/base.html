@@ -1,149 +1,67 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
+
     <!-- Logo for Portal-->
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='imgs/pif-logo.png') }}">
 
     <!-- Dynamic Title Block: Child templates can override this to set specific tab names -->
     <title>{% block title %}PIF Portal{% endblock %}</title>
-    
+
     <!-- Fonts & Bootstrap Configuration -->
     <link href="{{ url_for('static', filename='vendor/fonts/patrick-hand.css') }}" rel="stylesheet">
     <link href="{{ url_for('static', filename='vendor/bootstrap/5.3.0/bootstrap.min.css') }}" rel="stylesheet">
-    
-    <style>
-        /* =========================================
-           GLOBAL TYPOGRAPHY & LAYOUT
-           ========================================= */
-        body, input, select, textarea, button, .table {
-            font-family: 'Patrick Hand', cursive !important;
-            font-size: 1.15rem;
-            background-color: #f8f9fa; 
-        }
-        
-        .chalk-header {
-            font-size: 2.5rem;
-            border-bottom: 2px dashed #000;
-            padding-bottom: 10px;
-            margin-bottom: 20px;
-        }
-
-        /* =========================================
-           NAVIGATION STYLES
-           ========================================= */
-        .navbar-brand {
-            font-size: 2.2rem;
-            letter-spacing: 2px;
-        }
-
-        .nav-link {
-            transition: 0.2s ease-in-out;
-        }
-        
-        .nav-link:hover {
-            color: #000 !important;
-            transform: scale(1.05);
-            text-decoration: underline dashed 2px;
-        }
-
-        /* =========================================
-           FORM & COMPONENT STYLES
-           ========================================= */
-        .form-control, .form-select {
-            background-color: #e9ecef;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-
-        /* Customizing the Bootstrap Table */
-        .table th {
-            background-color: #ced4da !important;
-            font-weight: bold;
-            border: 1px solid #adb5bd;
-            font-size: 1.25rem;
-        }
-        
-        .table td {
-            border: 1px solid #adb5bd;
-            vertical-align: middle;
-        }
-
-        /* Bike Selector Card Styles */
-        .bike-card {
-            transition: transform 0.2s, box-shadow 0.2s;
-            cursor: pointer;
-            border: 2px solid #e9ecef;
-            border-radius: 12px;
-        }
-        
-        .bike-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-            border-color: #f0ad4e; /* Highlights orange on hover */
-        }
-        
-        .bike-card-title {
-            color: #f0ad4e; /* Orange brand color */
-            font-weight: bold;
-            font-size: 1.4rem;
-        }
-
-        /* footer customization */
-        .portal-footer {
-            text-align: center;
-            padding: 20px 10px;
-            font-size: 0.85rem;
-            color: #6c757d;
-            border-top: 1px solid #e9ecef;
-            margin-top: 40px;
-        }
-
-        .portal-footer p {
-            margin: 2px 0;
-        }
-
-        .portal-footer .sub-quote {
-            font-style: italic;
-            font-size: 0.78rem;
-            color: #8c959f;
-        }
-    </style>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/whiteboard.css') }}?v={{ app_version }}">
 </head>
+
 <body>
-    
+
     <nav class="navbar navbar-expand-xxl portal-nav mb-4" aria-label="Main navigation">
         <div class="container portal-shell {{ 'staff-nav' if session.get('username') and not requester_mode else '' }}">
             <a class="navbar-brand fw-bold text-dark" href="{{ '#' if requester_mode else url_for('index') }}">
-                <img src="{{ url_for('static', filename='imgs/pif-logo.png') }}" alt="" width="45" height="45"> PIF Portal
+                <img src="{{ url_for('static', filename='imgs/pif-logo.png') }}" alt="" width="45" height="45"> PIF
+                Portal
             </a>
             {% if session.get('username') and not requester_mode %}
-            <span class="portal-welcome" title="Welcome, {{ session.username }}">Welcome, <strong>{{ session.username }}</strong></span>
-            <button class="navbar-toggler border-dark" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
+            <span class="portal-welcome" title="Welcome, {{ session.username }}">Welcome, <strong>{{ session.username
+                    }}</strong></span>
+            <button class="navbar-toggler border-dark" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false"
+                aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto gap-2">
                     {% set order_pages = ['index', 'explorer', 'add', 'requester_links.manage'] %}
                     <li class="nav-item dropdown">
-                        <button class="nav-link dropdown-toggle {{ 'active' if request.endpoint in order_pages }}" type="button" data-bs-toggle="dropdown" aria-expanded="false">Orders</button>
+                        <button class="nav-link dropdown-toggle {{ 'active' if request.endpoint in order_pages }}"
+                            type="button" data-bs-toggle="dropdown" aria-expanded="false">Orders</button>
                         <ul class="dropdown-menu">
-                            {% for endpoint,label in [('index','Order Desk'),('explorer','Order Explorer'),('add','New Order'),('requester_links.manage','Request Form Links')] %}
-                            <li><a class="dropdown-item {{ 'active' if request.endpoint == endpoint }}" href="{{ url_for(endpoint) }}" {% if request.endpoint == endpoint %}aria-current="page"{% endif %}>{{ label }}</a></li>
+                            {% for endpoint,label in [('index','Order Desk'),('explorer','Order Explorer'),('add','New
+                            Order'),('requester_links.manage','Request Form Links')] %}
+                            <li><a class="dropdown-item {{ 'active' if request.endpoint == endpoint }}"
+                                    href="{{ url_for(endpoint) }}" {% if request.endpoint==endpoint
+                                    %}aria-current="page" {% endif %}>{{ label }}</a></li>
                             {% endfor %}
                         </ul>
                     </li>
                     <li class="nav-item dropdown">
-                        <button class="nav-link dropdown-toggle {{ 'active' if request.blueprint == 'workshop' or request.endpoint == 'dashboard' }}" type="button" data-bs-toggle="dropdown" aria-expanded="false">Workshop</button>
+                        <button
+                            class="nav-link dropdown-toggle {{ 'active' if request.blueprint == 'workshop' or request.endpoint == 'dashboard' }}"
+                            type="button" data-bs-toggle="dropdown" aria-expanded="false">Workshop</button>
                         <ul class="dropdown-menu">
                             {% for endpoint,label,family in [
-                                ('workshop.inventory','Finished Bikes',['workshop.inventory','workshop.new_bike','workshop.bike']),
-                                ('workshop.hours','Volunteer Hours',['workshop.hours','workshop.hours_form']),
-                                ('workshop.volunteers','Volunteers',['workshop.volunteers','workshop.edit_volunteer','workshop.volunteer_impact_preview']),
-                                ('workshop.volunteer_links','Volunteer Form Links',['workshop.volunteer_links']),
-                                ('dashboard','Reporting',['dashboard'])] %}
-                            <li><a class="dropdown-item {{ 'active' if request.endpoint in family }}" href="{{ url_for(endpoint) }}" {% if request.endpoint in family %}aria-current="{{ 'page' if request.endpoint == endpoint else 'location' }}"{% endif %}>{{ label }}</a></li>
+                            ('workshop.inventory','Finished
+                            Bikes',['workshop.inventory','workshop.new_bike','workshop.bike']),
+                            ('workshop.hours','Volunteer Hours',['workshop.hours','workshop.hours_form']),
+                            ('workshop.volunteers','Volunteers',['workshop.volunteers','workshop.edit_volunteer','workshop.volunteer_impact_preview']),
+                            ('workshop.volunteer_links','Volunteer Form Links',['workshop.volunteer_links']),
+                            ('dashboard','Reporting',['dashboard'])] %}
+                            <li><a class="dropdown-item {{ 'active' if request.endpoint in family }}"
+                                    href="{{ url_for(endpoint) }}" {% if request.endpoint in family
+                                    %}aria-current="{{ 'page' if request.endpoint == endpoint else 'location' }}" {%
+                                    endif %}>{{ label }}</a></li>
                             {% endfor %}
                         </ul>
                     </li>
@@ -161,28 +79,32 @@
 
     <!-- MAIN CONTENT AREA -->
     <main class="container portal-shell portal-content pb-4" id="main-content">
-        
+
         <!-- Global Flash Message Handler -->
         <!-- Placed here so ANY page can flash alerts without repeating code -->
         {% if not requester_mode %}
         {% with messages = get_flashed_messages(with_categories=true) %}
-            {% for category, message in messages %}
-            <div class="alert alert-{{ category if category in ['success','warning','danger','info'] else 'warning' }} border-dark mb-4" role="{{ 'alert' if category in ['danger','warning','message'] else 'status' }}">{{ message }}</div>
-            {% endfor %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category if category in ['success','warning','danger','info'] else 'warning' }} border-dark mb-4"
+            role="{{ 'alert' if category in ['danger','warning','message'] else 'status' }}">{{ message }}</div>
+        {% endfor %}
         {% endwith %}
         {% endif %}
 
         <!-- Child Templates Inject Content Here -->
         {% block content %}{% endblock %}
-        
+
     </main>
 
     <footer class="portal-footer">
-        <p><strong>PIF Portal</strong> <a class="footer-version" href="https://github.com/ajmasih0309/pif" target="_blank" rel="noopener noreferrer" aria-label="PIF Portal source on GitHub, {{ app_version }}">{{ app_version }}</a> <span aria-hidden="true">·</span> Built with love ❤️. Powered by Python.</p>
+        <p><strong>PIF Portal</strong> <a class="footer-version" href="https://github.com/ajmasih0309/pif"
+                target="_blank" rel="noopener noreferrer" aria-label="PIF Portal source on GitHub, {{ app_version }}">{{
+                app_version }}</a> <span aria-hidden="true">·</span> Built with love ❤️. Powered by Python.</p>
     </footer>
 
     <!-- Bootstrap JS Payload -->
     <script src="{{ url_for('static', filename='vendor/bootstrap/5.3.0/bootstrap.bundle.min.js') }}"></script>
-<script src="{{ url_for('static', filename='js/responsive_tables.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/responsive_tables.js') }}" defer></script>
 </body>
+
 </html>

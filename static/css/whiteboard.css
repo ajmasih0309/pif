@@ -1,5 +1,12 @@
-/* Sharpie whiteboard styles: high contrast, big targets, handwritten feeling. */
+/* Sharpie whiteboard design system: high contrast, big targets, handwritten feeling. */
 :root {
+    --portal-font: 'Patrick Hand', cursive;
+    --portal-bg: #f8f9fa;
+    --portal-surface: #ffffff;
+    --portal-surface-warm: #fffdf7;
+    --portal-surface-muted: #fafbfa;
+    --portal-ink: #202521;
+    --portal-ink-muted: #545c54;
     --whiteboard-edge: #202521;
     --paper-line: #c4c9c1;
     --highlighter-yellow: #fff3a8;
@@ -8,9 +15,141 @@
     --highlighter-orange: #ffe5d0;
 }
 
+/* Global typography & form/table baseline */
+body,
+input,
+select,
+textarea,
+button,
+.table {
+    font-family: var(--portal-font) !important;
+    font-size: 1.15rem;
+    background-color: var(--portal-bg);
+    color: var(--portal-ink);
+}
+
 /* Base button and field overrides for touch-friendly targets */
 .btn, .form-control, .form-select, .nav-link {
     min-height: 44px;
+}
+
+.form-control,
+.form-select {
+    background-color: #e9ecef;
+    border: 1px solid #adb5bd;
+    border-radius: 5px;
+}
+
+/* Unified Left-Aligned Page Header */
+.portal-page-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem 1rem;
+    padding-bottom: .6rem;
+    margin-top: .5rem;
+    margin-bottom: 1.15rem;
+    border-bottom: 2px solid var(--whiteboard-edge);
+}
+.portal-page-title {
+    font-size: 2.35rem;
+    font-weight: 700;
+    line-height: 1.1;
+    margin: 0;
+    color: var(--portal-ink);
+}
+.portal-page-subtitle {
+    margin: .2rem 0 0 0;
+    font-size: 1rem;
+    color: var(--portal-ink-muted);
+}
+.portal-page-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+    align-items: center;
+}
+
+/* Legacy heading aliases aligned to unified typography */
+.chalk-header,
+.page-heading {
+    font-size: 2.35rem;
+    font-weight: 700;
+    line-height: 1.1;
+    border-bottom: 2px solid var(--whiteboard-edge);
+    padding-bottom: .5rem;
+    margin-bottom: 1.15rem;
+    color: var(--portal-ink);
+}
+
+/* Shared whiteboard panel primitive */
+.marker-panel {
+    background: var(--portal-surface);
+    border: 1.5px solid #606860;
+    border-radius: .45rem;
+    padding: .9rem 1rem;
+}
+
+/* Shared Bootstrap Table styling */
+.table th {
+    background-color: #ced4da !important;
+    font-weight: bold;
+    border: 1px solid #adb5bd;
+    font-size: 1.2rem;
+}
+.table td {
+    border: 1px solid #adb5bd;
+    vertical-align: middle;
+}
+
+/* Bike Selector Card Styles */
+.bike-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+}
+.bike-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+    border-color: #f0ad4e;
+}
+.bike-card-title {
+    color: #f0ad4e;
+    font-weight: bold;
+    font-size: 1.4rem;
+}
+
+/* Portal Footer */
+.portal-footer {
+    text-align: center;
+    padding: 20px 10px;
+    font-size: 0.85rem;
+    color: #6c757d;
+    border-top: 1px solid #e9ecef;
+    margin-top: 40px;
+}
+.portal-footer p {
+    margin: 2px 0;
+}
+.portal-footer .sub-quote {
+    font-style: italic;
+    font-size: 0.78rem;
+    color: #8c959f;
+}
+
+/* Navigation: sticky, distinct shop indicator, clear active states */
+.navbar-brand {
+    font-size: 2.1rem;
+    letter-spacing: 1.5px;
+}
+.nav-link {
+    transition: 0.2s ease-in-out;
+}
+.nav-link:hover {
+    color: #000 !important;
+    text-decoration: underline dashed 2px;
 }
 
 /* Navigation: sticky, distinct shop indicator, clear active states */
@@ -531,4 +670,45 @@
     font-size: .95rem;
     color: #67501f;
     margin-top: .4rem;
+}
+
+/* Order Desk Tabs */
+#orderTabs .nav-link {
+    font-family: var(--portal-font);
+    font-size: 1.4rem;
+    border: 1px solid #000;
+    border-bottom: none;
+    margin-right: 2px;
+    opacity: 1;
+    transition: 0.2s;
+}
+#orderTabs .nav-link.active {
+    font-weight: bold;
+    box-shadow: inset 0 -4px 0 var(--whiteboard-edge);
+}
+#tab-open { background-color: #edf2ed; color: #202521 !important; }
+#tab-contacted { background-color: #e2eef3; color: #202521 !important; }
+#tab-completed { background-color: #e0eddf; color: #000 !important; }
+#tab-cancelled { background-color: #f4e4e4; color: #202521 !important; }
+#tab-all { background-color: #f2eddd; color: #000 !important; }
+
+/* Order Explorer / DataTables */
+.dataTables_wrapper {
+    font-family: var(--portal-font) !important;
+    font-size: 1.15rem;
+}
+table.dataTable thead th {
+    background-color: #ced4da !important;
+    color: #000;
+    border-bottom: 2px solid var(--whiteboard-edge) !important;
+}
+.dataTables_filter input {
+    border: 1px solid var(--whiteboard-edge);
+    border-radius: 5px;
+}
+.explorer-table-controls .dataTables_info {
+    padding-top: 0;
+}
+.explorer-table-controls .pagination {
+    flex-wrap: wrap;
 }

@@ -4,49 +4,7 @@
 {% block title %}Order Desk - PIF Portal{% endblock %}
 
 {% block content %}
-
-<style>
-    /* =========================================
-       TAB NAVIGATION STYLES
-       ========================================= */
-    .nav-tabs .nav-link {
-        font-family: 'Patrick Hand', cursive;
-        font-size: 1.5rem;
-        color: white !important;
-        border: 1px solid #000;
-        border-bottom: none;
-        margin-right: 2px;
-        opacity: 1;
-        transition: 0.3s;
-    }
-    .nav-tabs .nav-link.active { font-weight: bold; box-shadow: inset 0 -4px 0 #202521; }
-    
-    /* Individual Tab Colors */
-    #tab-open { background-color: #edf2ed; color: #202521 !important; }
-    #tab-contacted { background-color: #e2eef3; color: #202521 !important; }
-    #tab-completed { background-color: #e0eddf; color: black !important; }
-    #tab-cancelled { background-color: #f4e4e4; color: #202521 !important; }
-    #tab-all { background-color: #f2eddd; color: black !important; }
-
-    /* Order Desk Card List: 2 columns on tablet and desktop, 1 on mobile */
-    .desk-order-list {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr);
-        gap: 1rem;
-        align-items: start;
-        overflow: visible;
-    }
-    @media (min-width: 768px) {
-        .desk-order-list {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 1rem;
-        }
-    }
-    .desk-sections-row {
-        display: contents;
-    }
-    
-</style>
+{% from '_ui.html' import page_header %}
 
 <!-- =========================================
      JINJA MACROS (Code Reusability)
@@ -58,13 +16,9 @@
 <input type="hidden" name="return_page" value="{{ pagination.page }}">
 {% endmacro %}
 
-
 {% from '_order_cards.html' import order_cards with context %}
 
-<!-- PAGE HEADER -->
-<div class="mb-3 mt-3 pb-2 border-bottom border-dark">
-    <h1 class="chalk-header fw-bold mb-0 border-0 p-0">Order Desk</h1>
-</div>
+{{ page_header('Order Desk', action_href=url_for('add'), action_label='＋ New Order') }}
 
 {% include '_order_filters.html' %}
 
