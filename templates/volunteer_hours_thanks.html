@@ -1,9 +1,10 @@
 {% extends 'base.html' %}
+{% from '_ui.html' import page_header %}
 {% from '_workshop_forms.html' import duration %}
 {% block title %}Time saved · Pedal It Forward{% endblock %}
 {% block content %}
 <div class="mx-auto marker-panel" style="max-width:600px;">
-    <h1 class="chalk-header">Thanks, {{ receipt.volunteer_name }}!</h1>
+    {{ page_header('Thanks, ' ~ receipt.volunteer_name ~ '!') }}
     <p class="fs-4" role="status">Your {{ duration(receipt.minutes) }} is saved.</p>
     <p>{{ receipt.shop_location }} · {{ receipt.work_date }}</p>
     {% if impact %}{% include '_volunteer_impact.html' %}{% endif %}

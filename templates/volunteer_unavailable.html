@@ -1,3 +1,4 @@
 {% extends 'base.html' %}
+{% from '_ui.html' import page_header %}
 {% block title %}Volunteer hours · Pedal It Forward{% endblock %}
-{% block content %}<div class="marker-panel mx-auto" style="max-width:600px;"><h1 class="chalk-header">Volunteer entry isn't ready yet</h1><p>Please let staff know. They can help record your contribution.</p></div>{% endblock %}
+{% block content %}<div class="marker-panel mx-auto" style="max-width:600px;">{{ page_header("Volunteer entry isn't ready yet") }}<p>Please let staff know. They can help record your contribution.</p></div>{% endblock %}

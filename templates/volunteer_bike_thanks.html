@@ -1,8 +1,9 @@
 {% extends 'base.html' %}
+{% from '_ui.html' import page_header %}
 {% block title %}Bike contribution saved · Pedal It Forward{% endblock %}
 {% block content %}
 <div class="marker-panel mx-auto" style="max-width:600px;">
-    <h1 class="chalk-header">Thanks, {{ receipt.volunteer_name }}!</h1>
+    {{ page_header('Thanks, ' ~ receipt.volunteer_name ~ '!') }}
     <p class="fs-4" role="status">{{ 'Your contribution saved for' if receipt.existing else 'Finished bike saved:' }} tag {{ receipt.bike_tag }}.</p>
     <p>Your contribution is recorded. Bike shop: {{ receipt.shop_location }}.</p>
     {% if receipt.existing %}<p>The original bike details are unchanged.</p>{% endif %}

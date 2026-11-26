@@ -1,10 +1,10 @@
 {% extends 'base.html' %}
+{% from '_ui.html' import page_header %}
 {% from '_workshop_forms.html' import error with context %}
 {% block title %}Log your time · Pedal It Forward{% endblock %}
 {% block content %}
 <div class="volunteer-entry mx-auto" style="max-width: 600px;">
-    <h1 class="chalk-header">Log your time</h1>
-    <p class="fs-5">Thanks for lending a hand today.</p>
+    {{ page_header('Log your time', subtitle='Thanks for lending a hand today.') }}
     {% if errors %}<div class="alert alert-warning" role="alert">Your time has not been saved yet. Check the highlighted fields below.</div>{% endif %}
     {% if person %}
     <div class="marker-panel mb-3 d-flex flex-wrap align-items-center justify-content-between gap-2">

@@ -6,6 +6,20 @@ Format: `## [date] — brief description`
 
 ---
 
+## [2026-11-26] — Aligned Public Volunteer mobile-first pages to unified template (TASK-810)
+
+**Type:** UI consistency
+**Git state at time of entry:** local `main`
+**Author:** Development agent (Antigravity) / Approved by Project Owner
+
+### Summary
+
+- Applied `page_header()` from [templates/_ui.html](templates/_ui.html) across [templates/volunteer_log_hours.html](templates/volunteer_log_hours.html), [templates/volunteer_finished_bike.html](templates/volunteer_finished_bike.html), [templates/volunteer_hours_thanks.html](templates/volunteer_hours_thanks.html), [templates/volunteer_bike_thanks.html](templates/volunteer_bike_thanks.html), [templates/volunteer_unavailable.html](templates/volunteer_unavailable.html), and [templates/request_result.html](templates/request_result.html).
+- Preserved the no-login mobile-first ergonomics (`max-width: 600px`, touch targets) and zero-staff-navigation boundary.
+- Verified all `163` Python tests pass.
+
+---
+
 ## [2026-11-26] — Aligned Staff Workshop pages to unified template (TASK-809)
 
 **Type:** UI consistency
