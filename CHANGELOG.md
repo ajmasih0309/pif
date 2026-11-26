@@ -6,6 +6,18 @@ Format: `## [date] — brief description`
 
 ---
 
+## [2026-11-26] — Recorded DEC-005 & DEC-013 resolutions (public volunteer lookup & impact visibility)
+
+**Type:** Governance / Product contract decision
+**Git state at time of entry:** local `main`
+**Author:** Development agent (Antigravity) / Approved by Project Owner
+
+### Summary
+
+- Marked **`DEC-005` (`Q-005`)** and **`DEC-013` (`Q-019`)** ✅ Resolved in [TASKS.md](TASKS.md), [design/SPECIFICATION.md](design/SPECIFICATION.md), and [CURRENT_STATUS.md](CURRENT_STATUS.md): no-login public volunteer name selection and YTD impact summary display are approved as implemented.
+
+---
+
 ## [2026-11-26] — Volunteer reconciliation aliases & active DB link update (Post-TASK-616)
 
 **Type:** Data reconciliation / Migration script update

@@ -33,7 +33,7 @@ These are not code tasks. They block multiple downstream items and require the p
 | DEC-002 | Select WSGI server, reverse proxy, service manager (agent-assisted at deployment time) | TASK-101 |
 | DEC-003 | Confirm `SECRET_KEY` mandatory at startup; session rotation/revocation plan (⏸ On hold — planned for deployment phase) | TASK-201 |
 | DEC-004 | Staff account provisioning, password reset, disable/revocation procedures | ✅ Resolved: Owner confirms no rules enforced; staff creation/modification lifecycle skipped due to small, persistent headcount |
-| DEC-005 | Whether public volunteer attribution without authentication is acceptable for deployment | TASK-301 |
+| DEC-005 | Whether public volunteer attribution without authentication is acceptable for deployment | ✅ Resolved: Owner confirms no-login public volunteer name lookup & self-attribution is approved (`Q-005`) |
 | DEC-006 | Tag format for order completion: numeric-only or align with inventory text format | ✅ Resolved: Bike Tag is numeric-only; both `bike_inventory.bike_tag` and `orders.bike_tag` must share the same numeric data type (`TASK-401`) |
 | DEC-007 | UAT functional scenarios, acceptance checklist, Google Sheets switch-over date | TASK-501 |
 | DEC-008 | Request-time DDL vs. explicit versioned migrations | ✅ Resolved: Follow best-practice versioned schema maintenance & startup readiness check (unblocks `TASK-601`, `TASK-602`, `TASK-604`, `TASK-605`) |
@@ -41,7 +41,7 @@ These are not code tasks. They block multiple downstream items and require the p
 | DEC-010 | Confirm age 1–80 and phone normalization as approved intake requirements | ✅ Resolved: Age 1–80 and phone normalization approved (plain 10-digit DB storage, `(123) 456-7890` web display) |
 | DEC-011 | Confirm 7-day / 28-day pickup windows still correct | ✅ Resolved: 7-day Public / 28-day Pedal Partner confirmed active |
 | DEC-012 | Confirm approved layout: "Desktop unchanged" or unified two-column from 768px | ✅ Resolved: Owner approved Order Desk redesign displaying independent order cards with responsive two-column recipient layout stacking on mobile |
-| DEC-013 | Confirm volunteer impact aggregate visibility rules | TASK-302 |
+| DEC-013 | Confirm volunteer impact aggregate visibility rules | ✅ Resolved: Owner confirms displaying volunteer YTD hours/impact summary after name selection is approved (`Q-019`) |
 | DEC-014 | CDN assets: pin with integrity metadata, or self-host | ✅ Resolved: Owner selects self-hosting vendor assets (`TASK-106`) |
 | DEC-015 | Backup retention, RPO/RTO, restore-test cadence | TASK-102 |
 | DEC-016 | Privacy/retention rules for all stored personal data | TASK-801 |
@@ -155,5 +155,5 @@ These are not code tasks. They block multiple downstream items and require the p
 | TASK-D04 | Order header / durable request identity | On hold per SPEC Q-014 and ARCH PA-009. Owner confirms not currently needed. |
 | TASK-D05 | Tag format unification (order completion ↔ inventory) | ✅ Moved to `TASK-401` per `DEC-006` (2026-11-25): numeric-only shared data type approved. |
 | TASK-D06 | Staff role model beyond one-tier | On hold per O-002. Revisit only if operational needs change. |
-| TASK-D07 | Public volunteer authentication (PIN / QR / sign-in) | On hold per Q-005. Must not add or reject without owner decision. |
+| TASK-D07 | Public volunteer authentication (PIN / QR / sign-in) | ✅ Closed per `DEC-005` (2026-11-26): owner confirms no-login name selection is approved; no PIN/QR auth needed. |
 | TASK-D08 | Reintroduce removed prototypes (Streamlit, legacy import/setup scripts) | Do not reintroduce without specific requirement and owner approval. |
