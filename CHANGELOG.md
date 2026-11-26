@@ -6,6 +6,20 @@ Format: `## [date] — brief description`
 
 ---
 
+## [2026-11-26] — Volunteer reconciliation aliases & active DB link update (Post-TASK-616)
+
+**Type:** Data reconciliation / Migration script update
+**Git state at time of entry:** local `main`
+**Author:** Development agent (Antigravity) / Approved by Project Owner
+
+### Summary
+
+- Updated `NAME_ALIASES` in [scripts/migrate_bike_inventory.py](scripts/migrate_bike_inventory.py) with owner-approved mappings (`joef` / `joefeagin` → `joe feagin`, `kenny` → `kenny w`).
+- Linked `2` unlinked `Joefeagin` contribution rows in `data/processed/pif.db` to `Joe Feagin` (`volunteer_id=384`) with WAL-safe backup (`backups/pif-before-volunteer-reconcile-20261126T075204Z.db`), `0` FK errors, and `integrity_check = ok`.
+- Kept **John**, **Rob**, **Charlie**, **Chris**, and **Thomas** open for staff disambiguation in [design/volunteer-reconciliation-2025-2026.md](design/volunteer-reconciliation-2025-2026.md).
+
+---
+
 ## [2026-11-26] — Aligned Public Volunteer mobile-first pages to unified template (TASK-810)
 
 **Type:** UI consistency

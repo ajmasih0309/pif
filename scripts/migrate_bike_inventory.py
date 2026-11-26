@@ -93,6 +93,9 @@ NAME_ALIASES = {
     "charlie miller": "charles miller",
     "charlse miller": "charles miller",
     "marty h": "marty heyne",
+    "joef": "joe feagin",
+    "joefeagin": "joe feagin",
+    "kenny": "kenny w",
 }
 
 ORG_WORDS = {

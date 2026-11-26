@@ -32,6 +32,8 @@ The following high-confidence name variations have been mapped to their correspo
 | `Stu G-J` / `Stew G-J` | `Stu G` | 1 | Registered time-clock profile |
 | `Charlie Miller` / `Charlse Miller` | `Charles Miller` | 81 | Registered time-clock profile |
 | `Marty H` | `Marty Heyne` | 1 | Registered time-clock profile |
+| `Joef` / `Joefeagin` | `Joe Feagin` | 384 | Owner-approved 2026-11-26 (`Joefeagin` linked in `pif.db`) |
+| `Kenny` | `Kenny W` | 33 | Owner-approved 2026-11-26 in `NAME_ALIASES` (`pif.db` retains existing `Kenny` #97 profile) |
 
 ---
 
@@ -61,20 +63,20 @@ The following entries occurred in the 2025–2026 window and were retained with 
 
 ### 4.1 Potential Nicknames & Single Names
 
-- [ ] **Kenny** (87 bikes) — Potential candidate: `Kenny W` (Volunteer ID 45) or new profile?
+- [x] **Kenny** (87 bikes) — Owner-approved mapping to `Kenny W` in `NAME_ALIASES` (existing `Kenny` #97 profile retained in `pif.db`).
 - [ ] **Justin** (45 bikes) — Single name; frequent contributor across Bentonville and Springdale.
-- [ ] **Joef** / **Joefeagin** (16 bikes combined) — Probable match to `Joe Feagin` (Volunteer ID 384).
+- [x] **Joef** / **Joefeagin** (16 bikes combined) — Owner-approved match to `Joe Feagin` (`volunteer_id=384`; unlinked `Joefeagin` rows linked in `pif.db`).
 - [ ] **RC** (20 bikes) — Mononym / initials.
 - [ ] **Cory** (16 bikes) — Single name.
-- [ ] **John** (15 bikes) — Multiple Johns in database; requires staff disambiguation.
+- [ ] **John** (15 bikes) — **Kept open for staff** (owner-confirmed 2026-11-26).
 - [ ] **Asher** (13 bikes) — Single name at Bentonville.
 - [ ] **Isaac** (11 bikes) — Single name.
-- [ ] **Rob** (11 bikes) — Potential candidate: `Rob M` (Volunteer ID 17) or `Rob W` (Volunteer ID 48).
-- [ ] **Charlie** (8 bikes) — Probable match to `Charles Miller` (Volunteer ID 81) or `Charlie Grant` (Volunteer ID 489).
-- [ ] **Chris** (7 bikes) — Multiple Chrises in database.
+- [ ] **Rob** (11 bikes) — **Kept open for staff** (`Rob M` #17 vs. `Rob W` #48; owner-confirmed 2026-11-26).
+- [ ] **Charlie** (8 bikes) — **Kept open for staff** (`Charles Miller` #81 vs. `Charlie Grant` #489; owner-confirmed 2026-11-26).
+- [ ] **Chris** (7 bikes) — **Kept open for staff** (owner-confirmed 2026-11-26).
 - [ ] **Missy** (7 bikes) — Single name.
 - [ ] **Sam** (5 bikes) — Single name.
-- [ ] **Thomas** (5 bikes) — Probable match to `Thomas S` or `Thomas Barnard` (Volunteer ID 197).
+- [ ] **Thomas** (5 bikes) — **Kept open for staff** (`Thomas S` vs. `Thomas Barnard` #197; owner-confirmed 2026-11-26).
 - [ ] **Dalton** (5 bikes) — Single name.
 - [ ] **Hunter** (5 bikes) — Single name.
 
