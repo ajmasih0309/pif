@@ -6,6 +6,19 @@ Format: `## [date] — brief description`
 
 ---
 
+## [2026-11-26] — Recorded DEC-009 / TASK-701 email trigger and approval gate policy
+
+**Type:** Governance / Operations policy
+**Git state at time of entry:** local `main`
+**Author:** Development agent (Antigravity) / Approved by Project Owner
+
+### Summary
+
+- Marked **`DEC-009` (`Q-010`)** ✅ Resolved and **`TASK-701`** ✅ Complete in [TASKS.md](TASKS.md), [design/SPECIFICATION.md](design/SPECIFICATION.md), and [CURRENT_STATUS.md](CURRENT_STATUS.md).
+- Documented approved email triggers (order create, Contacted, 24h-before-deadline reminder, optional completion) and live-delivery gate (after full app testing and `EMAIL_MODE=test` verification in `TASK-703`).
+
+---
+
 ## [2026-11-26] — Recorded DEC-005 & DEC-013 resolutions (public volunteer lookup & impact visibility)
 
 **Type:** Governance / Product contract decision

@@ -37,7 +37,7 @@ These are not code tasks. They block multiple downstream items and require the p
 | DEC-006 | Tag format for order completion: numeric-only or align with inventory text format | ✅ Resolved: Bike Tag is numeric-only; both `bike_inventory.bike_tag` and `orders.bike_tag` must share the same numeric data type (`TASK-401`) |
 | DEC-007 | UAT functional scenarios, acceptance checklist, Google Sheets switch-over date | TASK-501 |
 | DEC-008 | Request-time DDL vs. explicit versioned migrations | ✅ Resolved: Follow best-practice versioned schema maintenance & startup readiness check (unblocks `TASK-601`, `TASK-602`, `TASK-604`, `TASK-605`) |
-| DEC-009 | SMTP sender, test-recipient policy, preview retention, approval gate | TASK-701 |
+| DEC-009 | SMTP sender, test-recipient policy, preview retention, approval gate | ✅ Resolved: Triggers confirmed (create, Contacted, 1-day-before reminder, optional completion); move to live after app testing & staging `EMAIL_MODE=test` verification (`TASK-701`) |
 | DEC-010 | Confirm age 1–80 and phone normalization as approved intake requirements | ✅ Resolved: Age 1–80 and phone normalization approved (plain 10-digit DB storage, `(123) 456-7890` web display) |
 | DEC-011 | Confirm 7-day / 28-day pickup windows still correct | ✅ Resolved: 7-day Public / 28-day Pedal Partner confirmed active |
 | DEC-012 | Confirm approved layout: "Desktop unchanged" or unified two-column from 768px | ✅ Resolved: Owner approved Order Desk redesign displaying independent order cards with responsive two-column recipient layout stacking on mobile |
@@ -112,9 +112,9 @@ These are not code tasks. They block multiple downstream items and require the p
 
 | ID | Task | Status | Blocking | SPEC/PART ref | Notes |
 |---|---|---|---|---|---|
-| TASK-701 | Define and document SMTP sender, test-recipient policy, preview retention, approval gate | 🔴 | DEC-009 | PART-002 | No live delivery until all gates approved |
-| TASK-702 | Implement single-owner scheduler with durable claim, idempotent delivery, retry bounds, monitoring | 🔴 | TASK-205, TASK-701 | PART-001 | Must not start until TASK-205 and TASK-701 complete |
-| TASK-703 | Verify live SMTP delivery in staging environment with test-recipient | 🔴 | TASK-701 | PART-002 | Requires approved sender and test policy |
+| TASK-701 | Define and document SMTP sender, test-recipient policy, preview retention, approval gate | ✅ | None | PART-002 | `DEC-009` resolved 2026-11-26: SMTP sender & test inbox configured; triggers (create, Contacted, 24h reminder, optional completion) documented; live delivery gated on app testing + `TASK-703` |
+| TASK-702 | Implement single-owner scheduler with durable claim, idempotent delivery, retry bounds, monitoring | 🔴 | TASK-205 | PART-001 | `send_due_reminders()` + `pickup_reminder_delivery` already implemented; needs single-owner runner (`TASK-205`) |
+| TASK-703 | Verify live SMTP delivery in staging environment with test-recipient | 🟡 | None | PART-002 | `TASK-701` complete; ready for staging test with `EMAIL_MODE=test` when ready |
 
 ---
 
