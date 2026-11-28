@@ -1,6 +1,6 @@
 # VERIFICATION.md — PIF Portal Evidence Register
 
-**Updated:** 2026-11-23 (re-verified during baseline establishment task)
+**Updated:** 2026-11-28 (167/167 Python tests passing; SMTP test-mode & active DB v3 verified)
 **Baseline:** local `main` at `029a613` | `origin/main` at `00c864b`
 
 This document records what has been verified, by what method, and what remains unverified. "Verified" means direct evidence was obtained. It does not mean production readiness or owner approval.

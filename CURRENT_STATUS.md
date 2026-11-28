@@ -1,8 +1,8 @@
 # CURRENT_STATUS.md — PIF Portal
 
-**Status date:** 2026-11-23 (re-verified 2026-11-23; full code audit completed 2026-11-23)
-**Git baseline:** local `main` at `029a613` | `origin/main` at `00c864b`
-**Phase:** Development baseline established. SPECIFICATION.md and ARCHITECTURE.md **approved by owner** 2026-11-23.
+**Status date:** 2026-11-28 (167/167 tests passing; pre-production hardening & SMTP test-mode verified)
+**Git baseline:** local `main` ahead of `origin/main` (`00c864b`)
+**Phase:** Pre-UAT / pre-production hardening complete. SPECIFICATION.md and ARCHITECTURE.md **approved by owner** 2026-11-23.
 
 ---
 

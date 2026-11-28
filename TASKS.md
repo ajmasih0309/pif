@@ -1,6 +1,6 @@
 # TASKS.md — PIF Portal Outstanding Work
 
-**Updated:** 2026-11-23 (re-verified during baseline establishment task)
+**Updated:** 2026-11-28 (synchronized through pre-production hardening, UI overhaul, and SMTP test verification)
 **Rules:**
 - Do not start a task blocked by an open owner decision (see [CURRENT_STATUS.md](CURRENT_STATUS.md)).
 - Do not mark a task complete without verification evidence (test, audit, or owner sign-off).
