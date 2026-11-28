@@ -63,13 +63,13 @@ These are not code tasks. They block multiple downstream items and require the p
 
 | ID | Task | Status | Blocking | SPEC/DEBT ref | Notes |
 |---|---|---|---|---|---|
-| TASK-201 | Require `SECRET_KEY` from env; fail startup without it; remove `loremipsum` fallback | 🔴 | DEC-003 | DEBT-002 | Add startup validation; document rotation procedure |
+| TASK-201 | Require `SECRET_KEY` from env; fail startup without it; remove `loremipsum` fallback | ✅ | None | DEBT-002 | `check_startup_readiness(require_secret=True)` in `app.py` / `wsgi.py` fails fast in production (`PIF_ENV=production`) if `SECRET_KEY` is missing, `'loremipsum'`, or `< 16` chars |
 | TASK-202 | Add login CSRF token and rate limiting; convert logout to POST with CSRF | ✅ | None | DEBT-004, DEBT-005 | Implemented in `app.py`, `utils.py` (`LoginRateLimiter`), `login.html`, `base.html`; 4 regression tests in `tests/test_auth_security.py` |
-| TASK-203 | Disable `debug=True` in production entry point; add WSGI entry point | 🔴 | DEC-002 | DEBT-001 | Separate `app.py` dev runner from production WSGI entry |
+| TASK-203 | Disable `debug=True` in production entry point; add WSGI entry point | ✅ | None | DEBT-001 | Added `wsgi.py` (`application = app`, `app.debug = False`); `app.py` dev runner separated under `if __name__ == '__main__':` |
 | TASK-204 | Centralize SQLite connection creation; enable `PRAGMA foreign_keys=ON` on all connections | ⏸ | None | DEBT-007 | Deferred to deployment/migration phase per owner decision |
-| TASK-205 | Assign single scheduler owner; remove import-time APScheduler startup | 🔴 | DEC-002 | DEBT-010 | Production process model must be decided first |
-| TASK-206 | Add global session cookie security config (Secure, HttpOnly, SameSite) and security headers | 🔴 | DEC-001, DEC-002 | DEBT-013 | Requires HTTPS proxy knowledge |
-| TASK-207 | Define and document trusted reverse-proxy forwarding header policy | 🔴 | DEC-001, DEC-002 | DEBT-014 | Currently trusts `X-Forwarded-For` without defined proxy boundary |
+| TASK-205 | Assign single scheduler owner; remove import-time APScheduler startup | ✅ | None | DEBT-010 | Removed import-time `scheduler.start()` from `app.py` (dev-only under `__main__`); added `scripts/send_reminders.py` for single-owner cron/systemd timer execution |
+| TASK-206 | Add global session cookie security config (Secure, HttpOnly, SameSite) and security headers | ✅ | None | DEBT-013 | Configured `SESSION_COOKIE_HTTPONLY`, `SESSION_COOKIE_SAMESITE='Lax'`, `SESSION_COOKIE_SECURE` (env-controlled), and `add_security_headers` in `app.py` |
+| TASK-207 | Define and document trusted reverse-proxy forwarding header policy | ✅ | None | DEBT-014 | Added `TRUSTED_PROXY_HOPS` `ProxyFix` boundary in `app.py`; `_client_ip()` uses `request.remote_addr` instead of untrusted `X-Forwarded-For` |
 
 ---
 
@@ -113,7 +113,7 @@ These are not code tasks. They block multiple downstream items and require the p
 | ID | Task | Status | Blocking | SPEC/PART ref | Notes |
 |---|---|---|---|---|---|
 | TASK-701 | Define and document SMTP sender, test-recipient policy, preview retention, approval gate | ✅ | None | PART-002 | `DEC-009` resolved 2026-11-26: SMTP sender & test inbox configured; triggers (create, Contacted, 24h reminder, optional completion) documented; live delivery gated on app testing + `TASK-703` |
-| TASK-702 | Implement single-owner scheduler with durable claim, idempotent delivery, retry bounds, monitoring | 🔴 | TASK-205 | PART-001 | `send_due_reminders()` + `pickup_reminder_delivery` already implemented; needs single-owner runner (`TASK-205`) |
+| TASK-702 | Implement single-owner scheduler with durable claim, idempotent delivery, retry bounds, monitoring | ✅ | None | PART-001 | Implemented `scripts/send_reminders.py` calling idempotent `send_due_reminders()` (`pickup_reminder_delivery` claim + 30m retry); ready for cron/systemd timer |
 | TASK-703 | Verify live SMTP delivery in staging environment with test-recipient | ✅ | None | PART-002 | Verified 2026-11-28 with `EMAIL_MODE=test` and `EMAIL_LIVE_ENABLED=false`: all 3 templates (`order_received`, `pickup_ready`, `pickup_reminder`) delivered over STARTTLS to `MAIL_TEST_RECIPIENT` (`status='test'`) |
 
 ---

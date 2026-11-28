@@ -6,6 +6,22 @@ Format: `## [date] — brief description`
 
 ---
 
+## [2026-11-28] — Pre-production code hardening (TASK-201, TASK-203, TASK-205, TASK-206, TASK-207, TASK-702)
+
+**Type:** Security / Production readiness
+**Git state at time of entry:** local `main`
+**Author:** Development agent (Antigravity) / Approved by Project Owner
+
+### Summary
+
+- **WSGI Entry Point (`TASK-203`):** Added [wsgi.py](wsgi.py) (`application = app`, `app.debug = False`) separating production serving from [app.py](app.py)'s dev server.
+- **Mandatory `SECRET_KEY` (`TASK-201`):** Updated `check_startup_readiness(require_secret=...)` in [app.py](app.py) to reject missing, default `'loremipsum'`, or `< 16`-char secrets in production (`PIF_ENV=production` / `wsgi.py`).
+- **Single-Owner Reminder Runner (`TASK-205`, `TASK-702`):** Moved `scheduler.start()` out of module import time (dev-only under `__main__`) and added [scripts/send_reminders.py](scripts/send_reminders.py) for cron/systemd timer execution.
+- **Cookies, Security Headers & Proxy Trust (`TASK-206`, `TASK-207`):** Enforced `SESSION_COOKIE_HTTPONLY`, `SESSION_COOKIE_SAMESITE='Lax'`, env-gated `SESSION_COOKIE_SECURE`, `add_security_headers` (`X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`), and `TRUSTED_PROXY_HOPS` `ProxyFix` (stopping untrusted `X-Forwarded-For` trust).
+- **Tests:** Added 4 hardening tests in [tests/test_hardening.py](tests/test_hardening.py); all `167` Python tests pass.
+
+---
+
 ## [2026-11-28] — Verified SMTP delivery in EMAIL_MODE=test to test recipient (TASK-703)
 
 **Type:** Verification / Operations (`PART-002`)

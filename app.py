@@ -12,6 +12,7 @@ from functools import wraps
 import subprocess
 
 from flask import Flask, render_template, request, redirect, url_for, session, flash, abort
+from werkzeug.middleware.proxy_fix import ProxyFix
 from werkzeug.security import check_password_hash
 from flask_apscheduler import APScheduler
 from dotenv import load_dotenv
@@ -37,8 +38,17 @@ from migrations import verify_schema_ready
 # APP CONFIGURATION & SCHEDULER
 # =============================================================================
 app = Flask(__name__)
-app.secret_key = os.getenv('SECRET_KEY', 'loremipsum')
+_DEV_FALLBACK_SECRET = 'loremipsum'
+app.secret_key = os.getenv('SECRET_KEY') or _DEV_FALLBACK_SECRET
 app.config['DB_PATH'] = os.getenv('DB_PATH', 'data/processed/pif.db')
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+app.config['SESSION_COOKIE_SECURE'] = os.getenv('SESSION_COOKIE_SECURE', '').strip().lower() == 'true'
+app.config['TRUSTED_PROXY_HOPS'] = max(0, int(os.getenv('TRUSTED_PROXY_HOPS', '0') or '0'))
+if app.config['TRUSTED_PROXY_HOPS'] > 0:
+    hops = app.config['TRUSTED_PROXY_HOPS']
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=hops, x_proto=hops, x_host=hops, x_prefix=hops)
+
 for setting in ('MAIL_USERNAME', 'MAIL_PASSWORD', 'MAIL_SERVER', 'MAIL_PORT',
                 'MAIL_DEFAULT_SENDER', 'MAIL_TEST_RECIPIENT', 'EMAIL_MODE',
                 'EMAIL_PREVIEW_DIR', 'EMAIL_LIVE_ENABLED', 'EMAIL_REMINDERS_ENABLED'):
@@ -53,7 +63,15 @@ app.register_blueprint(volunteer_entry)
 
 scheduler = APScheduler()
 scheduler.init_app(app)
-scheduler.start()
+
+
+@app.after_request
+def add_security_headers(response):
+    response.headers.setdefault('X-Content-Type-Options', 'nosniff')
+    response.headers.setdefault('X-Frame-Options', 'SAMEORIGIN')
+    response.headers.setdefault('Referrer-Policy', 'same-origin')
+    response.headers.setdefault('Permissions-Policy', 'geolocation=(), microphone=(), camera=()')
+    return response
 
 # =============================================================================
 # AUTHENTICATION
@@ -74,8 +92,7 @@ login_limiter = LoginRateLimiter()
 
 
 def _client_ip():
-    ip_address = request.headers.get('X-Forwarded-For', request.remote_addr)
-    return ip_address.split(',')[0].strip() if ip_address else 'unknown'
+    return request.remote_addr or 'unknown'
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -451,14 +468,23 @@ def inject_global_vars():
     )
 
 
-def check_startup_readiness():
-    """Verify database schema is at the expected version before serving traffic."""
+def check_startup_readiness(require_secret=None):
+    """Verify SECRET_KEY (in production) and database schema version before serving traffic."""
+    if require_secret is None:
+        require_secret = os.getenv('PIF_ENV', '').strip().lower() == 'production'
+    if require_secret:
+        key = app.secret_key
+        if not key or key == _DEV_FALLBACK_SECRET or len(str(key)) < 16:
+            raise RuntimeError(
+                'Production startup blocked: set a strong SECRET_KEY (>= 16 chars) in environment/.env.'
+            )
     return verify_schema_ready(app.config['DB_PATH'])
 
 
 # =============================================================================
-# EXECUTION
+# EXECUTION (development server only; production uses wsgi.py)
 # =============================================================================
 if __name__ == '__main__':
     check_startup_readiness()
+    scheduler.start()
     app.run(debug=True, port=5003)

@@ -10,7 +10,7 @@
 
 | Check | Result |
 |---|---|
-| Python test suite (163 tests) | **PASS — 163 tests in 8.60 s** (re-verified 2026-11-26 after TASK-810 Public Volunteer mobile-first template alignment) |
+| Python test suite (167 tests) | **PASS — 167 tests in 8.80 s** (re-verified 2026-11-28 after pre-production hardening TASK-201, 203, 205–207, 702) |
 | Python syntax compilation | **PASS** |
 | `git diff --check` | **PASS** (no whitespace errors) |
 | Node order-action test (`test_order_actions.cjs`) | Configured in CI (`.github/workflows/ci.yml`) — runs on Node 20 runner |
@@ -55,7 +55,7 @@ EMAIL_REMINDERS_ENABLED=false DB_PATH=/tmp/pif-baseline-test.db \
 | Volunteer-hours reporting | ❌ Not implemented | Documented as planned; no route/template found |
 | Workshop-activity reporting | ❌ Not implemented | Documented as planned; no route/template found |
 | QR artwork / production-reachable URLs | ❌ Not implemented | Waiting on stable production address |
-| Production WSGI configuration | ❌ Not implemented | No WSGI entry point or service definition (DEC-001/002 pending) |
+| Production WSGI configuration | ✅ Implemented (`wsgi.py`, TASK-203) | `wsgi:application` with `debug=False`, startup schema & secret checks; host service unit (`TASK-101`) pending deployment |
 | CI Workflow (GitHub Actions) | ✅ Complete (TASK-105) | `.github/workflows/ci.yml` runs Python 3.12 suite, compilation, safe email flags, and Node 20 runner |
 | Operational runbook | ❌ Not implemented | No documented operator procedures |
 
@@ -123,11 +123,7 @@ See [design/SPECIFICATION.md §7](design/SPECIFICATION.md) for full debt registe
 
 | ID | Defect | Risk |
 |---|---|---|
-| DEBT-001 | `app.py` runs `debug=True` on port 5003 | Must not reach production |
-| DEBT-002 | `SECRET_KEY` falls back to literal `loremipsum` | Unsafe session secret |
-| DEBT-007 | `foreign_keys=ON` only on workshop/CLI connections | Inconsistent integrity enforcement |
-| DEBT-010 | Scheduler starts at app import | Multi-process risk of duplicate schedulers |
-| DEBT-013 | No global session-cookie security, CSP, or proxy trust config | Security boundary undefined |
+| DEBT-007 | `foreign_keys=ON` only on workshop/CLI connections | Inconsistent integrity enforcement (deferred to `TASK-204`) |
 
 ---
 
