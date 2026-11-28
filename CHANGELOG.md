@@ -6,6 +6,20 @@ Format: `## [date] — brief description`
 
 ---
 
+## [2026-11-28] — Verified SMTP delivery in EMAIL_MODE=test to test recipient (TASK-703)
+
+**Type:** Verification / Operations (`PART-002`)
+**Git state at time of entry:** local `main`
+**Author:** Development agent (Antigravity) / Approved by Project Owner
+
+### Summary
+
+- Executed an end-to-end SMTP STARTTLS delivery check with `EMAIL_MODE=test` and `EMAIL_LIVE_ENABLED=false` for all 3 email templates (`order_received`, `pickup_ready`, `pickup_reminder`).
+- All 3 messages delivered cleanly to `MAIL_TEST_RECIPIENT` (`status='test'`), with no credentials or recipient addresses logged.
+- Marked **TASK-703** ✅ Complete in [TASKS.md](TASKS.md) and updated [CURRENT_STATUS.md](CURRENT_STATUS.md) and [VERIFICATION.md](VERIFICATION.md).
+
+---
+
 ## [2026-11-26] — Recorded DEC-009 / TASK-701 email trigger and approval gate policy
 
 **Type:** Governance / Operations policy

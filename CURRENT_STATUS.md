@@ -15,7 +15,7 @@
 | `git diff --check` | **PASS** (no whitespace errors) |
 | Node order-action test (`test_order_actions.cjs`) | Configured in CI (`.github/workflows/ci.yml`) — runs on Node 20 runner |
 | CI workflow (TASK-105) | **CONFIGURED** — `.github/workflows/ci.yml` (Python 3.12, syntax compilation, safe email overrides, Node test, whitespace check) |
-| Live SMTP | **NOT TESTED** — not in scope |
+| Live SMTP | **VERIFIED IN TEST MODE (`TASK-703`)** — `EMAIL_MODE=test` delivered all 3 templates to `MAIL_TEST_RECIPIENT`; `EMAIL_LIVE_ENABLED` remains `false` |
 | Scheduler production execution | **NOT TESTED** — not in scope |
 | Browser / device / accessibility | **NOT TESTED** — not in scope |
 | Active database schema/data | **INSPECTED (read-only, TASK-602)** — `integrity_check = ok`, `0` FK errors, `0` `orders` orphans; findings in `design/database.md` |
@@ -40,7 +40,7 @@ EMAIL_REMINDERS_ENABLED=false DB_PATH=/tmp/pif-baseline-test.db \
 | Order transitions (Open → Contacted → Completed / Cancelled → Open) | ✅ Implemented and tested | Workflow and policy tests |
 | Pickup policy (7-day Public, 28-day Pedal Partner, no Specialty deadline) | ✅ Implemented and tested | Policy tests |
 | Pickup reminders (APScheduler 15-min job) | ⚠️ Partial — operational behavior unverified | In-process scheduler not production-proven |
-| Email (preview / disabled / test / live gates) | ⚠️ Partial — live delivery unverified | Tests use mocks or disabled mode |
+| Email (preview / disabled / test / live gates) | ✅ Test-mode SMTP verified (`TASK-703`) | `EMAIL_MODE=test` STARTTLS delivery verified for all 3 templates; live delivery remains gated (`EMAIL_LIVE_ENABLED=false`) |
 | Requester links (expiring, one-use, hashed) | ⚠️ Partial — public reachability deployment-dependent | Intake tests pass |
 | Bike Distribution reporting | ✅ Implemented and tested | 7 dashboard regressions |
 | Finished Bike Inventory (staff + public self-attribution) | ✅ Complete (TASK-616, TASK-617) | 14,995 bikes, 15,461 contributions, 167 new volunteers active in `pif.db`; 0 FK errors |

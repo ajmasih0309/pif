@@ -114,7 +114,7 @@ These are not code tasks. They block multiple downstream items and require the p
 |---|---|---|---|---|---|
 | TASK-701 | Define and document SMTP sender, test-recipient policy, preview retention, approval gate | ✅ | None | PART-002 | `DEC-009` resolved 2026-11-26: SMTP sender & test inbox configured; triggers (create, Contacted, 24h reminder, optional completion) documented; live delivery gated on app testing + `TASK-703` |
 | TASK-702 | Implement single-owner scheduler with durable claim, idempotent delivery, retry bounds, monitoring | 🔴 | TASK-205 | PART-001 | `send_due_reminders()` + `pickup_reminder_delivery` already implemented; needs single-owner runner (`TASK-205`) |
-| TASK-703 | Verify live SMTP delivery in staging environment with test-recipient | 🟡 | None | PART-002 | `TASK-701` complete; ready for staging test with `EMAIL_MODE=test` when ready |
+| TASK-703 | Verify live SMTP delivery in staging environment with test-recipient | ✅ | None | PART-002 | Verified 2026-11-28 with `EMAIL_MODE=test` and `EMAIL_LIVE_ENABLED=false`: all 3 templates (`order_received`, `pickup_ready`, `pickup_reminder`) delivered over STARTTLS to `MAIL_TEST_RECIPIENT` (`status='test'`) |
 
 ---
 
